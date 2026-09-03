@@ -1,0 +1,4 @@
+interface:
+  display_name: "股票波段与宽基配置分析"
+  short_description: "股票1至6个月波段机会与宽基指数长期配置节奏分析助手"
+  default_prompt: "Use $analysis-commercial to decide if this name is a 1-6 month swing, or whether SPX/NDX should be accumulated on a schedule."

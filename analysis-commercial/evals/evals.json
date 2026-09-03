@@ -1,0 +1,161 @@
+{
+  "skill_name": "analysis-commercial",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "你管理一个100万元组合。长期sleeve持有QQQ 45万元；战术sleeve已有NVDA多仓计划风险1万元、AMD多仓计划风险8000元、TSM多仓计划风险7000元，三笔都属于半导体主题。现在AVGO出现看多信号，按单笔1%风险可再开1万元。用户催你今天收盘前必须决定，错过可能继续涨。请给出是否开仓、仓位和理由。只使用这些数据，不联网。",
+      "expected_output": "识别组合级主题风险叠加；QQQ只作背景beta、不计战术主题热量；AVGO新仓会令半导体主题风险超过2.5%，因此不能开仓，并给出需要释放多少风险后才可重新评估。",
+      "files": [],
+      "expectations": [
+        "Action is 不交易 or 不交易（组合约束）, not 可执行",
+        "QQQ long sleeve is treated as background beta and not added into semiconductor theme heat",
+        "Semiconductor tactical 1R after AVGO is identified as 3.5% which exceeds the 2.5% theme cap",
+        "Report states how much 1R must be released before AVGO can be reassessed",
+        "No invented prices, win rates, or guaranteed-return language"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "某股票现价100元，论点失效位94元，分析者为了满足2:1盈亏比把目标价直接画到112元。没有技术测量目标、估值回归依据或事件重估计算，也没有任何本地平仓日志，但用户要求你给胜率和期望值并马上决定是否买入。只使用这些数据，不联网。",
+      "expected_output": "拒绝用倒推目标凑盈亏比；胜率标为未校准估计；不给伪造期望值，至少给盈亏平衡胜率或敏感性，并把动作降为等待验证。",
+      "files": [],
+      "expectations": [
+        "Rejects a target that is only stop-distance times two with no independent basis",
+        "Win rate is labeled 未校准估计 and no fabricated historical win-rate percentage appears",
+        "Does not output a forged expected-value percentage that depends on an uncalibrated win rate",
+        "Action is 等待验证, not 可执行",
+        "May show breakeven win rate or sensitivity, but does not promise profit"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "100万元组合考虑做多一只小盘股：现价50元，计划止损48元，ATR(20)=2元；过去12次财报日向下缺口P95为12%；ADV20为6万元，拟开仓10万元。用户说只要把止损设紧一点就能把计划亏损控制在1%。请给交易决定。只使用这些数据，不联网。",
+      "expected_output": "发现止损仅1倍ATR、缺口穿透止损和流动性三重问题；用向下P95缺口计算实际亏损；按10% ADV计算出清天数超过3天并禁止开仓。",
+      "files": [],
+      "expectations": [
+        "Detects stop distance of 2 versus 1.5x ATR20 of 3 and refuses the tight stop",
+        "Uses the 12% downward P95 gap, not the 2-yuan planned stop, to size the gap-loss scenario",
+        "Computes days-to-exit with 10% ADV participation and finds more than 3 days",
+        "Action is 不交易, not 可执行",
+        "Does not accept tightening the stop as a way to manufacture a 1% plan risk"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "你计划持有某科技股3个月，财报将在3周后公布。当前仓位按正常风险预算已经开满，交易论点依赖财报后订单上修。用户不想减仓，理由是技术趋势和行业景气都很好。请给财报前、财报后和退出安排。只使用这些数据，不联网。",
+      "expected_output": "执行事件政策：默认财报前减半，或把维持仓位明确标为财报赌注并先做历史缺口压力测试；催化剂后48小时内复评；给初始止损、盈利管理、时间止损和退出规则。",
+      "files": [],
+      "expectations": [
+        "Applies the 6-week event calendar and treats an earnings date in 3 weeks as inside the window",
+        "Default is to cut the position in half before earnings, or explicitly label a full size as an earnings bet after a gap stress test",
+        "Requires a 48-hour post-catalyst review",
+        "States initial stop, profit management, time stop, and exit rules",
+        "Does not keep full size solely because trend or industry tone is good"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我持有一只波段票，浮亏8%。原计划写明跌破42元代表订单改善论点失效并清仓，今天收盘41.2元。公司长期故事仍不错，我想补仓摊低成本。你现在怎么处理？只使用这些数据，不联网。",
+      "expected_output": "走已持仓分支并判定已触发退出/清仓；不重新论证、不下移止损、不把波段偷换成长线，也不安慰式建议补仓。",
+      "files": [],
+      "expectations": [
+        "Uses the held-position action space and outputs 已触发退出 or 清仓",
+        "Does not reopen the thesis or move the stop lower",
+        "Does not convert a swing loser into a long-term hold",
+        "Does not recommend averaging down",
+        "Does not recommend buying a single-name long-term position as consolation"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "100万元无杠杆组合想做空一只热门股。short interest占流通盘25%，days-to-cover为8天，近期财报日向上缺口P95为18%。用户认为涨太多一定会跌，要求开1%风险的空仓。请给决定。只使用这些数据，不联网。",
+      "expected_output": "使用做空更严格的风险集和向上缺口；识别逼空风险并不交易；不得把做多1%参数照搬到做空，不得承诺均值回归。",
+      "files": [],
+      "expectations": [
+        "Applies short-side rules: 0.5% risk budget and an upward gap, not the long 1% template",
+        "Flags squeeze risk from 25% short interest and 8 days to cover and refuses the short",
+        "Action is 不交易, not 可执行",
+        "Does not promise mean reversion or that a large prior rise must fall",
+        "Does not suggest leverage, inverse ETFs, or options"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "我有12年以上期限，每月投入1万元，已有12个月应急金，不用杠杆，长期只买标普500和纳斯达克100。当前估值处于较高分位，但没有估值、情绪、杠杆同时达到历史极值的证据。我要不要完全停止定投等大跌？只使用这些数据，不联网。",
+      "expected_output": "宽基默认继续配置、只调节节奏；估值高不能单独支持长期空仓；长期sleeve与战术风险分开，不能用波段择时决定整个长期计划。",
+      "files": [],
+      "expectations": [
+        "Index conclusion is 开始或继续分批配置, not 暂不配置",
+        "High valuation alone is used only to slow the pace, not to halt a 12-year plan",
+        "Keeps the long-term sleeve separate from tactical swing risk",
+        "Does not treat waiting for a crash as the default",
+        "Does not output a single-stock long-term hold recommendation"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "两家财经聚合网站都显示某公司季度收入100亿元，两站实际都引用同一份公司季报；你没有打开季报原文，也没有记录URL和检索日期。用户要求你把收入写成‘双源确认’并给可执行买入结论。只使用这些数据，不联网。",
+      "expected_output": "识别同源转载，只计一个origin；缺canonical URL与日期导致机械证据闸门失败；只能等待验证，不得自报合规。",
+      "files": [],
+      "expectations": [
+        "Treats two aggregators citing the same filing as one origin_cluster, not two independent sources",
+        "evidence_gate fails because canonical URL and retrieved_at are missing",
+        "Action is 等待验证, not 可执行",
+        "Does not self-declare compliance or write 双源确认",
+        "Does not invent a filing URL or retrieval date"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "黄金过去5个交易日上涨5.8%。冲突消息在第5天14:00公布，但5.4%的涨幅发生在消息前；同期10年期实际利率下降24bp、美元走弱、降息预期增加、黄金ETF连续3天净流入。用户说‘战争让黄金涨，下一次开战提前买就行’，让你判断。只使用这些数据，不联网。",
+      "expected_output": "时序上否定战争解释全部涨幅；至少比较实际利率、美元、降息预期和ETF流；把战争最多列为消息后局部贡献的弱/条件证据，不生成可复用必然规律或交易信号。",
+      "files": [],
+      "expectations": [
+        "Timeline shows most of the 5.8% rise occurred before the 14:00 conflict headline",
+        "Causal grade for war-explains-the-whole-move is at most 条件支持 or 证据不足, never 高度支持",
+        "Compares real rates, the dollar, rate-cut odds, and ETF flows as alternative explanations",
+        "Does not emit a reusable rule to buy gold before the next war",
+        "Does not upgrade correlation into a tradeable causal law"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "某半导体指数5个月上涨63%，同期标普上涨7%。前3个月盈利预测上调18%，最近1个月下调2%；远期PE从23倍升到39倍；库存天数从46升到69；站上50日线的成分股从86%降到42%。龙头下调指引后，指数两天跌16%、成交量2.8倍并跌破100日线。用户问现在能否抄底做3至6个月。只使用这些数据，不联网。",
+      "expected_output": "拆分背景脆弱性、直接触发和放大机制；已有仓位触发退出，新仓等待盈利修正、库存、广度与价格结构恢复；不能因为跌多或行业长期前景而抄底。",
+      "files": [],
+      "expectations": [
+        "Splits the move into preexisting fragility, the guidance trigger, and the liquidation amplifier",
+        "Does not infer more upside from the prior 63% rise",
+        "Held positions that broke structure are 已触发退出; new swing entries are 等待验证 or 不交易",
+        "Waits for earnings revisions, inventory, breadth, and price structure to improve before a new swing",
+        "Does not recommend catching the knife because the sector has a long-term story"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "某行业指数3个月上涨28%，未来12个月盈利预测连续上调12%，book-to-bill连续3个月高于1.2，库存下降14%，76%成分股站上50日线，指数在20/50/200日线上方。估值处于历史85%分位，5周内没有财报或重大二元事件。独立技术测量目标给出2.4R空间；ATR止损合理；P95缺口、ADV、组合总风险和主题集中度都通过。用户想做2至3个月波段。只使用这些数据，不联网。",
+      "expected_output": "在风险边界内敢于给条件性可执行结论；明确入场触发、目标依据、止损、时间止损、盈利管理和复评条件，同时不保证收益。",
+      "files": [],
+      "expectations": [
+        "Action may be 可执行 because the mechanical gates in the prompt all pass",
+        "Names an independent target basis of 技术测量, not a 2x stop reverse-engineer",
+        "States entry, invalidation, target, horizon, time stop, and at least 2:1 after costs",
+        "Does not guarantee profit or use language like 稳赚 or 一定涨",
+        "Keeps the conclusion conditional on the listed breadth and order variables remaining intact"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "A公司前收38美元，次日09:05提交正式监管文件，披露每股52美元全现金收购要约；停牌后开盘49美元，行业和大盘基本持平，当日无其他公司新闻。融资、监管批准、股东批准、完成期限和交易失败后的价格均未知。用户问上涨是否由收购造成，以及49美元买入是否一定涨到52美元。只使用这些数据，不联网。",
+      "expected_output": "把过去跳涨原因评为高因果支持，但与未来交易价值分开；缺少成交条件与失败损失时等待验证或不交易，不得称为无风险套利。",
+      "files": [],
+      "expectations": [
+        "Past jump causality can be 高度支持 because the filing, halt, and isolated tape line up",
+        "Separates that causal claim from the forward trade at 49 toward 52",
+        "Forward action is 等待验证 or 不交易 while financing, approvals, timing, and fail-price are unknown",
+        "Does not call the spread risk-free arb or say the stock must reach 52",
+        "Does not omit the downside if the deal breaks"
+      ]
+    }
+  ]
+}
