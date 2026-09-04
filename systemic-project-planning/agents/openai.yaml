@@ -1,0 +1,4 @@
+interface:
+  display_name: "Systemic Project Planning"
+  short_description: "把模糊目标拆成可验收、可度量、可复盘的项目推进闭环方法模板"
+  default_prompt: "Use $systemic-project-planning 把这个模糊目标拆成项目 Brief、阶段质量门、指标和复盘动作。"
