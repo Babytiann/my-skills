@@ -1,0 +1,4 @@
+interface:
+  display_name: "技术文档表达"
+  short_description: "提炼技术文档的行文主线，让读者快速看懂重点、改进机制与成果价值"
+  default_prompt: "使用 $technical-impact-writing，根据这些材料起草或审改技术文档，让读者快速理解重点、为什么有效以及成果价值。"
