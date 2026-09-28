@@ -1,0 +1,6 @@
+interface:
+  display_name: "方案 UI 预览"
+  short_description: "把方案中的 UI 改动生成评审 HTML，演示关键交互并验证本机浏览器预览"
+  default_prompt: "使用 $plan-ui-preview，根据已有方案生成 UI 改动评审 HTML，把关键交互做出来，并打开浏览器验证。"
+policy:
+  allow_implicit_invocation: false
