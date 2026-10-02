@@ -8,12 +8,16 @@
 
 | 来源 | 本次读取的版本 | 用途 |
 | --- | --- | --- |
-| [Composer 优化设计方案 v2](https://ncnfmfxxif1e.feishu.cn/docx/MPLTdtVkPojMSVx5uYHcKz5knXg) | revision 556 | 对象定义、输入与发送链路、交互及视觉要求 |
-| [Composer 与命令体系：PR 拆分](https://ncnfmfxxif1e.feishu.cn/wiki/EobawKBW5insRikkBGecR9cpnug) | revision 57；解析后的文档 ID 为 `H9lAdGcvpo2VwgxkDBEcyNVGnle` | 阶段范围、验收条件、设计稿引用与讨论 |
-| [Composer 附件栏 + 呼出菜单 v3](https://share.figtu.com/d/8B3A32ct) | 页面标题 v3 | 菜单、附件栏、正文与队头的组合呈现 |
-| [Composer 呈现形态 · 样板 v6](https://share.figtu.com/d/admrEvCQ) | 页面标题 v6 | 全貌、原子类型、hover、文件与批注浮窗 |
+| [Composer 优化设计方案 v2](sources/composer-design-v2.md) | revision 556 | 对象定义、输入与发送链路、交互及视觉要求 |
+| [Composer 与命令体系：PR 拆分](sources/composer-pr-split.md) | revision 57；解析后的文档 ID 为 `H9lAdGcvpo2VwgxkDBEcyNVGnle` | 阶段范围、验收条件、设计稿引用与讨论 |
+| [Composer 附件栏 + 呼出菜单 v3](sources/composer-attachments-menu-v3.html) | 页面标题 v3 | 菜单、附件栏、正文与队头的组合呈现 |
+| [Composer 呈现形态 · 样板 v6](sources/composer-presentation-v6.html) | 页面标题 v6 | 全貌、原子类型、hover、文件与批注浮窗 |
 
 两份飞书文档通过 `lark-cli docs +fetch --as user` 读取，包含可见评论；两份设计稿检查了 HTML 源码和实际浏览器画面，并实际点击验证了 v6 的长消息展开。主题切换、菜单选中动画、批注展开等另有源码依据，但本次未逐一操作验收。在线内容可能继续变化，上述版本只说明本次调研的依据。
+
+四份来源于 2026-10-02 保存为本地副本，以上引用均指向本地文件。两份文档正文按表中 revision 获取；评论及画板按归档时实际可读取的内容保存，不能据此认定它们也是历史版本。两份 HTML 保存的是归档当天的页面，不冒充 2026-09-28 的历史快照。文档原始读取结果存放在 `sources/raw/`，画板及字体存放在 `sources/assets/`；只保存这四份来源及其阅读所需资源，不递归下载它们引用的其他文档。
+
+本地副本验收（2026-10-02）：两份文档的标题、表格与代码块已和原始响应核对；主方案的 1 张画板已保存并查看，PR 拆分附录保留本次返回的 5 条评论串、19 条发言。两份 HTML 的原始内联样式与脚本保持不变，3 个字体家族及许可证一并保存。浏览器在离线模式下直接打开本地文件，确认画面、图片和字体正常，无远程资源请求；实际操作通过两份稿子的明暗切换，以及 v6 的“查看消息 → 收起 → 查看消息”。原稿其他控件的实现及验收边界仍以下文说明为准。
 
 没有取得生成设计稿时的提示词、Agent 过程或历史产物。因此，下文归纳的是从现有成果中观察到的表达方法，不推断原作者具体如何生成。
 
@@ -110,4 +114,4 @@ Definition 注册、五支 parts、handler 补全、消息落库、目录初始�
 
 文件写入成功、HTTP 返回成功、浏览器标签创建成功，都不能单独代表预览验收完成。浏览器能力不可用时仍保留 HTML，说明验证阻塞，不编造截图或验证结论。
 
-实现保持三个文件：`SKILL.md` 固化工作方法，`agents/openai.yaml` 配置显式调用，本文保存示例调研。示例帮助理解表达方法，不是每次生成都必须重新访问的输入，也不是固定页面模板。
+`SKILL.md` 固化工作方法，`agents/openai.yaml` 配置显式调用，本文保存示例调研，`references/sources/` 保存四份来源的本地副本和必需资源。示例帮助理解表达方法，按需读取本地副本即可，不是每次生成都必须重新访问的输入，也不是固定页面模板。

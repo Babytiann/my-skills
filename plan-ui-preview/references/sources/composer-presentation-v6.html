@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Composer 呈现形态 · 样板 v6</title>
+  <!-- 本地来源副本：Composer 呈现形态 · 样板 v6；下载日期：2026-10-02；原始 HTML SHA256：f5b6f53e101f60edb42c10994706edf56cb76b6e3adf0e2674b22f92eff46e8f。仅本地化字体资源并移除 preconnect；原始布局、文案、样式和交互代码保留。 -->
+  <link href="assets/fonts/google-fonts.css" rel="stylesheet" />
+  <style>
+    :root {
+      font-size: 16px;
+      --font-sans: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --radius-control: 4px;
+      --radius-container: 6px;
+      --radius-card: 8px;
+      --radius-message: 16px;
+      --radius-composer: 20px;
+      --radius-pill: 9999px;
+      /* 浮层宽是中栏输入框壳（640 − seat 18×2 = 604）的 80%。仅名字的不跟这档。 */
+      --hv-width: 483px;
+      --hv-max-height: 360px;
+      --hv-gap: 8px;
+      --hv-name-line: 18.9px;
+      --hv-meta-line: 17.4px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── 两套色只有一套在场，由页首的切换入口换。 ───────────────── */
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --page: 17, 17, 17;
+      --page-ink: 230, 230, 230;
+      --page-ink-soft: 150, 150, 150;
+      --page-ink-faint: 110, 110, 110;
+      --page-rule: 42, 42, 42;
+      --palette-content: 31, 31, 31;
+      --palette-canvas: 26, 26, 26;
+      --palette-chrome: 24, 24, 24;
+      --palette-composer: 31, 31, 31;
+      --palette-content-inset: 40, 40, 40;
+      --palette-surface: 43, 43, 43;
+      --palette-muted: 49, 49, 49;
+      --palette-card-edge: 44, 44, 44;
+      --palette-border: 62, 62, 62;
+      --palette-border-soft: 54, 54, 54;
+      --palette-ink: 230, 230, 230;
+      --palette-ink-soft: 163, 163, 163;
+      --palette-ink-faint: 115, 115, 115;
+      --palette-accent: 240, 99, 46;
+      --palette-border-strong: 86, 86, 86;
+      --palette-focus: 255, 255, 255;
+      --shadow-composer: 0 0 0 0.5px rgb(var(--palette-border)), 0 3px 7.5px rgba(0,0,0,0.04), 0 0 20px rgba(0,0,0,0.05);
+      --palette-overlay: 43, 43, 43;
+      --palette-well: 31, 31, 31;
+      --shadow-overlay: 0 0 0 0.5px rgb(var(--palette-border)), 0 6px 16px rgba(0,0,0,0.34), 0 0 28px rgba(0,0,0,0.22);
+      --overlay-edge: rgba(255, 255, 255, 0.055);
+      --overlay-rule: rgba(255, 255, 255, 0.048);
+      --shadow-float: 0 10px 28px rgba(0, 0, 0, 0.48), 0 0 36px rgba(0, 0, 0, 0.28);
+      --dot-command: #f0632e;
+      --dot-skill: #c084fc;
+      --dot-ref: #818cf8;
+      --dot-file: #38bdf8;
+    }
+    [data-theme="light"] {
+      color-scheme: light;
+      --page: 236, 236, 239;
+      --page-ink: 24, 25, 28;
+      --page-ink-soft: 85, 88, 95;
+      --page-ink-faint: 130, 133, 140;
+      --page-rule: 216, 217, 221;
+      --palette-content: 255, 255, 255;
+      --palette-canvas: 255, 255, 255;
+      --palette-chrome: 248, 248, 250;
+      --palette-composer: 255, 255, 255;
+      --palette-content-inset: 250, 250, 252;
+      --palette-surface: 252, 252, 254;
+      --palette-muted: 244, 244, 247;
+      --palette-card-edge: 236, 238, 241;
+      --palette-border: 228, 229, 233;
+      --palette-border-soft: 238, 239, 242;
+      --palette-ink: 20, 21, 24;
+      --palette-ink-soft: 70, 75, 84;
+      --palette-ink-faint: 120, 125, 134;
+      --palette-accent: 217, 72, 28;
+      --palette-border-strong: 176, 178, 184;
+      --palette-focus: 0, 0, 0;
+      --shadow-composer: 0 0 0 0.5px rgb(var(--palette-border)), 0 3px 7.5px rgba(0,0,0,0.04), 0 0 20px rgba(0,0,0,0.05);
+      --palette-overlay: 255, 255, 255;
+      --palette-well: 244, 244, 247;
+      --shadow-overlay: 0 0 0 0.5px rgb(var(--palette-border)), 0 6px 16px rgba(0,0,0,0.07), 0 0 28px rgba(0,0,0,0.05);
+      --overlay-edge: rgba(0, 0, 0, 0.10);
+      --overlay-rule: rgba(0, 0, 0, 0.065);
+      --shadow-float: 0 10px 28px rgba(0, 0, 0, 0.10), 0 0 36px rgba(0, 0, 0, 0.06);
+      --dot-command: #d9481c;
+      --dot-skill: #9333ea;
+      --dot-ref: #4f46e5;
+      --dot-file: #0284c7;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: rgb(var(--page));
+      color: rgb(var(--page-ink));
+      padding: 0 24px 72px;
+      -webkit-font-smoothing: antialiased;
+      font-synthesis: none;
+      text-autospace: normal;
+    }
+
+    /* ── 页面骨架 ───────────────────────────────────────────── */
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      margin: 0 -24px 26px;
+      padding: 14px 24px 12px;
+      background: rgba(var(--page), 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgb(var(--page-rule));
+    }
+    .top-in {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top h1 {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .top h1 small {
+      display: block;
+      margin-top: 3px;
+      font-size: 11.5px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: rgb(var(--page-ink-soft));
+    }
+    .theme-dock {
+      flex-shrink: 0;
+      display: flex;
+      border-radius: var(--radius-container);
+      overflow: hidden;
+      border: 1px solid rgb(var(--page-rule));
+    }
+    .theme-btn {
+      width: 46px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      color: rgb(var(--page-ink-faint));
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+    .theme-btn.is-on {
+      background: rgb(var(--palette-muted));
+      color: rgb(var(--palette-ink));
+    }
+
+    .sec {
+      max-width: 1100px;
+      margin: 0 auto 18px;
+      padding-top: 26px;
+    }
+    .sec.is-app { max-width: 1280px; }
+    .sec h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .sec h2 b {
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: rgb(var(--page-ink-faint));
+      vertical-align: 1px;
+    }
+    .sec p {
+      margin-top: 6px;
+      max-width: 82ch;
+      font-size: 12px;
+      line-height: 1.65;
+      color: rgb(var(--page-ink-soft));
+    }
+    .sec code, .cap code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgb(var(--page-ink));
+    }
+    .cap {
+      max-width: 1280px;
+      margin: 10px auto 0;
+      font-size: 11px;
+      line-height: 1.6;
+      color: rgb(var(--page-ink-faint));
+    }
+
+    .board {
+      margin: 0 auto 8px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgb(var(--palette-card-edge));
+      background: rgb(var(--palette-chrome));
+    }
+    .board.is-wide { max-width: 1100px; }
+    .board.is-app { max-width: 1280px; }
+    .board-label {
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgb(var(--palette-ink-faint));
+      padding: 9px 16px 8px;
+      border-bottom: 1px solid rgb(var(--palette-border-soft));
+    }
+    .board-pad { padding: 20px 22px 22px; background: rgb(var(--palette-canvas)); }
+
+    /* ── 16:10 会话窗口 ─────────────────────────────────────── */
+    .frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      display: flex;
+      flex-direction: column;
+      background: rgb(var(--palette-chrome));
+      color: rgb(var(--palette-ink));
+      overflow: hidden;
+    }
+    .titlebar {
+      height: 35px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+    }
+    .traffic { display: flex; gap: 6px; width: 52px; }
+    .traffic i {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-pill);
+      background: rgb(var(--palette-ink-faint));
+    }
+    .titlebar-name {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: rgb(var(--palette-ink-soft));
+    }
+    .app-shell {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      gap: 6px;
+      padding: 0 6px 6px;
+    }
+    .rail {
+      width: 44px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding-top: 6px;
+    }
+    .rail-item {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-control);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgb(var(--palette-ink-faint));
+    }
+    .rail-item.is-on {
+      background: rgb(var(--palette-muted));
+      color: rgb(var(--palette-ink));
+    }
+    .rail svg { width: 16px; height: 16px; }
+    .work {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      border-radius: var(--radius-card);
+      background: rgb(var(--palette-canvas));
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .session-col {
+      width: 100%;
+      max-width: 768px;
+      margin: 0 auto;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .transcript {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 26px 24px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(var(--palette-border)) transparent;
+    }
+    /* 会话窗口里：agent 靠左，用户气泡靠右。 */
+    .frame .msg-user-row { align-self: flex-end; align-items: flex-end; }
+    .frame .msg-agent { align-self: flex-start; }
+
+    .msg-user-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      max-width: 82%;
+      min-width: 0;
+    }
+    .msg-user-bubble {
+      background: rgb(var(--palette-muted));
+      border-radius: var(--radius-message);
+      padding: 10px 14px;
+      color: rgb(var(--palette-ink));
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      font-synthesis: none;
+      text-autospace: normal;
+      font-feature-settings: "palt" 1;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    /* 正文超过 20 行才收。收到 20 行，下面另起一行 ... 。队头签不进这一层。 */
+    .bubble-omit {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .msg-user-bubble.is-omit:not(.is-open) .bubble-omit {
+      max-height: calc(1.6em * 20);
+      overflow: clip;
+    }
+    .bubble-omit-mark {
+      display: block;
+      margin-top: 2px;
+      color: rgb(var(--palette-ink));
+      font-size: 14px;
+      line-height: 1.2;
+      letter-spacing: 0.06em;
+    }
+    .msg-user-bubble.is-open .bubble-omit-mark { display: none; }
+    .bubble-fold-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .bubble-fold {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: rgb(var(--palette-ink-faint));
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .bubble-fold svg {
+      width: 10px;
+      height: 7px;
+      display: block;
+      transition: transform 100ms linear;
+    }
+    .msg-user-bubble.is-open .bubble-fold svg { transform: rotate(180deg); }
+    .bubble-fold:hover { color: rgb(var(--palette-ink)); }
+    .bubble-fold:focus-visible {
+      outline: 1px solid rgba(var(--palette-ink), 0.32);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .bubble-fold svg { transition: none; }
+    }
+    .msg-agent {
+      max-width: 88%;
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgb(var(--palette-ink-soft));
+      overflow-wrap: anywhere;
+      font-feature-settings: "palt" 1;
+    }
+
+    .composer-seat { padding: 4px 24px 16px; flex-shrink: 0; }
+    .composer-shell {
+      border-radius: var(--radius-composer);
+      background: rgb(var(--palette-composer));
+      padding: 10px 0 8px;
+      box-shadow: var(--shadow-composer);
+    }
+    .composer-gutter { padding-inline: 16px; }
+    .composer-box {
+      min-height: 52px;
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgb(var(--palette-ink));
+      font-synthesis: none;
+      text-autospace: normal;
+      font-feature-settings: "palt" 1;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      min-width: 0;
+    }
+    .composer-pill-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding-top: 6px;
+    }
+    .pill-btn, .pill-btn-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: transparent;
+      color: rgb(var(--palette-ink-soft));
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .pill-btn-icon { width: 28px; padding: 0; justify-content: center; }
+    .pill-spacer { flex: 1; }
+    .btn-send {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: rgb(var(--palette-accent));
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── 五类原子的填色。按输入框底预合成，气泡和输入框同一套。 ── */
+    [data-theme="dark"] .tone-command {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(240, 99, 46) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(240, 99, 46) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #f0632e 17%);
+    }
+    [data-theme="light"] .tone-command {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #d9481c 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(217, 72, 28) 15%);
+      color: color-mix(in srgb, #18191c 70%, #d9481c 30%);
+    }
+    [data-theme="dark"] .tone-skill {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(168, 85, 247) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(168, 85, 247) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #c084fc 17%);
+    }
+    [data-theme="light"] .tone-skill {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #9333ea 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(147, 51, 234) 15%);
+      color: color-mix(in srgb, #18191c 70%, #9333ea 30%);
+    }
+    [data-theme="dark"] .tone-file {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(2, 132, 199) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(56, 189, 248) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #38bdf8 17%);
+    }
+    [data-theme="light"] .tone-file {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #0284c7 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(2, 132, 199) 15%);
+      color: color-mix(in srgb, #18191c 70%, #0284c7 30%);
+    }
+    [data-theme="dark"] .tone-ref {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(99, 102, 241) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(129, 140, 248) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #818cf8 17%);
+    }
+    [data-theme="light"] .tone-ref {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #4f46e5 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(79, 70, 229) 15%);
+      color: color-mix(in srgb, #18191c 70%, #4f46e5 30%);
+    }
+    /* 图片：主色来自缩略图，再按同一套比例混到输入框底。 */
+    [data-theme="dark"] .tone-image {
+      --img-accent: #8a8a8a;
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, var(--img-accent) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, var(--img-accent) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, var(--img-accent) 17%);
+    }
+    [data-theme="light"] .tone-image {
+      --img-accent: #52525b;
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, var(--img-accent) 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, var(--img-accent) 15%);
+      color: color-mix(in srgb, #18191c 70%, var(--img-accent) 30%);
+    }
+
+    /* ── Chip ───────────────────────────────────────────────── */
+    .chip {
+      display: inline-flex;
+      height: 1.41em;
+      max-width: 100%;
+      min-width: 0;
+      align-items: center;
+      gap: 0.33em;
+      border-radius: 0.5em;
+      padding: 0 0.5em;
+      font-weight: 400;
+      line-height: 1;
+      vertical-align: middle;
+      font-size: 0.80em;
+      white-space: nowrap;
+      margin: 1px 2.5px;
+      box-sizing: border-box;
+      overflow: hidden;
+      font-synthesis: none;
+      font-synthesis-weight: none;
+    }
+    .chip .chip-icon-box,
+    .chip .ico,
+    .chip svg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.17em;
+      height: 1.17em;
+      flex-shrink: 0;
+      color: currentColor;
+      opacity: 0.92;
+    }
+    .chip svg { display: block; }
+    .chip .chip-thumb-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.17em;
+      height: 1.17em;
+      flex-shrink: 0;
+      border-radius: 999px;
+      overflow: hidden;
+      background: color-mix(in srgb, var(--img-accent, rgb(var(--palette-ink))) 22%, transparent);
+      border: 1px solid color-mix(in srgb, var(--img-accent, rgb(var(--palette-ink))) 38%, transparent);
+      box-sizing: border-box;
+    }
+    .chip .chip-thumb-wrap .thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .chip .lbl {
+      display: block;
+      line-height: 1.15;
+      font-weight: 400;
+      letter-spacing: 0;
+      color: inherit;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-autospace: normal;
+      font-feature-settings: "palt" 1;
+    }
+    .chip > .lbl { flex: 0 1 auto; max-width: 16em; }
+    .chip:has(.chip-param-text) > .lbl { flex: 0 0 auto; max-width: 16em; }
+    .chip-head .lbl { flex: 0 1 auto; max-width: 16em; }
+    /* 380 窄栏气泡内容宽：(380 − 14×2) × 82% − 14×2 ≈ 261。 */
+    .msg-user-bubble .chip:not(.is-expanded) { max-width: min(100%, 261px); }
+    /* 带参命令同样封 261：参数再长也不把整颗撑开。只有展开（编辑）时才超过这个上限。 */
+    .chip:not(.is-expanded):has(.chip-param-text) { max-width: min(100%, 261px); }
+    .chip:has(.chip-param-text) .chip-param-text { flex: 1 1 0%; min-width: 0; }
+
+    .chip-param-text {
+      display: flex;
+      align-items: center;
+      margin-left: 0.12em;
+      padding-left: 0.5em;
+      border-left: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+      font-size: 0.92em;
+      font-weight: 400;
+      opacity: 0.88;
+      line-height: inherit;
+      min-width: 0;
+      overflow: hidden;
+      flex: 1 1 auto;
+      white-space: nowrap;
+    }
+    .chip-param-text.is-empty { opacity: 0.42; }
+    .chip-param-hint { flex-shrink: 0; margin-right: 0.35em; opacity: 0.42; }
+    .chip-param-inline {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chip.is-expanded {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      white-space: normal;
+      vertical-align: top;
+      padding: 0.4em 0.6em 0.5em;
+      gap: 0.28em;
+      overflow: hidden;
+    }
+    .chip-head {
+      display: flex;
+      align-items: center;
+      gap: 0.33em;
+      min-width: 0;
+      height: 1.41em;
+      flex-shrink: 0;
+    }
+    .chip-param-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.18em;
+      min-width: 0;
+    }
+    .chip-param-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4em;
+      min-width: 0;
+      font-size: 0.92em;
+      line-height: 1.45;
+      white-space: normal;
+    }
+    .chip-param-key { flex-shrink: 0; opacity: 0.42; font-weight: 400; }
+    .chip-param-val {
+      min-width: 0;
+      opacity: 0.92;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .caret {
+      display: inline-block;
+      width: 1.5px;
+      height: 0.92em;
+      margin: 0 0 0 1px;
+      background: currentColor;
+      vertical-align: -0.08em;
+      flex-shrink: 0;
+    }
+    .chip.is-open { outline: 1px solid rgb(var(--palette-border-strong)); }
+
+    /* ── Carry：输入框顶槽 / 气泡前头。一行装不下整颗换行，不横向滚。 ── */
+    .composer-carry-strip,
+    .msg-user-carries { position: relative; min-width: 0; }
+    .composer-carry-strip {
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+    .msg-user-carries {
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+    .composer-carry-row {
+      display: flex;
+      min-width: 0;
+      width: 100%;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+    }
+    .carry-pill {
+      display: inline-flex;
+      min-width: 0;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 4px;
+      border-radius: var(--radius-pill);
+      padding: 2px 7px;
+      height: 20px;
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.2;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(var(--palette-border), 0.7);
+      color: rgb(var(--palette-ink-soft));
+      user-select: none;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+    [data-theme="light"] .carry-pill {
+      background: rgba(0, 0, 0, 0.035);
+      border-color: rgba(var(--palette-border), 0.85);
+      color: rgb(var(--palette-ink));
+    }
+    .carry-pill .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 11px;
+      height: 11px;
+      color: currentColor;
+    }
+    .carry-pill .icon svg { width: 11px; height: 11px; display: block; }
+    .carry-pill .label { font-size: 10.5px; line-height: 1.2; }
+    .carry-pill.is-open {
+      background: rgb(var(--palette-muted));
+      border-color: rgb(var(--palette-border-strong));
+      color: rgb(var(--palette-ink));
+    }
+
+    /* ── 类型总表 ───────────────────────────────────────────── */
+    .kinds {
+      display: flex;
+      flex-direction: column;
+      background: rgb(var(--palette-canvas));
+    }
+    .kind {
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr) 260px;
+      align-items: start;
+      gap: 18px;
+      padding: 16px 22px;
+      border-top: 1px solid rgb(var(--palette-border-soft));
+    }
+    .kind:first-child { border-top: 0; }
+    .kind-id { display: flex; align-items: center; gap: 8px; padding-top: 2px; }
+    .kind-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .kind-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgb(var(--palette-ink));
+      letter-spacing: 0.01em;
+    }
+    .kind-specs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 14px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgb(var(--palette-ink));
+    }
+    .kind-spec {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .kind-spec > em {
+      font-style: normal;
+      font-size: 10.5px;
+      letter-spacing: 0.04em;
+      color: rgb(var(--palette-ink-faint));
+    }
+    .kind-note {
+      font-size: 11.5px;
+      line-height: 1.65;
+      color: rgb(var(--palette-ink-soft));
+      padding-top: 3px;
+    }
+    .kind-note em {
+      font-style: normal;
+      color: rgb(var(--palette-ink));
+    }
+    .kinds-foot {
+      padding: 13px 22px 15px;
+      border-top: 1px solid rgb(var(--palette-border-soft));
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: rgb(var(--palette-ink-faint));
+      background: rgb(var(--palette-canvas));
+    }
+
+    /* ── 原画 + 箭头标注 ─────────────────────────────────────── */
+    .spec {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 316px;
+      gap: 26px;
+      align-items: start;
+      padding: 20px 22px 22px;
+      background: rgb(var(--palette-canvas));
+      border-top: 1px solid rgb(var(--palette-border-soft));
+    }
+    .spec:first-child { border-top: 0; }
+    .spec-art {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .spec-art.is-narrow { max-width: 380px; }
+    .spec-art > .composer-shell,
+    .spec-art > .stack { width: 100%; }
+    /* 气泡在上、输入框在下；气泡左对齐。 */
+    .stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+    }
+    .stack .msg-user-row { align-self: flex-start; align-items: flex-start; }
+    .stack .composer-shell { width: 100%; }
+    .spec-tag {
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: rgb(var(--palette-ink-faint));
+    }
+    .spec-notes {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      padding-top: 2px;
+      padding-bottom: 6px;
+      min-width: 0;
+    }
+    .spec-notes li {
+      display: grid;
+      grid-template-columns: 40px 16px minmax(0, 1fr);
+      align-items: start;
+      gap: 7px;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: rgb(var(--palette-ink-soft));
+    }
+    .spec-notes .arrow {
+      width: 40px;
+      height: 16px;
+      margin-top: 1px;
+      color: rgb(var(--palette-ink-faint));
+      opacity: 0.7;
+    }
+    .spec-notes .arrow svg { width: 40px; height: 8px; display: block; margin-top: 4px; }
+    .spec-notes b {
+      color: rgb(var(--palette-ink));
+      font-weight: 600;
+    }
+    .spec-notes .cond {
+      color: rgb(var(--palette-ink-faint));
+    }
+    .pin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      border-radius: 999px;
+      border: 1px solid rgb(var(--palette-border-strong));
+      background: rgb(var(--palette-canvas));
+      color: rgb(var(--palette-ink));
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 1;
+      font-family: var(--font-sans);
+    }
+    .spec-notes .pin { margin-top: 1px; }
+    /* 画里的标记贴在被说明的那一处后面，不占版。 */
+    .pin-in {
+      position: relative;
+      top: -0.55em;
+      margin: 0 1px 0 3px;
+      transform: scale(0.88);
+      background: rgb(var(--palette-muted));
+    }
+    .composer-shell .pin-in { background: rgb(var(--palette-composer)); }
+    .hv .pin-in { background: rgb(var(--palette-overlay)); }
+    .float .pin-in,
+    .float .pin { background: rgb(var(--palette-content)); }
+    .float-acts .pin-in { top: 0; margin-left: 1px; }
+    .pin-abs { position: absolute; z-index: 3; }
+
+    /* ── Hover 浮层 ─────────────────────────────────────────── */
+    .hv {
+      width: var(--hv-width);
+      max-width: calc(100% - 16px);
+      max-height: var(--hv-max-height);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: var(--radius-card);
+      background: rgb(var(--palette-overlay));
+      box-shadow: var(--shadow-overlay);
+      color: rgb(var(--palette-ink));
+      font-family: var(--font-sans);
+      font-synthesis: none;
+      text-autospace: normal;
+      overflow: hidden;
+    }
+    .hv.is-pinned {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 30;
+    }
+    .hv-id {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      min-width: 0;
+      flex-shrink: 0;
+    }
+    .hv-name {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+      color: rgb(var(--palette-ink));
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-feature-settings: "palt" 1;
+    }
+    .hv-meta {
+      font-size: 12px;
+      line-height: 1.45;
+      color: rgb(var(--palette-ink-faint));
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+    .hv-body {
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      font-size: 13px;
+      line-height: 1.7;
+      color: rgb(var(--palette-ink-soft));
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      font-feature-settings: "palt" 1;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(var(--palette-border)) transparent;
+    }
+    .hv-body.is-code { color: rgb(var(--palette-ink)); white-space: normal; }
+    .hv-code {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: rgb(var(--palette-ink));
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    /* 仅名字的：圆角、字号收到和 carry 一档；高度按汉字行盒收，不写死 20px，免得名字从底边溢出去。 */
+    .hv.is-name {
+      width: max-content;
+      max-width: 100%;
+      max-height: none;
+      height: auto;
+      min-height: 24px;
+      padding: 4px 8px;
+      gap: 0;
+      overflow: hidden;
+      flex-direction: row;
+      align-items: center;
+      border-radius: var(--radius-control);
+      box-shadow: 0 0 0 0.5px rgb(var(--palette-border)), 0 4px 10px rgba(0, 0, 0, 0.22);
+      vertical-align: middle;
+    }
+    [data-theme="light"] .hv.is-name {
+      box-shadow: 0 0 0 0.5px rgb(var(--palette-border)), 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+    .hv.is-name .hv-id {
+      height: auto;
+      flex: 0 1 auto;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      min-width: 0;
+    }
+    .hv.is-name .hv-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.35;
+      letter-spacing: 0;
+      max-width: 100%;
+    }
+    .hv-inline {
+      display: inline-flex;
+      vertical-align: middle;
+      margin: 0 2px;
+      max-width: 100%;
+    }
+
+    /* 批注的 hover：分段，每段有行数预算；列表滚动，底栏指引不跟滚。 */
+    .hv-clamp-1, .hv-clamp-2 {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+    .hv-clamp-1 { -webkit-line-clamp: 1; line-clamp: 1; }
+    .hv-clamp-2 { -webkit-line-clamp: 2; line-clamp: 2; }
+    .hv-comments {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      white-space: normal;
+    }
+    .hv-cmt {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 3px;
+      min-width: 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgb(var(--palette-border-soft));
+    }
+    .hv-cmt:last-child { padding-bottom: 0; border-bottom: none; }
+    .hv-cmt-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: rgb(var(--palette-ink));
+    }
+    .hv-cmt-from {
+      font-size: 11px;
+      line-height: 1.4;
+      color: rgb(var(--palette-ink-faint));
+    }
+    .hv-cmt-body {
+      margin-top: 2px;
+      padding: 6px 8px;
+      border-radius: var(--radius-control);
+      background: color-mix(in srgb, rgb(var(--palette-overlay)) 62%, rgb(var(--palette-well)) 38%);
+      font-size: 12px;
+      line-height: 1.55;
+      color: rgb(var(--palette-ink-soft));
+    }
+    [data-theme="dark"] .hv-cmt-body {
+      background: color-mix(in srgb, rgb(var(--palette-overlay)) 84%, rgb(var(--palette-well)) 16%);
+    }
+    .hv-cmt-body-inner {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+    .hv-cmt-note {
+      font-size: 12px;
+      line-height: 1.45;
+      color: rgb(var(--palette-ink));
+    }
+    .hv-cmt-note-k { color: rgb(var(--palette-ink-faint)); margin-right: 6px; }
+    .hv-hint {
+      flex-shrink: 0;
+      font-size: 11px;
+      line-height: 1.4;
+      color: rgb(var(--palette-ink-faint));
+      letter-spacing: 0.01em;
+      padding-top: 8px;
+      border-top: 1px solid rgb(var(--palette-border-soft));
+    }
+
+    /* 批注浮窗：点击打开的居中列表。外壳跟文件浮窗同一档，不另起一套色。 */
+    .float.is-comments .float-header { border-bottom-color: transparent; }
+    .float.is-comments.is-scrolled .float-header { border-bottom-color: var(--overlay-rule); }
+    .float.is-comments .float-id { flex-direction: row; align-items: center; }
+    .float.is-comments .float-body {
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--palette-ink), 0.28) transparent;
+    }
+    .cmt-list { display: flex; flex-direction: column; padding: 4px 0 10px; }
+    .cmt {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--overlay-rule);
+    }
+    .cmt:last-child { border-bottom: 0; }
+    .cmt-top { display: flex; align-items: flex-start; gap: 8px; }
+    .cmt-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .cmt-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: rgb(var(--palette-ink));
+    }
+    .cmt-from {
+      font-size: 11px;
+      line-height: 1.4;
+      color: rgb(var(--palette-ink-faint));
+      overflow-wrap: anywhere;
+    }
+    .cmt-acts { display: flex; align-items: flex-start; gap: 2px; flex-shrink: 0; }
+    .cmt-excerpt {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+    }
+    .cmt-quote {
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: var(--radius-control);
+      background: rgb(var(--palette-content-inset));
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.55;
+      color: rgb(var(--palette-ink-soft));
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-feature-settings: "palt" 1;
+    }
+    .cmt-excerpt:not(.is-open) .cmt-quote {
+      max-height: calc(16px + 1.55em * 5);
+      overflow: clip;
+    }
+    .cmt-more {
+      display: none;
+      align-self: flex-end;
+      flex-shrink: 0;
+      width: 20px;
+      height: 16px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: rgb(var(--palette-ink-faint));
+      cursor: pointer;
+    }
+    .cmt-excerpt.has-more .cmt-more { display: inline-flex; align-items: center; justify-content: center; }
+    .cmt-more:hover { color: rgb(var(--palette-ink)); }
+    .cmt-more svg { width: 12px; height: 12px; display: block; transition: transform 100ms linear; }
+    .cmt-excerpt.is-open .cmt-more svg { transform: rotate(180deg); }
+    .cmt-excerpt.has-more:not(.is-open) .cmt-quote {
+      padding-right: 14px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .cmt-excerpt.has-more:not(.is-open) .cmt-quote:focus {
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      outline: 1px solid rgba(var(--palette-ink), 0.32);
+      outline-offset: -1px;
+    }
+    .cmt-excerpt.has-more:not(.is-open) .cmt-quote::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .cmt-rail {
+      position: absolute;
+      right: 5px;
+      width: 3px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 180ms linear;
+      z-index: 1;
+    }
+    .cmt-excerpt.is-scrolling .cmt-rail { opacity: 1; }
+    .cmt-rail i {
+      position: absolute;
+      left: 0;
+      width: 3px;
+      border-radius: 999px;
+      background: rgba(var(--palette-ink), 0.22);
+    }
+    [data-theme="light"] .cmt-rail i { background: rgba(var(--palette-ink), 0.16); }
+    button.float-act { font: inherit; padding: 0; cursor: pointer; }
+    button.float-act:hover { color: rgb(var(--palette-ink)); background: rgb(var(--palette-muted)); }
+    @media (prefers-reduced-motion: reduce) {
+      .cmt-rail { transition: none; }
+      .cmt-more svg { transition: none; }
+    }
+    .cmt-note {
+      font-size: 13px;
+      line-height: 1.55;
+      color: rgb(var(--palette-ink));
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .cmt-note-k { color: rgb(var(--palette-ink-faint)); margin-right: 6px; }
+
+    /* Markdown 渲染态：文档排版，不走行号。 */
+    .float-body.is-md {
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--palette-ink), 0.35) transparent;
+    }
+    .md {
+      max-width: 896px;
+      margin: 0 auto;
+      padding: 24px;
+      font-size: 14px;
+      line-height: 22px;
+      color: rgb(var(--palette-ink));
+      font-feature-settings: "palt" 1;
+    }
+    .md > :first-child { margin-top: 0; }
+    .md > :last-child { margin-bottom: 0; }
+    .md h1 { font-size: 28px; font-weight: 600; line-height: 1.25; margin: 28px 0 10px; }
+    .md h2 { font-size: 20px; font-weight: 600; line-height: 1.25; margin: 28px 0 10px; }
+    .md p { margin: 0 0 15px; }
+    .md ul { margin: 0 0 15px; padding-left: 1.35em; }
+    .md li { margin-bottom: 6px; }
+    .md li:last-child { margin-bottom: 0; }
+    .md li::marker { color: rgb(var(--palette-ink-faint)); }
+    .md blockquote {
+      position: relative;
+      margin: 0 0 16px;
+      padding: 8px 0 8px 24px;
+      line-height: 24px;
+      color: rgb(var(--palette-ink-soft));
+    }
+    .md blockquote::after {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 4px;
+      border-radius: 2px;
+      background: rgb(var(--palette-border));
+    }
+    .md blockquote > p:last-child { margin-bottom: 0; }
+    .md code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 1px 5px;
+      border-radius: var(--radius-control);
+      background: rgb(var(--palette-content-inset));
+    }
+
+    /* ── 浮窗 ───────────────────────────────────────────────── */
+    .scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      background: rgba(var(--palette-chrome), 0.70);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .float {
+      position: absolute;
+      z-index: 60;
+      left: 50%;
+      top: 50%;
+      width: min(calc(100% - 64px), 944px);
+      max-height: min(calc(100% - 112px), 640px);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: var(--radius-card);
+      border: 1px solid var(--overlay-edge);
+      background: rgb(var(--palette-content));
+      box-shadow: var(--shadow-float);
+      color: rgb(var(--palette-ink));
+      transform: translate(-50%, -50%);
+    }
+    .float-header {
+      min-height: 52px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 8px 0 14px;
+      border-bottom: 1px solid var(--overlay-rule);
+    }
+    .float-glyph { flex-shrink: 0; display: flex; color: rgb(var(--palette-ink-soft)); }
+    .float-glyph svg { width: 15px; height: 15px; }
+    .float-id {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      padding-block: 8px;
+    }
+    .float-name {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: rgb(var(--palette-ink));
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .float-path {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.45;
+      color: rgb(var(--palette-ink-faint));
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .float-acts { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .float-act {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: var(--radius-control);
+      background: transparent;
+      color: rgb(var(--palette-ink-soft));
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .float-act.is-on { color: rgb(var(--palette-ink)); background: rgb(var(--palette-muted)); }
+    .float-act svg { width: 14px; height: 14px; }
+    .float-body {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ed-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .ed-scroll.is-wrap { overflow-y: auto; overflow-x: hidden; }
+    .ed-scroll[data-pan] {
+      overflow-x: auto;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .ed-scroll[data-pan]::-webkit-scrollbar { display: none; }
+    .ed {
+      min-height: 100%;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 20px;
+      color: rgb(var(--palette-ink));
+      padding: 12px 0 22px;
+    }
+    .ed.is-nowrap { width: max-content; min-width: 100%; }
+    .ed-row {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr);
+      align-items: start;
+    }
+    .ed.is-nowrap .ed-row { grid-template-columns: 52px max-content; }
+    .ed-ln {
+      text-align: right;
+      padding: 0 12px 0 16px;
+      color: rgb(var(--palette-ink-faint));
+      user-select: none;
+      font-variant-numeric: tabular-nums;
+      position: sticky;
+      left: 0;
+      background: rgb(var(--palette-content));
+      z-index: 1;
+    }
+    .ed-tx { padding-right: 24px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .ed.is-nowrap .ed-tx { white-space: nowrap; overflow-wrap: normal; word-break: keep-all; }
+    .tok-kw { color: #c4a7e7; }
+    .tok-str { color: #8fb9a8; }
+    .tok-cmt { color: rgb(var(--palette-ink-faint)); }
+    .tok-type { color: #9db4d4; }
+    [data-theme="light"] .tok-kw { color: #6b3fa0; }
+    [data-theme="light"] .tok-str { color: #2f6f5e; }
+    [data-theme="light"] .tok-type { color: #3d5a80; }
+
+    /* 横向滑轨：和竖轴同一根。默认不画，指针到下沿附近或正在拖时浮现。 */
+    .pan-rail {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 6px;
+      height: 6px;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 180ms linear;
+    }
+    .pan-rail.is-on { opacity: 1; }
+    .pan-rail i {
+      position: absolute;
+      top: 1.5px;
+      left: 0;
+      height: 3px;
+      border-radius: var(--radius-pill);
+      background: rgba(var(--palette-ink), 0.22);
+    }
+    [data-theme="light"] .pan-rail i { background: rgba(var(--palette-ink), 0.16); }
+
+    @media (max-width: 1020px) {
+      .spec { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .spec-notes li { grid-template-columns: 16px minmax(0, 1fr); gap: 8px; }
+      .spec-notes .arrow { display: none; }
+      .kind { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pan-rail { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-in">
+      <h1>
+        Composer 呈现形态 · 样板 v6
+        <small>一份稿子只画一次。同一处在不同情况下的变化，用箭头标在原画上；形态本身变了才另画一张。明暗由右侧入口换，不并排。</small>
+      </h1>
+      <div class="theme-dock" role="group" aria-label="明暗切换">
+        <button type="button" class="theme-btn is-on" data-theme-set="dark">暗色</button>
+        <button type="button" class="theme-btn" data-theme-set="light">浅色</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sec is-app">
+    <h2><b>01</b>全貌</h2>
+    <p>16:10 窗口下的一段会话。气泡从上往下累加，输入框钉在窗口底部，中间留空，不和最后一条气泡挤在一起。agent 的话靠左不带底，用户的话靠右进气泡。命令原子排在第一条消息最前面，表示这一轮是命令调用；其余原子散在句子里。队头签跟着气泡走一份，输入框顶上留一份。</p>
+  </div>
+  <section class="board is-app" id="board-overview">
+    <div class="board-label">会话窗口 · 1280 × 800</div>
+    <div class="frame" id="frame-overview"></div>
+  </section>
+
+  <div class="sec is-app">
+    <h2><b>02</b>Hover 的两处落点</h2>
+    <p>同一套浮层，挂在气泡里的原子上，和挂在输入框里的原子上。默认在原子上方、水平对原子居中，贴到窗口边才让开。</p>
+  </div>
+  <section class="board is-app" id="board-hv-bubble">
+    <div class="board-label">气泡里的原子</div>
+    <div class="frame" id="frame-hv-bubble"></div>
+  </section>
+  <p class="cap">命令原子的浮层：名字、参数名、命令自己的介绍。</p>
+  <section class="board is-app" id="board-hv-composer">
+    <div class="board-label">输入框里的原子</div>
+    <div class="frame" id="frame-hv-composer"></div>
+  </section>
+  <p class="cap">文件原子的浮层：名字、相对路径、文件开头。浮层压在输入框上方，不把输入框顶开。</p>
+
+  <div class="sec">
+    <h2><b>03</b>五类原子</h2>
+    <p>一类一行。左边是这一类的颜色和名字，中间是这一类今天长什么样，右边写清楚记号答的是什么问题。</p>
+  </div>
+  <section class="board is-wide" id="board-kinds">
+    <div class="board-label">类型总表</div>
+    <div class="kinds" id="kinds"></div>
+    <div class="kinds-foot">以上都是有默认图标的，如果实现方需要专有图标可以自行改动。</div>
+  </section>
+
+  <div class="sec">
+    <h2><b>04</b>细节</h2>
+    <p>气泡在上、输入框在下，都靠左。每组一张原画，右边的箭头说明同一张画在不同条件下会变成什么样。正文超过 20 行的，只在最后一组画一次。</p>
+  </div>
+  <section class="board is-wide" id="board-detail"></section>
+
+  <div class="sec">
+    <h2><b>05</b>Hover</h2>
+    <p>一套浮层，不按原子类型分形。三个槽：名字、次级信息、正文；有就填，没有就跳过。</p>
+  </div>
+  <section class="board is-wide" id="board-hover-spec"></section>
+
+  <div class="sec is-app">
+    <h2><b>06</b>文件浮窗</h2>
+    <p>点文件原子打开的阅读层，居中压在会话上。直接摊文件内容，不套代码块。markdown 默认渲染，切到源码才有行号；源码再关掉自动换行，长行不折，底下用滑轨左右看。</p>
+  </div>
+  <section class="board is-app" id="board-float-md">
+    <div class="board-label">markdown · 渲染</div>
+    <div class="frame" id="frame-float-md"></div>
+  </section>
+  <div class="sec" style="padding-top:14px"><div id="float-md-notes"></div></div>
+  <section class="board is-app" id="board-float">
+    <div class="board-label">源码 · 不换行</div>
+    <div class="frame" id="frame-float"></div>
+  </section>
+  <div class="sec" style="padding-top:14px"><div id="float-notes"></div></div>
+
+  <div class="sec is-app">
+    <h2><b>07</b>批注浮窗</h2>
+    <p>点队头签上的批注打开。外壳跟文件浮窗同一档，里面装的不是文件，是本轮带着的那几条批注。</p>
+  </div>
+  <section class="board is-app" id="board-float-cmt">
+    <div class="board-label">批注 · 从输入框的队头签打开</div>
+    <div class="frame" id="frame-float-cmt"></div>
+  </section>
+  <div class="sec" style="padding-top:14px"><div id="float-cmt-notes"></div></div>
+
+  <script>
+    // ── 记号 ──────────────────────────────────────────────────
+    // command 三类的记号答来源：buffin 内置 / agent 提供 / 用户自己写的。
+    const ICO = {
+      plugin: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5a2 2 0 1 1 4 0V5h3.5A1.5 1.5 0 0 1 19 6.5V10h1.5a2 2 0 1 1 0 4H19v3.5a1.5 1.5 0 0 1-1.5 1.5H14v-1.5a2 2 0 1 0-4 0V19H6.5A1.5 1.5 0 0 1 5 17.5V14H3.5a2 2 0 1 1 0-4H5V6.5A1.5 1.5 0 0 1 6.5 5H10z"/></svg>',
+      bot: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4.5"/><circle cx="12" cy="3" r="1.3"/><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M2 13.5v2"/><path d="M22 13.5v2"/><path d="M9 13v1.6"/><path d="M15 13v1.6"/></svg>',
+      // 控制：两道推杆。agent 命令走 run control 时用，颜色仍跟 command。
+      control: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h3.2"/><path d="M11.2 8H20.5"/><rect x="6.5" y="5.15" width="4.8" height="5.7" rx="1.35"/><path d="M3.5 16h9.2"/><path d="M17.8 16H20.5"/><rect x="12.7" y="13.15" width="4.8" height="5.7" rx="1.35"/></svg>',
+      person: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+      skill: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+      file: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      // 引用默认：未指定类别时用链环。任务 / 会话 / 编排有专有记号时盖掉。
+      ref: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+      image: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.6" cy="8.6" r="1.4"/><path d="m21 15.5-5-5L5.5 21"/></svg>'
+    };
+
+    // 文件的专有记号：有就盖掉默认那张纸。
+    const ICO_FILETYPE = {
+      ts: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="3.2"/><path d="M6.4 9.4h5"/><path d="M8.9 9.4v6.4"/><path d="M17.6 10.2a2.2 2.2 0 0 0-3.4.5c-.5 1.2.6 1.9 1.7 2.3 1.1.4 2.2 1.1 1.7 2.3a2.2 2.2 0 0 1-3.4.5"/></svg>',
+      json: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.5H7.5A2.5 2.5 0 0 0 5 6v3.2a2.5 2.5 0 0 1-2 2.45v.7a2.5 2.5 0 0 1 2 2.45V18a2.5 2.5 0 0 0 2.5 2.5H9"/><path d="M15 3.5h1.5A2.5 2.5 0 0 1 19 6v3.2a2.5 2.5 0 0 0 2 2.45v.7a2.5 2.5 0 0 0-2 2.45V18a2.5 2.5 0 0 1-2.5 2.5H15"/></svg>',
+      md: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.6"/><path d="M5.6 15.6V8.4l3 3.6 3-3.6v7.2"/><path d="M16.4 8.4v6.2"/><path d="m14.2 12.6 2.2 2.4 2.2-2.4"/></svg>',
+      sh: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="3.6" width="19.2" height="16.8" rx="2.8"/><path d="m7 9.6 3 2.7-3 2.7"/><path d="M12.8 15.6h4.4"/></svg>'
+    };
+
+    // 引用的专有记号：有就盖掉默认那枚链环。session 对话、workflow 两格取自 v16；task 用看板。
+    const ICO_REFTYPE = {
+      task: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg>',
+      session: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+      workflow: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg>'
+    };
+
+    const CARRY_ICO = {
+      space: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>',
+      ref: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+      workflow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg>',
+      annotation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg>'
+    };
+
+    const PILL_ROW =
+      '<span class="pill-btn-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>' +
+      '<span class="pill-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Claude 3.7 Sonnet</span>' +
+      '<span class="pill-spacer"></span>' +
+      '<span class="btn-send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>';
+
+    const RAIL =
+      '<nav class="rail" aria-hidden="true">' +
+        '<span class="rail-item is-on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><line x1="8" y1="4.5" x2="8" y2="7"/><line x1="12" y1="4.5" x2="12" y2="7"/><line x1="16" y1="4.5" x2="16" y2="7"/></svg></span>' +
+        '<span class="rail-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>' +
+        '<span class="rail-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/></svg></span>' +
+      '</nav>';
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function svgThumb(bg, inner) {
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" fill="' + bg + '"/>' + inner + '</svg>';
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    const THUMB = {
+      shot: {
+        src: svgThumb('#1a2426',
+          '<rect x="2" y="3" width="20" height="12" rx="1.4" fill="#243033"/>' +
+          '<rect x="4" y="6" width="7" height="2.2" rx="0.8" fill="#4db6a8"/>' +
+          '<rect x="4" y="10" width="14" height="1.4" rx="0.5" fill="#3d6a66"/>' +
+          '<rect x="4" y="13" width="10" height="1.4" rx="0.5" fill="#355955"/>' +
+          '<rect x="2" y="17.5" width="20" height="4" rx="1.4" fill="#1e2c2e"/>'),
+        accent: '#4a8f86'
+      },
+      cover: {
+        src: svgThumb('#c4845a',
+          '<circle cx="8" cy="7.5" r="4.2" fill="#f0c9a0"/>' +
+          '<path d="M0 20.5 7 13l6 4 11-9.5V24H0z" fill="#8a5a3c"/>'),
+        accent: '#c4845a'
+      }
+    };
+
+    // ── 原子 ──────────────────────────────────────────────────
+    function chip(o) {
+      const lead = o.thumb
+        ? '<span class="chip-thumb-wrap"><img class="thumb" src="' + o.thumb + '" alt="" /></span>'
+        : '<span class="chip-icon-box">' + (o.svg || ICO[o.icon || o.tone] || ICO.person) + '</span>';
+      const title = o.title ? ' title="' + o.title + '"' : '';
+      const style = o.accent ? ' style="--img-accent:' + o.accent + '"' : '';
+      const mark = o.mark ? ' data-hv-anchor="' + o.mark + '"' : '';
+      const open = o.open ? ' is-open' : '';
+      const name = '<span class="lbl">' + o.label + '</span>';
+
+      if (o.expanded) {
+        const rows = (o.params || []).map(function (r) {
+          return '<span class="chip-param-row"><span class="chip-param-key">' + r.key + ':</span>' +
+            '<span class="chip-param-val">' + r.value + (r.caret ? '<span class="caret"></span>' : '') + '</span></span>';
+        }).join('');
+        return '<span class="chip tone-' + o.tone + ' is-expanded"' + title + style + mark + '>' +
+          '<span class="chip-head">' + lead + name + '</span>' +
+          '<span class="chip-param-list">' + rows + '</span>' +
+        '</span>';
+      }
+
+      let param = '';
+      if (o.empty) {
+        param = '<span class="chip-param-text is-empty">' + (o.hint || '参数') + '</span>';
+      } else if (o.hint || o.param != null) {
+        const hint = o.hint ? '<span class="chip-param-hint">' + o.hint + '</span>' : '';
+        param = '<span class="chip-param-text">' + hint + '<span class="chip-param-inline">' + (o.param || '') + '</span></span>';
+      }
+      return '<span class="chip tone-' + o.tone + open + '"' + title + style + mark + '>' + lead + name + param + '</span>';
+    }
+
+    function carryPill(o) {
+      return '<span class="carry-pill' + (o.open ? ' is-open' : '') + '"' + (o.title ? ' title="' + o.title + '"' : '') + '>' +
+        '<span class="icon">' + CARRY_ICO[o.icon] + '</span>' +
+        '<span class="label">' + o.label + '</span>' +
+      '</span>';
+    }
+
+    function carryRow(pills, host) {
+      const cls = host === 'bubble' ? 'msg-user-carries' : 'composer-gutter composer-carry-strip';
+      return '<div class="' + cls + '"><div class="composer-carry-row">' + pills + '</div></div>';
+    }
+
+    const CARRY_4 =
+      carryPill({ icon: 'space', label: '空间说明' }) +
+      carryPill({ icon: 'ref', label: '引用说明' }) +
+      carryPill({ icon: 'workflow', label: '工作流说明' }) +
+      carryPill({ icon: 'annotation', label: '3条批注' });
+
+    const CARRY_2 =
+      carryPill({ icon: 'space', label: '空间说明' }) +
+      carryPill({ icon: 'ref', label: '引用说明' });
+
+    const CARRY_MANY = CARRY_4 +
+      carryPill({ icon: 'space', label: '权限沙箱' }) +
+      carryPill({ icon: 'ref', label: '分支基准' });
+
+    // ── 这份稿子用到的原子 ───────────────────────────────────
+    const LONG_FILE = 'composer-session-transcript-user-bubble-and-composer-chip-overflow-layout.integration.spec.ts';
+    const LONG_INSTRUCTION = '把验收清单拆成三路并发：一路改 Chip 和 composer-compile，一路补会话气泡与输入框混排，一路对 daemon 直连；输出对齐 BUF-102，并把本周进展与风险写进 instruction。';
+    const LONG_CONTEXT = '对照 BUF-102 的验收标准，改动范围限定在 Chip、composer-compile 和会话气泡，daemon 继续直连。';
+
+    function C() {
+      return {
+        cmdBuffin: chip({ tone: 'command', icon: 'plugin', label: 'workflow' }),
+        cmdAgent: chip({ tone: 'command', icon: 'bot', label: 'compact' }),
+        cmdControl: chip({ tone: 'command', icon: 'control', label: 'compact' }),
+        cmdUser: chip({ tone: 'command', icon: 'person', label: '日报', param: '本周' }),
+        workflow: chip({ tone: 'command', icon: 'plugin', label: 'give my workflow', hint: 'instruction', param: '拆成三路并发' }),
+        workflowMark: chip({ tone: 'command', icon: 'plugin', label: 'give my workflow', hint: 'instruction', param: '拆成三路并发', mark: 'cmd', open: true }),
+        workflowEmpty: chip({ tone: 'command', icon: 'plugin', label: 'give my workflow', empty: true, hint: 'instruction' }),
+        workflowLong: chip({ tone: 'command', icon: 'plugin', label: 'give my workflow', hint: 'instruction', param: LONG_INSTRUCTION }),
+        workflowOpen: chip({
+          tone: 'command', icon: 'plugin', label: 'give my workflow', expanded: true,
+          params: [
+            { key: 'instruction', value: LONG_INSTRUCTION, caret: true },
+            { key: 'context', value: LONG_CONTEXT }
+          ]
+        }),
+
+        skill: chip({ tone: 'skill', label: 'code-review' }),
+        skillBugs: chip({ tone: 'skill', label: 'diagnosing-bugs' }),
+
+        refDefault: chip({ tone: 'ref', label: 'Composer 链路重做' }),
+        refTask: chip({ tone: 'ref', svg: ICO_REFTYPE.task, label: '验收清单 BUF-102' }),
+        refSession: chip({ tone: 'ref', svg: ICO_REFTYPE.session, label: '昨天那轮排查' }),
+        refWorkflow: chip({ tone: 'ref', svg: ICO_REFTYPE.workflow, label: 'LoopX 编排' }),
+        refLong: chip({ tone: 'ref', svg: ICO_REFTYPE.task, label: 'BUF-102 Composer 链路重做、三路并发验收清单与混排修正后胶囊尺寸对齐记录（含 daemon 直连）' }),
+
+        file: chip({ tone: 'file', label: 'Chip.tsx', title: 'src/components/Chip.tsx' }),
+        fileCompile: chip({ tone: 'file', label: 'composer-compile.ts', title: 'src/renderer/features/session/models/composer-compile.ts' }),
+        fileCompileMark: chip({ tone: 'file', label: 'composer-compile.ts', title: 'src/renderer/features/session/models/composer-compile.ts', mark: 'file', open: true }),
+        fileCss: chip({ tone: 'file', label: 'chip-lab.css', title: 'src/styles/chip-lab.css' }),
+        fileTs: chip({ tone: 'file', svg: ICO_FILETYPE.ts, label: 'composer-compile.ts' }),
+        fileJson: chip({ tone: 'file', svg: ICO_FILETYPE.json, label: 'tsconfig.json' }),
+        fileMd: chip({ tone: 'file', svg: ICO_FILETYPE.md, label: 'composer.md' }),
+        fileSh: chip({ tone: 'file', svg: ICO_FILETYPE.sh, label: 'verify.sh' }),
+        fileLong: chip({ tone: 'file', label: LONG_FILE, title: 'packages/composer/src/utils/' + LONG_FILE }),
+
+        img: chip({ tone: 'image', label: 'cover-dark.png', title: 'assets/cover-dark.png', thumb: THUMB.shot.src, accent: THUMB.shot.accent }),
+        imgWarm: chip({ tone: 'image', label: 'banner.png', title: 'assets/banner.png', thumb: THUMB.cover.src, accent: THUMB.cover.accent })
+      };
+    }
+
+    function bubble(html, carry, cls) {
+      return '<div class="msg-user-row' + (cls ? ' ' + cls : '') + '"><div class="msg-user-bubble">' +
+        (carry ? carryRow(carry, 'bubble') : '') + html +
+      '</div></div>';
+    }
+    function agentMsg(html) { return '<div class="msg-agent">' + html + '</div>'; }
+
+    function composer(box, carry) {
+      return '<div class="composer-shell">' +
+        (carry ? carryRow(carry, 'composer') : '') +
+        '<div class="composer-box composer-gutter">' + box + '</div>' +
+        '<div class="composer-gutter composer-pill-row">' + PILL_ROW + '</div>' +
+      '</div>';
+    }
+    function composerFlat(box, carry) {
+      return '<div class="composer-shell">' +
+        (carry ? carryRow(carry, 'composer') : '') +
+        '<div class="composer-box composer-gutter" style="min-height:0">' + box + '</div>' +
+      '</div>';
+    }
+
+    // ── 01 全貌 ──────────────────────────────────────────────
+    function transcriptHtml(opts) {
+      opts = opts || {};
+      const c = C();
+      const cmd = opts.markCmd ? c.workflowMark : c.workflow;
+      return '<div class="transcript">' +
+        bubble(
+          cmd + ' 把 BUF-102 的验收拆开跑。一路改 ' + c.file + ' 的记号与省略，' +
+          '一路补会话气泡和输入框的混排，一路盯 daemon 直连。每一路跑完先自查再合，别攒到最后一起看。' +
+          '口径按 ' + c.refTask + ' 那份，跑完的截图统一放 ' + c.img + '。' +
+          '混排那一路要同时看宽栏和窄栏，两边的气泡长度对不上就先停下来说一声，别自己挑一个。' +
+          'daemon 那一路先不要动接口，把现在的返回结构原样透出来就行，改形状等这轮验收过了再说。' +
+          '本周的进展和风险写进 instruction，周五我要直接拿去过会。',
+          CARRY_4
+        ) +
+        agentMsg('三路已经排好。改动都落在同一层编译结果上，气泡和输入框读的是同一份，所以混排只用对一次。daemon 侧保持直连，不经模型转述。') +
+        bubble('先跑第二路。顺手把 ' + c.fileCss + ' 里的间距也对一遍，气泡里和输入框里现在差一格。') +
+      '</div>';
+    }
+
+    function composerSeat(opts) {
+      opts = opts || {};
+      const c = C();
+      const file = opts.markFile ? c.fileCompileMark : c.fileCompile;
+      return '<div class="composer-seat">' +
+        composer('第三路等我确认再开。先把 ' + file + ' 的返回结构贴给我。', CARRY_2) +
+      '</div>';
+    }
+
+    function frameHtml(opts) {
+      opts = opts || {};
+      return '<div class="titlebar"><span class="traffic"><i></i><i></i><i></i></span>' +
+          '<span class="titlebar-name">buffin · BUF-102</span></div>' +
+        '<div class="app-shell">' + RAIL +
+          '<div class="work"><div class="session-col">' +
+            transcriptHtml(opts) +
+            composerSeat(opts) +
+          '</div></div>' +
+        '</div>' +
+        (opts.hover || '');
+    }
+
+    // ── Hover 浮层 ───────────────────────────────────────────
+    const CMT_FROM = 'an agent in another session';
+    const COMMENTS_3 = [
+      {
+        from: CMT_FROM,
+        body: '批注的 hover 按阅读条目摊，不要做成注入源复读。每条：标题一行、来源一行、正文三行、附加评语两行。超出的不在浮层里摊开。'
+      },
+      {
+        from: CMT_FROM,
+        body: 'mposer-hover/index.html\n页里按原规约摊开暗色 / 浅色：\n文件：标题 +',
+        note: '这条用来看长评语。评语封两行，剩下的进浮窗。'
+      },
+      {
+        from: CMT_FROM,
+        body: '文件长名字不再只出一条。完整浮层仍走身份加内容：底下灰相对路径，正文前 30 行。'
+      }
+    ];
+
+    function commentItemHtml(c, i) {
+      return '<article class="hv-cmt">' +
+        '<div class="hv-cmt-title hv-clamp-1">Comment ' + (i + 1) + '</div>' +
+        '<div class="hv-cmt-from hv-clamp-1">From: ' + esc(c.from) + '</div>' +
+        '<div class="hv-cmt-body"><div class="hv-cmt-body-inner">' + esc(c.body) + '</div></div>' +
+        (c.note ? '<div class="hv-cmt-note hv-clamp-2"><span class="hv-cmt-note-k">Comment:</span> ' + esc(c.note) + '</div>' : '') +
+      '</article>';
+    }
+
+    function hoverCard(d, cls) {
+      let out = '<div class="hv-id"><div class="hv-name">' + d.name + '</div>' +
+        (d.meta ? '<div class="hv-meta">' + d.meta + '</div>' : '') + '</div>';
+      if (d.comments) {
+        out += '<div class="hv-body hv-comments">' + d.comments.slice(0, 5).map(commentItemHtml).join('') + '</div>';
+        out += '<div class="hv-hint">双击打开浮窗查看全文</div>';
+      } else if (d.code) {
+        out += '<div class="hv-body is-code"><pre class="hv-code"><code>' + esc(d.code) + '</code></pre></div>';
+      } else if (d.body) {
+        out += '<div class="hv-body">' + d.body + '</div>';
+      }
+      return '<div class="hv' + (cls ? ' ' + cls : '') + '">' + out + '</div>';
+    }
+
+    const HV_CMD = {
+      name: 'give my workflow',
+      meta: 'instruction  ·  context',
+      body: '把一段指令拆成可并发执行的工作流，按依赖排期后逐路启动。每一路跑完回流一次日志，失败的那一路不拖住其他路。'
+    };
+    const SRC = [
+      "import { Editor } from '@tiptap/core'",
+      "import type { JSONContent } from '@tiptap/core'",
+      '',
+      'export interface ComposerCompiledPrompt {',
+      '  readonly text: string',
+      '  readonly spaces: ComposerSpaceCarry | null',
+      '  readonly references: string | null',
+      '  readonly timestamp: number',
+      '}',
+      '',
+      'export function compileComposerDraft(',
+      '  editor: Editor,',
+      '  spaceCarry?: ComposerSpaceCarry | null',
+      '): ComposerCompiledPrompt {',
+      '  const doc = editor.getJSON()',
+      '  const rawText = extractRawText(doc)',
+      '  const chips = extractPromptChips(doc)',
+      '  return {',
+      '    text: rawText,',
+      '    spaces: spaceCarry ?? null,',
+      "    references: chips.filter(c => c.type === 'reference').map(c => c.id).join(','),",
+      '    timestamp: Date.now()',
+      '  }',
+      '}'
+    ];
+    const HV_FILE = {
+      name: 'composer-compile.ts',
+      meta: 'src/renderer/features/session/models/composer-compile.ts',
+      code: SRC.join('\n')
+    };
+
+    document.getElementById('frame-overview').innerHTML = frameHtml({});
+    document.getElementById('frame-hv-bubble').innerHTML = frameHtml({
+      markCmd: true,
+      hover: hoverCard(HV_CMD, 'is-pinned')
+    });
+    document.getElementById('frame-hv-composer').innerHTML = frameHtml({
+      markFile: true,
+      hover: hoverCard(HV_FILE, 'is-pinned')
+    });
+
+    function placeHover(frame) {
+      const hv = frame.querySelector('.hv.is-pinned');
+      const anchor = frame.querySelector('[data-hv-anchor]');
+      if (!hv || !anchor) return;
+      const f = frame.getBoundingClientRect();
+      const a = anchor.getBoundingClientRect();
+      const h = hv.getBoundingClientRect();
+      const pad = 14;
+      let left = (a.left - f.left) + a.width / 2 - h.width / 2;
+      left = Math.max(pad, Math.min(left, f.width - h.width - pad));
+      let top = (a.top - f.top) - h.height - 8;
+      if (top < pad) top = (a.bottom - f.top) + 8;
+      hv.style.left = Math.round(left) + 'px';
+      hv.style.top = Math.round(top) + 'px';
+    }
+    function placeAllHovers() {
+      ['frame-hv-bubble', 'frame-hv-composer'].forEach(function (id) {
+        placeHover(document.getElementById(id));
+      });
+    }
+
+    // ── 03 类型总表 ─────────────────────────────────────────
+    function specimen(label, html) {
+      return '<span class="kind-spec">' + html + '<em>' + label + '</em></span>';
+    }
+    (function buildKinds() {
+      const c = C();
+      const rows = [
+        {
+          dot: 'var(--dot-command)',
+          name: 'command',
+          specs: specimen('buffin', c.cmdBuffin) + specimen('agent', c.cmdAgent) + specimen('user', c.cmdUser) + specimen('走 run control 的agent 命令', c.cmdControl),
+          note: '记号答这条命令<em>是谁提供的</em>。buffin 内置用插件，agent 提供的用 bot，用户自己写的用人。带参数时参数续在命令名后面。'
+        },
+        {
+          dot: 'var(--dot-skill)',
+          name: 'skill',
+          specs: specimen('技能', c.skill) + specimen('技能', c.skillBugs),
+          note: '只有一支。记号是那只包装箱，标签就是技能名。'
+        },
+        {
+          dot: 'var(--dot-ref)',
+          name: '引用',
+          specs: specimen('默认', c.refDefault) + specimen('task', c.refTask) + specimen('session', c.refSession) + specimen('workflow', c.refWorkflow),
+          note: '默认是那枚链环。<em>被引的是任务、会话还是编排，有对应记号就盖掉默认那枚</em>，颜色不跟着记号走，仍是这一支的靛。'
+        },
+        {
+          dot: 'var(--dot-file)',
+          name: 'file',
+          specs: specimen('默认', c.file) + specimen('ts', c.fileTs) + specimen('json', c.fileJson) + specimen('md', c.fileMd) + specimen('sh', c.fileSh),
+          note: '默认是那张纸。<em>这个文件有对应的记号就盖掉默认那张</em>，颜色不跟着记号走，仍是这一支的蓝。标签只留文件名，路径进 title。'
+        },
+        {
+          dot: 'linear-gradient(135deg, #4a8f86 0 50%, #c4845a 50% 100%)',
+          name: 'image',
+          specs: specimen('青灰', c.img) + specimen('暖色', c.imgWarm),
+          note: '没有记号，直接是缩略图，圆的。填色、边色和字色都<em>从这张图里取</em>，所以两枚图片原子不同色。'
+        }
+      ];
+      document.getElementById('kinds').innerHTML = rows.map(function (r) {
+        return '<div class="kind">' +
+          '<div class="kind-id"><span class="kind-dot" style="background:' + r.dot + '"></span>' +
+            '<span class="kind-name">' + r.name + '</span></div>' +
+          '<div class="kind-specs">' + r.specs + '</div>' +
+          '<div class="kind-note">' + r.note + '</div>' +
+        '</div>';
+      }).join('');
+    })();
+
+    // ── 04 细节：原画 + 箭头 ────────────────────────────────
+    const ARROW = '<span class="arrow" aria-hidden="true"><svg viewBox="0 0 40 8" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M39 4H3"/><path d="M7 1 3 4l4 3"/></svg></span>';
+
+    function pin(letter) { return '<i class="pin pin-in">' + letter + '</i>'; }
+
+    function specFigure(o) {
+      const notes = o.notes.map(function (n) {
+        return '<li><span class="arrow-cell">' + ARROW + '</span>' +
+          '<i class="pin">' + n.k + '</i>' +
+          '<span>' + (n.cond ? '<span class="cond">' + n.cond + '　</span>' : '') + n.text + '</span></li>';
+      }).join('');
+      return '<div class="spec">' +
+        '<div class="spec-art' + (o.narrow ? ' is-narrow' : '') + '">' +
+          (o.tag ? '<div class="spec-tag">' + o.tag + '</div>' : '') + o.art +
+        '</div>' +
+        '<ul class="spec-notes">' + notes + '</ul>' +
+      '</div>';
+    }
+
+    (function buildDetail() {
+      const c = C();
+      const board = document.getElementById('board-detail');
+
+      const art1 =
+        '<div class="stack">' +
+          bubble('宽栏也不拉满。长文件 ' + c.fileLong + pin('A') + ' 后面还能接验收口径。') +
+          bubble(c.refLong + pin('B')) +
+          bubble('把这次 BUF-102 的验收口径、混排修正后的胶囊尺寸和发送气泡最大宽度再对一遍之后提交 ' + c.file + pin('C') + '，不要在行末把它挤扁。') +
+        '</div>' +
+        '<div class="spec-tag">窄 380 · 容器比 16em 更窄</div>' +
+        '<div style="width:100%;max-width:380px">' +
+          composerFlat('核对 ' + c.fileLong + pin('D') + ' 之后继续写。') +
+        '</div>';
+
+      const art2 =
+        '<div class="stack">' +
+          composerFlat('空参：' + c.workflowEmpty + pin('A') + '　短参：' + c.workflow + pin('B')) +
+          composerFlat('超长：' + c.workflowLong + pin('C') + ' 后面还能接字。') +
+        '</div>';
+
+      const art3 =
+        '<div class="stack">' +
+          composerFlat('执行：' + c.workflowOpen + pin('A') + pin('B')) +
+        '</div>';
+
+      const art4 =
+        '<div class="stack">' +
+          bubble('这一轮带着的东西都在上面。' + pin('A'), CARRY_4) +
+          composerFlat('键入提示词，或键入 / 唤醒命令。' + pin('B'), CARRY_4) +
+        '</div>';
+
+      const art5 = composerFlat('键入提示词。' + pin('A'), CARRY_MANY);
+
+      const OMIT_BODY = [
+        '把 BUF-102 的验收拆开跑。一路改记号和省略，一路补会话气泡和输入框的混排，一路盯 daemon 直连。',
+        '每一路跑完先自查再合，别攒到最后一起看。口径按验收清单那份，截图按主题分开放，暗色和浅色都要有。',
+        '混排那一路同时看宽栏和窄栏，两边的气泡长度对不上就先停下来说一声，不要自己挑一个。',
+        '胶囊在窄栏里封住，长文件名省尾部，行末不够放整颗就换行。',
+        '命令参数写长了也别把整颗撑开，名字留着，省的是参数。还没填的参数把名字虚化在原位，不要留空槽。',
+        '展开只为了改字，改完收起，超出的再变回省略号。',
+        '队头签发出去就跟着气泡，只读；还在输入框里的时候挂在顶上，不进正文。',
+        '一排装不下就换行，标签不要截断，也不要横着滚。',
+        '文件只显示文件名。引用有自己的记号就用自己的，没有再用链环。图片直接放缩略图，颜色跟这张图走。',
+        '悬浮看个大概，点文件再打开阅读层。markdown 先看排好的，要行号再切源码。',
+        '源码里长行不折，滑轨平时收着。批注从队头那颗签打开，一条一段，超行数的就地截住，超过五条的进浮窗。',
+        'daemon 先别动接口，把现在的返回原样透出来。本周的进展和风险写进 instruction，周五我拿去过会。',
+        '后面这些还是同一条消息：合码之前再对一次发送结果，气泡里的原子和输入框里是同一份，位置不要漂。',
+        '评论如果这轮带着，队头签写条数，正文里不要再复述一遍。图片两张以上就各取各的主色，不要刷成同一种灰。',
+        '工作流说明只讲绑定的编排，不把这轮参数抄进去。空间说明发完这一轮就走，下一轮输入框顶上不应再留着。',
+        '引用说明跟着被引用的那一个走。出了问题先停在这一条上改，不要顺手改旁边的浮窗。',
+        '验收记录写清楚哪一张是宽栏、哪一张是窄栏、哪一张是超过二十行被收起的气泡。',
+        '短消息维持整段都留在气泡里。队头那一排如果这轮也带着，放在正文上面，别算进行数。',
+        '合进去时按原来的顺序，不要为了好看把胶囊挪到句首。宽栏里那一句看起来还松，窄栏里会折行，折行之后胶囊仍是整颗。',
+        '发送前再读一遍队头：空间说明、引用说明、工作流说明、批注。多出来的签换行，不要挤进正文。',
+        '图片如果这轮有两张，各自带自己的主色，缩略图仍是圆的。文件路径长也不要写进胶囊，需要看路径就悬浮。',
+        '命令带参数时，参数和命令名之间那道发丝留着。展开之后改的是值，不是把整段提示词重写一遍。改完收起再发。',
+        'daemon 那一路的返回先原样留着，字段名不要先改。三路的截图放在同一处，文件名里写上宽栏或窄栏。',
+        '对不齐的地方用一句话标出来，不要只丢一张图。周五过会我按这个顺序讲：先看短消息，再看这条长消息收起之后的样子，最后看队头签没有被算进行数。'
+      ].join('');
+
+      const FOLD_ANGLE = '<svg viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.2 1.4 6 6.2 10.8 1.4"/></svg>';
+
+      const artOmit =
+        '<div class="stack">' +
+          '<div class="msg-user-row">' +
+            '<div class="msg-user-bubble is-omit" id="bubble-omit-sample">' +
+              '<div class="bubble-omit">' + OMIT_BODY + '</div>' +
+              '<div class="bubble-omit-mark" aria-hidden="true">...</div>' +
+              '<div class="bubble-fold-row">' +
+                '<button type="button" class="bubble-fold" aria-expanded="false">' +
+                  '<span class="bubble-fold-tx">查看消息</span>' + FOLD_ANGLE +
+                '</button>' +
+                pin('A') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      board.innerHTML =
+        '<div class="board-label">标签长度与换行</div>' +
+        specFigure({
+          art: art1,
+          notes: [
+            { k: 'A', cond: '标签超过 16em', text: '尾部省略。<b>命令名、技能、文件、引用、图片同一档</b>，短的保持原宽。' },
+            { k: 'B', cond: '气泡里未展开', text: '整颗再封到 <b>261</b>，也就是最窄栏（380）时的气泡内容宽。宽栏窄栏同长。' },
+            { k: 'C', cond: '行末剩余不够', text: '整颗换到下一行，<b>不在行末挤扁</b>。' },
+            { k: 'D', cond: '容器比 16em 还窄', text: '改由容器 100% 兜底，标签继续收，整颗贴着容器边。' }
+          ]
+        }) +
+        '<div class="board-label">参数</div>' +
+        specFigure({
+          art: art2,
+          notes: [
+            { k: 'A', cond: '还没填', text: '位置留着，参数名<b>虚化</b>占位，不留一个空槽。' },
+            { k: 'B', cond: '填得下', text: '参数完整显示，左边一道发丝把它和命令名分开。' },
+            { k: 'C', cond: '参数写得很长', text: '整颗<b>不跟着变长</b>，封在 261，和气泡里那一档同宽。省的是参数尾部，<b>命令名不让位</b>。想看全文只能展开。' }
+          ]
+        }) +
+        '<div class="board-label">展开</div>' +
+        specFigure({
+          art: art3,
+          notes: [
+            { k: 'A', cond: '点整颗', text: '就地展开成一块，参数<b>一行一条</b>摊开，键名在左、值在右。再点某一行的值，光标落在那一行，颜色跟参数文字同色。' },
+            { k: 'B', cond: '只有这一态可以超宽', text: '展开是<b>编辑态</b>，为了改字才占满一整行，不受 261 那个上限管。收起就回到上限，超出的那截又成省略号。' }
+          ]
+        }) +
+        '<div class="board-label">Carry</div>' +
+        specFigure({
+          art: art4,
+          notes: [
+            { k: 'A', cond: '发出之后', text: '同一批队头签跟着气泡走，<b>只读</b>。' },
+            { k: 'B', cond: '在输入框里', text: '挂在顶上<b>独立一槽</b>，不进正文，也不挤输入的字。四种同一套中性色，是哪一种由标签说。' }
+          ]
+        }) +
+        specFigure({
+          tag: '窄 380 · 队头签六颗',
+          narrow: true,
+          art: art5,
+          notes: [
+            { k: 'A', cond: '一槽装不下', text: '整颗换到下一行，<b>不横向滚动</b>。标签本身不截断。' }
+          ]
+        }) +
+        '<div class="board-label">超过 20 行 · 收起</div>' +
+        specFigure({
+          tag: '重新打开会话 · 默认折叠' + pin('B'),
+          art: artOmit,
+          notes: [
+            { k: 'A', cond: '正文超过 20 行', text: '收到前 <b>20 行</b>，队头签不占行数。下面一行 <b>...</b> 表示省略。左下角灰色「查看消息」，旁边一枚尖头朝下。点它全文摊开，省略行去掉，字换成「收起」，尖头朝上。再点回到 20 行。不到 20 行的没有这一处。' },
+            { k: 'B', cond: '重新打开会话', text: '默认折叠。这次点开的状态不保留。' }
+          ]
+        });
+    })();
+
+    (function bindBubbleFold() {
+      const bubble = document.getElementById('bubble-omit-sample');
+      if (!bubble) return;
+      const btn = bubble.querySelector('.bubble-fold');
+      const tx = btn.querySelector('.bubble-fold-tx');
+      btn.addEventListener('click', function () {
+        const open = bubble.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        tx.textContent = open ? '收起' : '查看消息';
+      });
+    })();
+
+    // ── 05 Hover ────────────────────────────────────────────
+    (function buildHoverSpec() {
+      const board = document.getElementById('board-hover-spec');
+      const card =
+        '<div class="hv">' +
+          '<div class="hv-id">' +
+            '<div class="hv-name">' + HV_FILE.name + pin('A') + '</div>' +
+            '<div class="hv-meta">' + HV_FILE.meta + pin('B') + '</div>' +
+          '</div>' +
+          '<div class="hv-body is-code">' + pin('C') +
+            '<pre class="hv-code"><code>' + esc(HV_FILE.code) + '</code></pre></div>' +
+        '</div>';
+      const nameOnly = '<span class="hv-inline">' + hoverCard({ name: '验收清单 BUF-102' }, 'is-name') + '</span>';
+      const cmtCard =
+        '<div class="hv">' +
+          '<div class="hv-id"><div class="hv-name">3条批注' + pin('E') + '</div></div>' +
+          '<div class="hv-body hv-comments">' +
+            COMMENTS_3.map(commentItemHtml).join('') + pin('F') + pin('G') +
+          '</div>' +
+          '<div class="hv-hint">双击打开浮窗查看全文' + pin('H') + '</div>' +
+        '</div>';
+      const art =
+        '<div class="stack" style="align-items:flex-start">' +
+          card +
+          '<div class="spec-tag">宽 483 · 高封顶 360' + pin('D') + '</div>' +
+        '</div>';
+      board.innerHTML =
+        '<div class="board-label">一套浮层</div>' +
+        specFigure({
+          art: art,
+          notes: [
+            { k: 'A', text: '第一行永远是<b>身份</b>：命令名、技能名、文件名、被引对象的名字。' },
+            { k: 'B', cond: '有次级信息才有这一行', text: '命令是参数名，文件是相对路径。没有就没有这一行。' },
+            { k: 'C', cond: '正文超过封顶', text: '正文自己滚，身份不跟着滚。命令这里是介绍，技能是 description，文件是开头那一段。' },
+            { k: 'D', cond: '只有名字可讲', text: '不套同一张卡再加粗，收成 ' + nameOnly + ' 这么一条，和队头签一档。引用和图片走这支。' }
+          ]
+        }) +
+        '<div class="board-label">批注的浮层不走上面那三槽</div>' +
+        specFigure({
+          art:
+            '<div class="stack" style="align-items:flex-start">' +
+              '<div class="spec-tag">挂在队头签上方</div>' +
+              carryRow(carryPill({ icon: 'annotation', label: '3条批注', open: true }), 'composer').replace('composer-gutter ', '') +
+              cmtCard +
+            '</div>',
+          notes: [
+            { k: 'E', cond: '正文位置换成列表', text: '本轮带着的批注<b>一条一段</b>摊开，不是把注入源复读一遍。' },
+            { k: 'F', text: '每段有<b>行数预算</b>：标题一行、来源一行、正文三行、评语两行。超出的就地截断，不在浮层里摊开。' },
+            { k: 'G', cond: '超过 5 条', text: '最多摊 5 条，剩下的留给浮窗。' },
+            { k: 'H', text: '底栏固定<b>双击打开浮窗查看全文</b>，列表滚它也不跟着滚。' }
+          ]
+        });
+    })();
+
+    // ── 06 浮窗 ─────────────────────────────────────────────
+    const ICO_LIST = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3.5" cy="6" r="0.85" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="0.85" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="0.85" fill="currentColor" stroke="none"/></svg>';
+    const ICO_SWITCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h14"/><path d="m17 3 4 4-4 4"/><path d="M17 17H3"/><path d="m7 21-4-4 4-4"/></svg>';
+    const ICO_PENCIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+    const ICO_CHEVRON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    const ICO_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/></svg>';
+    const ICO_CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+    const ICO_FILE_DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>';
+
+    const SRC_LONG = SRC.concat([
+      '',
+      'function extractRawText(node: JSONContent): string {',
+      "  if (node.type === 'text') return node.text ?? ''",
+      '  const parts = (node.content ?? []).map(extractRawText)',
+      "  return parts.join(node.type === 'paragraph' ? '\\n' : '')",
+      '}',
+      '',
+      "// 这一行故意写长：关掉自动换行之后它会一直顶出浮窗的右边，底下那根滑轨才有事情可做；滚动条本身仍然不画在版上，指针靠近下沿或者正在拖的时候才浮现，手停下来过一会儿它又收回去。",
+      "const CHIP_TYPES = ['command', 'skill', 'file', 'reference', 'image'] as const satisfies readonly ChipType[]"
+    ]);
+
+    function highlightTs(line) {
+      const t = line.trim();
+      if (!t) return '';
+      if (t.indexOf('//') === 0) return '<span class="tok-cmt">' + esc(line) + '</span>';
+      let s = esc(line);
+      s = s.replace(/\b(import|export|from|interface|function|const|return|type|readonly|string|number|null|undefined|for|of|if|as)\b/g, '<span class="tok-kw">$1</span>');
+      s = s.replace(/'([^']*)'/g, '<span class="tok-str">\'$1\'</span>');
+      s = s.replace(/\b([A-Z][A-Za-z0-9]+)\b/g, '<span class="tok-type">$1</span>');
+      return s;
+    }
+
+    function editorHtml(lines) {
+      return '<div class="ed-scroll" data-pan><div class="ed is-nowrap">' +
+        lines.map(function (line, i) {
+          const body = highlightTs(line);
+          return '<div class="ed-row"><span class="ed-ln">' + (i + 1) + '</span>' +
+            '<span class="ed-tx">' + (body === '' ? ' ' : body) + '</span></div>';
+        }).join('') +
+      '</div></div>';
+    }
+
+    function floatAct(svg, label, on) {
+      return '<span class="float-act' + (on ? ' is-on' : '') + '" aria-label="' + label + '">' + svg + '</span>';
+    }
+
+    (function buildFloat() {
+      const c = C();
+      const panel =
+        '<div class="float" role="dialog" aria-modal="true">' +
+          '<div class="float-header">' +
+            '<span class="float-glyph" aria-hidden="true">' + ICO_FILE_DOC + '</span>' +
+            '<span class="float-id">' +
+              '<span class="float-name">composer-compile.ts' + pin('A') + '</span>' +
+              '<span class="float-path">src/renderer/features/session/models/composer-compile.ts</span>' +
+            '</span>' +
+            '<span class="float-acts">' +
+              floatAct(ICO_LIST, '自动换行') + pin('B') +
+              floatAct(ICO_OPEN, '在标签页打开') + floatAct(ICO_CLOSE, '关闭') +
+            '</span>' +
+          '</div>' +
+          '<div class="float-body">' + editorHtml(SRC_LONG) +
+            '<span class="pan-rail" aria-hidden="true"><i></i></span>' +
+            '<i class="pin pin-abs" style="left:12px;bottom:13px">C</i>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('frame-float').innerHTML =
+        '<div class="titlebar"><span class="traffic"><i></i><i></i><i></i></span>' +
+          '<span class="titlebar-name">buffin · BUF-102</span></div>' +
+        '<div class="app-shell">' + RAIL +
+          '<div class="work"><div class="session-col">' +
+            '<div class="transcript">' +
+              bubble('打开 ' + chip({ tone: 'file', label: 'composer-compile.ts', open: true }) + ' 看一眼。') +
+              agentMsg('点开是阅读层，直接摊文件内容。') +
+            '</div>' +
+            '<div class="composer-seat">' + composer('对照这一层。') + '</div>' +
+          '</div></div>' +
+        '</div>' +
+        '<div class="scrim"></div>' + panel;
+
+      document.getElementById('float-notes').innerHTML =
+        '<ul class="spec-notes" style="max-width:820px">' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">A</i><span>' +
+            '<span class="cond">顶栏　</span>浮窗自己写文件名和路径。遮罩带模糊之后，背后那枚原子只剩轮廓，身份不能靠它认。</span></li>' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">B</i><span>' +
+            '<span class="cond">右上第一枚灭着　</span>自动换行关掉，长行不折。点亮它，长行在栏里折，这根滑轨也就跟着没了。</span></li>' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">C</i><span>' +
+            '<span class="cond">底部滑轨　</span><b>默认不画</b>。指针移到下沿附近，或者正在拖着看，它才浮现；手停下来过一会儿又收回去。样式跟竖着那根滚动条是同一根，不是另做一个方块。</span></li>' +
+        '</ul>';
+    })();
+
+    // ── 06 markdown 渲染态 ───────────────────
+    const MD_RENDERED =
+      '<article class="md">' +
+        '<h1>Composer</h1>' +
+        '<p>输入框坐在会话底部。文件、技能、引用都以胶囊出现在句子里。点文件胶囊打开的是阅读浮窗，不是把文件再开成一张 tab。</p>' +
+        '<h2>胶囊</h2>' +
+        '<p>五种：command、skill、file、reference、image。command 不带斜杠前缀。文件只显示文件名，路径放 title。</p>' +
+        '<ul>' +
+          '<li>command 有参时名字底下垫灰参</li>' +
+          '<li>skill 正文取 <code>skill.md</code> 的 description</li>' +
+          '<li>图片缩略图是圆，底色跟图走</li>' +
+        '</ul>' +
+        '<h2>Carry</h2>' +
+        '<p>输入框顶部有一排队头签：空间、引用、工作流、批注。发出后可以挂在气泡前头。过多时横向拖，标签本身不截断。</p>' +
+        '<blockquote><p>工作流说明只讲绑定的编排，不带本轮参数。</p></blockquote>' +
+        '<h2>尺寸</h2>' +
+        '<p>宽跟工作区阅读栏同一档，高只封上限。短文件按内容收，长文件顶到上限后在浮窗里滚。顶栏两行：文件名 14，路径 11 等宽。</p>' +
+        '<p>输入框坐在会话底部，文件技能引用都以胶囊出现在句子里；点文件胶囊打开的是阅读浮窗而不是再开一张 tab，宽跟工作区阅读栏同一档、高只封上限，短文件按内容收、长文件顶到上限之后才在浮窗里滚，顶栏自己写文件名和路径，不靠背后那枚被压暗的胶囊认身份。</p>' +
+      '</article>';
+
+    function floatFrame(opts) {
+      return '<div class="titlebar"><span class="traffic"><i></i><i></i><i></i></span>' +
+          '<span class="titlebar-name">buffin · BUF-102</span></div>' +
+        '<div class="app-shell">' + RAIL +
+          '<div class="work"><div class="session-col">' +
+            '<div class="transcript">' + opts.transcript + '</div>' +
+            '<div class="composer-seat">' + opts.composer + '</div>' +
+          '</div></div>' +
+        '</div>' +
+        '<div class="scrim"></div>' + opts.panel;
+    }
+
+    (function buildFloatMd() {
+      const c = C();
+      const panel =
+        '<div class="float" role="dialog" aria-modal="true">' +
+          '<div class="float-header">' +
+            '<span class="float-glyph" aria-hidden="true">' + ICO_FILE_DOC + '</span>' +
+            '<span class="float-id">' +
+              '<span class="float-name">composer.md</span>' +
+              '<span class="float-path">docs/user/composer.md</span>' +
+            '</span>' +
+            '<span class="float-acts">' +
+              floatAct(ICO_SWITCH, '切到源码') + pin('A') +
+              floatAct(ICO_OPEN, '在标签页打开') + floatAct(ICO_CLOSE, '关闭') +
+            '</span>' +
+          '</div>' +
+          '<div class="float-body is-md">' + MD_RENDERED +
+            '<i class="pin pin-abs" style="left:14px;top:14px">B</i>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('frame-float-md').innerHTML = floatFrame({
+        transcript:
+          bubble('先看一眼 ' + c.fileMd + ' 里写的口径。') +
+          agentMsg('点开就是这一层。markdown 默认渲染，不先给你源码。'),
+        composer: composer('对照这一层。', CARRY_2),
+        panel: panel
+      });
+
+      document.getElementById('float-md-notes').innerHTML =
+        '<ul class="spec-notes" style="max-width:820px">' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">A</i><span>' +
+            '<span class="cond">右上双箭头　</span>渲染态只有这一枚。点它切到源码，行号和自动换行那一枚才跟着出现，就是下一张那个样子。</span></li>' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">B</i><span>' +
+            '<span class="cond">正文　</span>按文档排版摄：标题、列表、引文块。<b>不走行号</b>，也不套一层代码块；正文栏自己居中收宽，不跟着浮窗拉满。</span></li>' +
+        '</ul>';
+    })();
+
+    // ── 07 批注浮窗 ───────────────────────
+    const FLOAT_COMMENTS = [
+      {
+        from: 'From: an agent in another session',
+        body: '批注的 hover 按阅读条目摊，不要做成注入源复读。每条：标题一行、来源一行、正文三行、附加评语两行。\n\n有正文的浮层宽按中栏输入框壳的 80%。引用和图片继续按名字收，不跟这档宽高。\n\n文件长名字仍走完整浮层：名字和路径超框换行，挤占正文，身份区最多再高两行，再超出滚动。工作流说明只讲绑定的编排，不带本轮参数。\n\n图片胶囊不要再用统一灰。缩略图圆形，底色和边色跟图走，每张带自己的主色，再按和其他类型同一套比例混到输入框底。'
+      },
+      {
+        from: 'File: src/renderer/features/composer/FileChip.tsx · lines 88-102',
+        body: '文件长名字不再只出一条。完整浮层仍走身份加内容：底下灰相对路径，正文前 30 行。',
+        note: '名字超框换行可以，路径继续做灰字，不要抬成第二行标题。'
+      },
+      {
+        from: 'From: an agent in another session',
+        body: 'command 有参：左上角名字，底下灰参，正文是命令介绍。没有参数就没有第二行。',
+        note: '无参时把第二行拿掉，不要留一个空的参数槽。'
+      }
+    ];
+
+    function commentFloatItemHtml(c, i, marks) {
+      marks = marks || {};
+      return '<article class="cmt">' +
+        '<div class="cmt-top">' +
+          '<div class="cmt-id">' +
+            '<div class="cmt-title">Comment ' + (i + 1) + '</div>' +
+            '<div class="cmt-from">' + esc(c.from) + '</div>' +
+          '</div>' +
+          '<div class="cmt-acts">' +
+            '<button class="float-act" type="button" aria-label="回到写下的位置">' + ICO_PENCIL + '</button>' +
+            '<button class="float-act" type="button" aria-label="删除批注">' + ICO_CLOSE + '</button>' +
+            (marks.acts ? pin(marks.acts) : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="cmt-excerpt">' +
+          '<div class="cmt-quote">' + esc(c.body) + '</div>' +
+          '<button class="cmt-more" type="button" aria-expanded="false" aria-label="展开原文">' + ICO_CHEVRON + '</button>' +
+          (marks.more ? '<i class="pin pin-abs" style="right:26px;bottom:1px">' + marks.more + '</i>' : '') +
+        '</div>' +
+        (c.note
+          ? '<p class="cmt-note"><span class="cmt-note-k">Comment:</span> ' + esc(c.note) + (marks.note ? pin(marks.note) : '') + '</p>'
+          : '') +
+      '</article>';
+    }
+
+    (function buildFloatCmt() {
+      const carryOpen =
+        carryPill({ icon: 'space', label: '空间说明' }) +
+        carryPill({ icon: 'ref', label: '引用说明' }) +
+        carryPill({ icon: 'annotation', label: '3条批注', open: true });
+
+      const marks = [
+        { acts: 'B', more: 'C' },
+        { note: 'D' },
+        {}
+      ];
+
+      const panel =
+        '<div class="float is-comments" role="dialog" aria-modal="true" data-float>' +
+          '<div class="float-header">' +
+            '<span class="float-glyph" aria-hidden="true">' + CARRY_ICO.annotation + '</span>' +
+            '<span class="float-id"><span class="float-name">批注' + pin('A') + '</span></span>' +
+            '<button class="float-act" type="button" aria-label="关闭">' + ICO_CLOSE + '</button>' +
+          '</div>' +
+          '<div class="float-body" data-body>' +
+            '<div class="cmt-list">' +
+              FLOAT_COMMENTS.map(function (c, i) {
+                return commentFloatItemHtml(c, i, marks[i]);
+              }).join('') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('frame-float-cmt').innerHTML = floatFrame({
+        transcript:
+          bubble('把这几条批注一起带上，发出前我再看一眼原文。') +
+          agentMsg('批注还在输入框顶上。点开是一张居中的卡片，不是 hover 那张窄浮层。'),
+        composer: composer('对照这三条，发出前我要看原文和评语。', carryOpen),
+        panel: panel
+      });
+
+      document.getElementById('float-cmt-notes').innerHTML =
+        '<ul class="spec-notes" style="max-width:820px">' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">A</i><span>' +
+            '<span class="cond">顶栏　</span>只写「批注」，不计数。里面装的不是一份文件，所以不走文件名加路径那两行。外壳跟文件浮窗<b>同一档</b>：同一块底、同一根描边、同一层阴影。</span></li>' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">B</i><span>' +
+            '<span class="cond">每条右侧　</span>回到写下的位置、删除。这两枚只在<b>输入框的队头签</b>打开时有；从气泡里打开是同一张列表，只是这一格空着，只能看。</span></li>' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">C</i><span>' +
+            '<span class="cond">原文超五行　</span>先收到五行，右下角浮一枚三角。点进井里才滚这一格，此时右侧浮一根细轨；没点进去就滚大窗，不会误碰。点三角是整段展开，不再收。</span></li>' +
+          '<li><span class="arrow-cell">' + ARROW + '</span><i class="pin">D</i><span>' +
+            '<span class="cond">有评语才有这一行　</span>原文在井里，评语贴着卡片底摄。两者分开，不把评语也塞进井。hover 里这一行封两行，这里整段摊。</span></li>' +
+        '</ul>';
+    })();
+
+    // ── 浮窗的横向滑轨 ──────────────────────────────────────
+    function bindPan(scroll, rail) {
+      if (!scroll || !rail) return;
+      const thumb = rail.querySelector('i');
+      let dragging = false, startX = 0, startLeft = 0, hideTimer = 0;
+
+      function layout() {
+        const max = scroll.scrollWidth - scroll.clientWidth;
+        const track = rail.clientWidth;
+        if (max <= 0 || track <= 0) { thumb.style.width = '0px'; return; }
+        const w = Math.max(28, (scroll.clientWidth / scroll.scrollWidth) * track);
+        const x = (scroll.scrollLeft / max) * (track - w);
+        thumb.style.width = w + 'px';
+        thumb.style.transform = 'translateX(' + x + 'px)';
+      }
+      function show(sticky) {
+        layout();
+        rail.classList.add('is-on');
+        window.clearTimeout(hideTimer);
+        if (sticky) return;
+        hideTimer = window.setTimeout(function () {
+          if (!dragging) rail.classList.remove('is-on');
+        }, 720);
+      }
+      function hide() {
+        window.clearTimeout(hideTimer);
+        if (!dragging) rail.classList.remove('is-on');
+      }
+
+      layout();
+      scroll.addEventListener('scroll', function () { show(dragging); }, { passive: true });
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(layout).observe(scroll);
+
+      // 指针到下沿附近就浮现。近 = 离底 64 以内。
+      scroll.addEventListener('pointermove', function (e) {
+        const r = scroll.getBoundingClientRect();
+        if (r.bottom - e.clientY <= 64) show(true); else hide();
+        if (!dragging) return;
+        scroll.scrollLeft = startLeft - (e.clientX - startX);
+      });
+      scroll.addEventListener('pointerleave', hide);
+      scroll.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        if (scroll.scrollWidth <= scroll.clientWidth + 1) return;
+        dragging = true; startX = e.clientX; startLeft = scroll.scrollLeft;
+        show(true);
+        try { scroll.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      function end() {
+        if (!dragging) return;
+        dragging = false;
+        show(false);
+      }
+      scroll.addEventListener('pointerup', end);
+      scroll.addEventListener('pointercancel', end);
+    }
+    document.querySelectorAll('.float-body').forEach(function (body) {
+      bindPan(body.querySelector('[data-pan]'), body.querySelector('.pan-rail'));
+    });
+
+    // ── 批注原文井：展开、滚动、细轨 ──────────
+    function bindExcerpt(excerpt) {
+      const quote = excerpt.querySelector('.cmt-quote');
+      const more = excerpt.querySelector('.cmt-more');
+      if (!quote || !more) return null;
+
+      const rail = document.createElement('span');
+      rail.className = 'cmt-rail';
+      rail.setAttribute('aria-hidden', 'true');
+      rail.innerHTML = '<i></i>';
+      excerpt.appendChild(rail);
+      const thumb = rail.querySelector('i');
+      let hideTimer = 0;
+
+      function layoutRail() {
+        const box = excerpt.getBoundingClientRect();
+        const well = quote.getBoundingClientRect();
+        const inset = 6;
+        const trackH = Math.max(0, well.height - inset * 2);
+        const view = quote.clientHeight;
+        const total = quote.scrollHeight;
+        rail.style.top = (well.top - box.top + inset) + 'px';
+        rail.style.height = trackH + 'px';
+        if (total <= view + 1 || trackH <= 0) { thumb.style.height = '0px'; return; }
+        const thumbH = Math.max(14, (view / total) * trackH);
+        const range = total - view;
+        const y = range > 0 ? (quote.scrollTop / range) * (trackH - thumbH) : 0;
+        thumb.style.height = thumbH + 'px';
+        thumb.style.transform = 'translateY(' + y + 'px)';
+      }
+
+      function showRail() {
+        if (!excerpt.classList.contains('has-more') || excerpt.classList.contains('is-open')) return;
+        layoutRail();
+        excerpt.classList.add('is-scrolling');
+        window.clearTimeout(hideTimer);
+        hideTimer = window.setTimeout(function () { excerpt.classList.remove('is-scrolling'); }, 720);
+      }
+
+      function setFocusable(on) {
+        if (on) {
+          quote.tabIndex = 0;
+          quote.setAttribute('role', 'region');
+          quote.setAttribute('aria-label', '原文摘录');
+          return;
+        }
+        quote.removeAttribute('tabindex');
+        quote.removeAttribute('role');
+        quote.removeAttribute('aria-label');
+        if (document.activeElement === quote) quote.blur();
+      }
+
+      function measure() {
+        if (excerpt.classList.contains('is-open')) { setFocusable(false); return; }
+        const overflowed = quote.scrollHeight - quote.clientHeight > 1;
+        excerpt.classList.toggle('has-more', overflowed);
+        setFocusable(overflowed);
+        layoutRail();
+      }
+
+      more.addEventListener('click', function () {
+        const open = excerpt.classList.toggle('is-open');
+        more.setAttribute('aria-expanded', open ? 'true' : 'false');
+        more.setAttribute('aria-label', open ? '收起原文' : '展开原文');
+        excerpt.classList.remove('is-scrolling');
+        if (open) setFocusable(false); else measure();
+      });
+
+      quote.addEventListener('scroll', showRail, { passive: true });
+      quote.addEventListener('wheel', function (e) {
+        if (e.ctrlKey || e.deltaY === 0) return;
+        if (!excerpt.classList.contains('has-more') || excerpt.classList.contains('is-open')) return;
+        if (document.activeElement !== quote || !quote.contains(e.target)) return;
+        const overflow = quote.scrollHeight - quote.clientHeight;
+        if (overflow <= 1) return;
+        const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+        const remaining = dy > 0 ? overflow - quote.scrollTop : quote.scrollTop;
+        if (remaining > 1) { e.preventDefault(); quote.scrollTop += dy; }
+      }, { passive: false });
+
+      measure();
+      return measure;
+    }
+
+    document.querySelectorAll('[data-float]').forEach(function (panel) {
+      const body = panel.querySelector('[data-body]');
+      const measures = [];
+      panel.querySelectorAll('.cmt-excerpt').forEach(function (ex) {
+        const m = bindExcerpt(ex);
+        if (m) measures.push(m);
+      });
+      panel.addEventListener('pointerdown', function (e) {
+        const hit = e.target.closest('.cmt-excerpt.has-more:not(.is-open) .cmt-quote');
+        panel.querySelectorAll('.cmt-quote').forEach(function (n) {
+          if (n !== hit && document.activeElement === n) n.blur();
+        });
+      });
+      if (body) {
+        const sync = function () { panel.classList.toggle('is-scrolled', body.scrollTop > 0); };
+        body.addEventListener('scroll', sync, { passive: true });
+        sync();
+      }
+      const remeasure = function () { measures.forEach(function (fn) { fn(); }); };
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+      window.addEventListener('resize', remeasure);
+    });
+
+    // ── 明暗切换入口 ────────────────────────────────────────
+    document.querySelectorAll('[data-theme-set]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const next = btn.getAttribute('data-theme-set');
+        document.documentElement.setAttribute('data-theme', next);
+        document.querySelectorAll('[data-theme-set]').forEach(function (b) {
+          b.classList.toggle('is-on', b === btn);
+        });
+        placeAllHovers();
+      });
+    });
+
+    placeAllHovers();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeAllHovers);
+    window.addEventListener('resize', placeAllHovers);
+  </script>
+</body>
+</html>

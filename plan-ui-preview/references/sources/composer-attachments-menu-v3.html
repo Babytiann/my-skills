@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Composer 附件栏 + 呼出菜单 v3</title>
+  <!-- 本地来源副本：Composer 附件栏 + 呼出菜单 v3；下载日期：2026-10-02；原始 HTML SHA256：c64abb49e396e51811e9ced9ad57a37bb5bd58f02d5c954127f127b3cc16d0ab。仅本地化字体资源并移除 preconnect；原始布局、文案、样式和交互代码保留。 -->
+  <link href="assets/fonts/google-fonts.css" rel="stylesheet" />
+  <style>
+    :root {
+      font-size: 16px;
+      --font-sans: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --radius-control: 4px;
+      --radius-container: 6px;
+      --radius-card: 8px;
+      --radius-message: 16px;
+      --radius-composer: 20px;
+      --radius-pill: 9999px;
+      --pop-gap: 10px;
+      --att-h: 46px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --page: 17, 17, 17;
+      --page-ink: 230, 230, 230;
+      --page-ink-soft: 150, 150, 150;
+      --page-ink-faint: 110, 110, 110;
+      --page-rule: 42, 42, 42;
+      --palette-content: 31, 31, 31;
+      --palette-canvas: 26, 26, 26;
+      --palette-chrome: 24, 24, 24;
+      --palette-composer: 31, 31, 31;
+      --palette-muted: 49, 49, 49;
+      --palette-card-edge: 44, 44, 44;
+      --palette-border: 62, 62, 62;
+      --palette-border-soft: 54, 54, 54;
+      --palette-border-strong: 86, 86, 86;
+      --palette-ink: 230, 230, 230;
+      --palette-ink-soft: 163, 163, 163;
+      --palette-ink-faint: 115, 115, 115;
+      --palette-command: 204, 204, 204;
+      --palette-command-muted: 152, 152, 152;
+      --palette-accent: 240, 99, 46;
+      --shadow-composer: 0 0 0 0.5px rgb(var(--palette-border)), 0 3px 7.5px rgba(0,0,0,0.04), 0 0 20px rgba(0,0,0,0.05);
+      --palette-overlay: 43, 43, 43;
+      --shadow-overlay: 0 0 0 0.5px rgb(var(--palette-border)), 0 6px 16px rgba(0,0,0,0.34), 0 0 28px rgba(0,0,0,0.22);
+    }
+    [data-theme="light"] {
+      color-scheme: light;
+      --page: 236, 236, 239;
+      --page-ink: 24, 25, 28;
+      --page-ink-soft: 85, 88, 95;
+      --page-ink-faint: 130, 133, 140;
+      --page-rule: 216, 217, 221;
+      --palette-content: 255, 255, 255;
+      --palette-canvas: 255, 255, 255;
+      --palette-chrome: 248, 248, 250;
+      --palette-composer: 255, 255, 255;
+      --palette-muted: 244, 244, 247;
+      --palette-card-edge: 236, 238, 241;
+      --palette-border: 228, 229, 233;
+      --palette-border-soft: 238, 239, 242;
+      --palette-border-strong: 176, 178, 184;
+      --palette-ink: 20, 21, 24;
+      --palette-ink-soft: 70, 75, 84;
+      --palette-ink-faint: 120, 125, 134;
+      --palette-command: 48, 49, 52;
+      --palette-command-muted: 108, 110, 116;
+      --palette-accent: 217, 72, 28;
+      --shadow-composer: 0 0 0 0.5px rgb(var(--palette-border)), 0 3px 7.5px rgba(0,0,0,0.04), 0 0 20px rgba(0,0,0,0.05);
+      --palette-overlay: 255, 255, 255;
+      --shadow-overlay: 0 0 0 0.5px rgb(var(--palette-border)), 0 6px 16px rgba(0,0,0,0.07), 0 0 28px rgba(0,0,0,0.05);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: rgb(var(--page));
+      color: rgb(var(--page-ink));
+      padding: 0 24px 72px;
+      -webkit-font-smoothing: antialiased;
+      font-synthesis: none;
+      text-autospace: normal;
+    }
+
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      margin: 0 -24px 22px;
+      padding: 14px 24px 12px;
+      background: rgba(var(--page), 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgb(var(--page-rule));
+    }
+    .top-in {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .top h1 {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .top h1 small {
+      display: block;
+      margin-top: 3px;
+      font-size: 11.5px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: rgb(var(--page-ink-soft));
+    }
+    .theme-dock {
+      flex-shrink: 0;
+      display: flex;
+      border-radius: var(--radius-container);
+      overflow: hidden;
+      border: 1px solid rgb(var(--page-rule));
+    }
+    .theme-btn {
+      width: 46px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      color: rgb(var(--page-ink-faint));
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+    .theme-btn.is-on {
+      background: rgb(var(--palette-muted));
+      color: rgb(var(--palette-ink));
+    }
+
+    .sec {
+      max-width: 1120px;
+      margin: 0 auto 10px;
+      padding-top: 22px;
+    }
+    .sec h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .sec h2 b {
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: rgb(var(--page-ink-faint));
+      vertical-align: 1px;
+    }
+    .sec p {
+      margin-top: 6px;
+      max-width: 82ch;
+      font-size: 12px;
+      line-height: 1.65;
+      color: rgb(var(--page-ink-soft));
+    }
+
+    .board {
+      max-width: 920px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgb(var(--palette-card-edge));
+      background: rgb(var(--palette-chrome));
+    }
+    .board.is-noted { max-width: 1120px; }
+    .board + .board { margin-top: 18px; }
+    .board-label {
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgb(var(--palette-ink-faint));
+      padding: 9px 16px 8px;
+      border-bottom: 1px solid rgb(var(--palette-border-soft));
+    }
+    .work {
+      background: rgb(var(--palette-canvas));
+      color: rgb(var(--palette-ink));
+    }
+    .work.is-session {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .work.is-shot { padding: 28px 24px 26px; }
+    .work.is-noted.is-shot {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 22px;
+      align-items: start;
+      padding: 22px 22px 24px;
+    }
+    .noted-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 22px;
+      align-items: center;
+      padding-bottom: 16px;
+    }
+    .noted-row .composer-seat { padding-right: 0; }
+
+    .session {
+      width: 100%;
+      max-width: 768px;
+      margin: 0 auto;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .noted-row .session { margin: 0; max-width: none; }
+    .shot-col {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .work.is-noted .shot-col { margin: 0; }
+    .shot-col.is-bubble { align-items: flex-end; max-width: 640px; }
+
+    .transcript {
+      flex: 0 0 auto;
+      min-height: 0;
+      padding: 28px 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .msg-user-row {
+      align-self: flex-end;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      max-width: 82%;
+      min-width: 0;
+    }
+    .msg-user-bubble {
+      background: rgb(var(--palette-muted));
+      border-radius: var(--radius-message);
+      padding: 10px 14px;
+      color: rgb(var(--palette-ink));
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      font-synthesis: none;
+      text-autospace: normal;
+      font-feature-settings: "palt" 1;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .msg-agent {
+      max-width: 88%;
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgb(var(--palette-ink-soft));
+    }
+
+    .composer-seat { padding: 4px 24px 16px; flex-shrink: 0; }
+    .composer-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--pop-gap);
+    }
+    .composer-shell {
+      border-radius: var(--radius-composer);
+      background: rgb(var(--palette-composer));
+      padding: 10px 0 8px;
+      box-shadow: var(--shadow-composer);
+    }
+    .composer-gutter { padding-inline: 16px; }
+    .composer-box {
+      min-height: 52px;
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgb(var(--palette-ink));
+      font-synthesis: none;
+      text-autospace: normal;
+      font-feature-settings: "palt" 1;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      min-width: 0;
+    }
+    .composer-box.is-long {
+      max-height: calc(1.65em * 9);
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(var(--palette-border)) transparent;
+    }
+    .composer-pill-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding-top: 6px;
+    }
+    .pill-btn, .pill-btn-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: transparent;
+      color: rgb(var(--palette-ink-soft));
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .pill-btn-icon { width: 28px; padding: 0; justify-content: center; }
+    .pill-spacer { flex: 1; }
+    .btn-send {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: rgb(var(--palette-accent));
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .caret {
+      display: inline-block;
+      width: 1.5px;
+      height: 0.92em;
+      margin: 0 0 0 1px;
+      background: currentColor;
+      vertical-align: -0.08em;
+      flex-shrink: 0;
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .caret { animation: none; }
+      .row-hl { transition: none !important; }
+    }
+
+    .pop {
+      --pop-fade: 16px;
+      position: relative;
+      width: 100%;
+      max-height: calc(var(--composer-h, 108px) * 3);
+      overflow: hidden;
+      border-radius: var(--radius-composer);
+      background: rgb(var(--palette-overlay));
+      box-shadow: var(--shadow-overlay);
+      color: rgb(var(--palette-ink));
+    }
+    .pop::before,
+    .pop::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: var(--pop-fade);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .pop::before {
+      top: 0;
+      background: linear-gradient(to bottom, rgb(var(--palette-overlay)) 0%, rgba(var(--palette-overlay), 0) 100%);
+    }
+    .pop::after {
+      bottom: 0;
+      background: linear-gradient(to top, rgb(var(--palette-overlay)) 0%, rgba(var(--palette-overlay), 0) 100%);
+    }
+    .pop-list {
+      position: relative;
+      max-height: inherit;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(var(--palette-border)) transparent;
+      padding: 16px 0;
+    }
+    .row-hl {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      border-radius: 12px;
+      background: rgb(var(--palette-muted));
+      pointer-events: none;
+      opacity: 0;
+      will-change: transform, width, height;
+    }
+    .group + .group .group-label { padding-top: 10.8px; }
+    .group-label,
+    .pop-hint {
+      position: relative;
+      z-index: 1;
+      padding: 7.2px 16px 5.4px;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.26;
+      letter-spacing: 0.01em;
+      color: rgb(var(--palette-command-muted));
+    }
+    .pop-hint { padding-top: 10.8px; pointer-events: none; }
+    .row {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      padding: 2.7px 6px;
+      cursor: default;
+    }
+    .row-inner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 7.2px 10px;
+      border-radius: 12px;
+    }
+    .row-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .row-icon {
+      flex: none;
+      width: 15px;
+      height: 15px;
+      color: rgb(var(--palette-command-muted));
+    }
+    .row-icon svg { display: block; width: 15px; height: 15px; }
+    .row-name {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.26;
+      color: rgb(var(--palette-command-muted));
+    }
+    .row.is-on .row-icon,
+    .row.is-on .row-name { color: rgb(var(--palette-command)); }
+    .row-desc {
+      flex: 0 1 auto;
+      max-width: 80%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.26;
+      color: rgb(var(--palette-ink-faint));
+      opacity: 0.78;
+    }
+    .row-origin {
+      flex: none;
+      margin-left: auto;
+      padding-left: 12px;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.3;
+      color: rgb(var(--palette-ink-faint));
+      white-space: nowrap;
+      opacity: 0.78;
+    }
+    .row.is-on .row-desc,
+    .row.is-on .row-origin { opacity: 1; }
+    .row.is-file .row-body { flex: 1; min-width: 0; }
+    .row.is-file .row-name { flex: 0 0 auto; max-width: 100%; }
+    .row.is-file .row-desc { flex: 1 1 0; min-width: 0; max-width: none; }
+
+    .pop.is-hug::before,
+    .pop.is-hug::after,
+    .pop.is-empty::before,
+    .pop.is-empty::after { display: none; }
+    .pop.is-hug .pop-list,
+    .pop.is-empty .pop-list {
+      overflow: hidden;
+      padding: 6px 0;
+    }
+    .pop.is-empty { max-height: none; }
+
+    [data-theme="dark"] .tone-command {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(240, 99, 46) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(240, 99, 46) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #f0632e 17%);
+    }
+    [data-theme="light"] .tone-command {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #d9481c 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(217, 72, 28) 15%);
+      color: color-mix(in srgb, #18191c 70%, #d9481c 30%);
+    }
+    [data-theme="dark"] .tone-file {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(2, 132, 199) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(56, 189, 248) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #38bdf8 17%);
+    }
+    [data-theme="light"] .tone-file {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #0284c7 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(2, 132, 199) 15%);
+      color: color-mix(in srgb, #18191c 70%, #0284c7 30%);
+    }
+    [data-theme="dark"] .tone-ref {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, rgb(99, 102, 241) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, rgb(129, 140, 248) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, #818cf8 17%);
+    }
+    [data-theme="light"] .tone-ref {
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, #4f46e5 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, rgb(79, 70, 229) 15%);
+      color: color-mix(in srgb, #18191c 70%, #4f46e5 30%);
+    }
+    [data-theme="dark"] .tone-image {
+      --img-accent: #8a8a8a;
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 90%, var(--img-accent) 10%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 80%, var(--img-accent) 20%);
+      color: color-mix(in srgb, rgb(var(--palette-ink)) 83%, var(--img-accent) 17%);
+    }
+    [data-theme="light"] .tone-image {
+      --img-accent: #52525b;
+      background: color-mix(in srgb, rgb(var(--palette-composer)) 92%, var(--img-accent) 8%);
+      border: 1px solid color-mix(in srgb, rgb(var(--palette-composer)) 85%, var(--img-accent) 15%);
+      color: color-mix(in srgb, #18191c 70%, var(--img-accent) 30%);
+    }
+
+    .chip {
+      display: inline-flex;
+      height: 1.41em;
+      max-width: 100%;
+      min-width: 0;
+      align-items: center;
+      gap: 0.33em;
+      border-radius: 0.5em;
+      padding: 0 0.5em;
+      font-weight: 400;
+      line-height: 1;
+      vertical-align: middle;
+      font-size: 0.80em;
+      white-space: nowrap;
+      margin: 1px 2.5px;
+      box-sizing: border-box;
+      overflow: hidden;
+      font-synthesis: none;
+    }
+    .chip .chip-icon-box,
+    .chip .ico,
+    .chip svg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.17em;
+      height: 1.17em;
+      flex-shrink: 0;
+      color: currentColor;
+      opacity: 0.92;
+    }
+    .chip svg { display: block; }
+    .chip .chip-thumb-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.17em;
+      height: 1.17em;
+      flex-shrink: 0;
+      border-radius: 999px;
+      overflow: hidden;
+      background: color-mix(in srgb, var(--img-accent, rgb(var(--palette-ink))) 22%, transparent);
+      border: 1px solid color-mix(in srgb, var(--img-accent, rgb(var(--palette-ink))) 38%, transparent);
+      box-sizing: border-box;
+    }
+    .chip .chip-thumb-wrap .thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .chip .lbl {
+      display: block;
+      line-height: 1.15;
+      font-weight: 400;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chip > .lbl { flex: 0 1 auto; max-width: 16em; }
+    .msg-user-bubble .chip:not(.is-expanded) { max-width: min(100%, 261px); }
+
+    .composer-carry-strip,
+    .msg-user-carries { position: relative; min-width: 0; }
+    .composer-carry-strip {
+      --carry-fade: rgb(var(--palette-composer));
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+    .msg-user-carries {
+      --carry-fade: rgb(var(--palette-muted));
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+    .composer-carry-row {
+      display: flex;
+      min-width: 0;
+      width: 100%;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      align-items: center;
+      gap: 5px;
+      scrollbar-width: none;
+    }
+    .composer-carry-row::-webkit-scrollbar { display: none; }
+    .carry-pill {
+      display: inline-flex;
+      min-width: 0;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 4px;
+      border-radius: var(--radius-pill);
+      padding: 2px 7px;
+      height: 20px;
+      font-size: 10.5px;
+      font-weight: 500;
+      line-height: 1.2;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(var(--palette-border), 0.7);
+      color: rgb(var(--palette-ink-soft));
+      user-select: none;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+    [data-theme="light"] .carry-pill {
+      background: rgba(0, 0, 0, 0.035);
+      border-color: rgba(var(--palette-border), 0.85);
+      color: rgb(var(--palette-ink));
+    }
+    .carry-pill .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 11px;
+      height: 11px;
+      color: currentColor;
+    }
+    .carry-pill .icon svg { width: 11px; height: 11px; display: block; }
+    .carry-pill .label { font-size: 10.5px; line-height: 1.2; }
+
+    .composer-attach-strip,
+    .msg-user-attach { position: relative; min-width: 0; }
+    .composer-attach-strip { padding-bottom: 8px; margin-bottom: 2px; }
+    .msg-user-attach { padding-bottom: 8px; margin-bottom: 2px; }
+    .composer-attach-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 6px;
+      min-width: 0;
+    }
+    .att {
+      position: relative;
+      display: block;
+      width: var(--att-h);
+      height: var(--att-h);
+      flex: 0 0 auto;
+      border-radius: var(--radius-container);
+      overflow: hidden;
+      background: rgb(var(--palette-muted));
+      box-shadow: 0 0 0 0.5px rgba(var(--palette-border), 0.85);
+    }
+    .att img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+    .att-x {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 14px;
+      height: 14px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.38);
+      color: rgba(255, 255, 255, 0.78);
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+    }
+    .att:hover .att-x,
+    .att.is-hov .att-x { opacity: 1; }
+    .att-x svg { width: 8px; height: 8px; display: block; }
+    .msg-user-attach .att-x { display: none; }
+
+    .spec-notes {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      padding: 4px 8px 8px 0;
+      min-width: 0;
+    }
+    .noted-row .spec-notes { padding: 0 18px 0 0; }
+    .spec-notes li {
+      display: grid;
+      grid-template-columns: 40px 16px minmax(0, 1fr);
+      align-items: start;
+      gap: 7px;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: rgb(var(--palette-ink-soft));
+    }
+    .spec-notes .arrow {
+      width: 40px;
+      height: 16px;
+      margin-top: 1px;
+      color: rgb(var(--palette-ink-faint));
+      opacity: 0.7;
+    }
+    .spec-notes .arrow svg { width: 40px; height: 8px; display: block; margin-top: 4px; }
+    .spec-notes b { color: rgb(var(--palette-ink)); font-weight: 600; }
+    .spec-notes .cond { color: rgb(var(--palette-ink-faint)); }
+    .pin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      border-radius: 999px;
+      border: 1px solid rgb(var(--palette-border-strong));
+      background: rgb(var(--palette-canvas));
+      color: rgb(var(--palette-ink));
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 1;
+      font-family: var(--font-sans);
+    }
+    .spec-notes .pin { margin-top: 1px; }
+    .pin-in {
+      position: relative;
+      top: -0.55em;
+      margin: 0 1px 0 3px;
+      transform: scale(0.88);
+      background: rgb(var(--palette-overlay));
+    }
+    .row.is-on .pin-in { background: rgb(var(--palette-muted)); }
+    .composer-shell .pin-in { background: rgb(var(--palette-composer)); }
+
+    @media (max-width: 1100px) {
+      .work.is-noted.is-shot,
+      .noted-row { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .noted-row .spec-notes { padding: 0 16px 8px; }
+      .spec-notes li { grid-template-columns: 16px minmax(0, 1fr); gap: 8px; }
+      .spec-notes .arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-in">
+      <h1>
+        Composer 附件栏 + 呼出菜单 v3
+        <small>选中条在行间滑动，带一点滞后拉动。搜不到时菜单收成一行。carry 钉在最顶，附件栏在它下面。格子正方形、框高一致，从原图正中取出。正文约 9 行，多了滚动。拿掉胶囊，栏里的图还在；点栏里的 X，对应胶囊一起删。</small>
+      </h1>
+      <div class="theme-dock" role="group" aria-label="主题">
+        <button class="theme-btn is-on" type="button" data-theme-set="dark">Dark</button>
+        <button class="theme-btn" type="button" data-theme-set="light">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="board is-noted" id="board-together">
+    <div class="board-label">附件栏 + /</div>
+    <div class="work is-shot" data-shot="together"></div>
+  </section>
+
+  <section class="board is-noted" id="board-slash">
+    <div class="board-label">/ 命令</div>
+    <div class="work is-session">
+      <div class="noted-row">
+        <div class="session">
+          <div class="transcript">
+            <div class="msg-user-row">
+              <div class="msg-user-bubble">先把 BUF-102 的验收拆开跑，口径按那份清单。</div>
+            </div>
+            <div class="msg-agent">三路已经排好。改动都落在同一层编译结果上，气泡和输入框读的是同一份。</div>
+          </div>
+          <div class="composer-seat">
+            <div class="composer-stack" data-composer>
+              <div class="pop" role="listbox" aria-label="命令">
+                <div class="pop-list" id="pop-list-slash"></div>
+              </div>
+              <div class="composer-shell">
+                <div class="composer-box composer-gutter">/<span class="caret"></span></div>
+                <div class="composer-gutter composer-pill-row" data-pills></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="spec-notes" id="notes-slash"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="board is-noted" id="board-at">
+    <div class="board-label">@ 默认</div>
+    <div class="work is-session">
+      <div class="noted-row">
+        <div class="session">
+          <div class="transcript">
+            <div class="msg-user-row">
+              <div class="msg-user-bubble">先把 BUF-102 的验收拆开跑，口径按那份清单。</div>
+            </div>
+            <div class="msg-agent">三路已经排好。改动都落在同一层编译结果上，气泡和输入框读的是同一份。</div>
+          </div>
+          <div class="composer-seat">
+            <div class="composer-stack" data-composer>
+              <div class="pop" role="listbox" aria-label="空间">
+                <div class="pop-list" id="pop-list-at"></div>
+              </div>
+              <div class="composer-shell">
+                <div class="composer-box composer-gutter">@<span class="caret"></span></div>
+                <div class="composer-gutter composer-pill-row" data-pills></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="spec-notes" id="notes-at"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="board is-noted" id="board-at-search">
+    <div class="board-label">@ 搜索</div>
+    <div class="work is-session">
+      <div class="noted-row">
+        <div class="session">
+          <div class="transcript">
+            <div class="msg-user-row">
+              <div class="msg-user-bubble">先把 BUF-102 的验收拆开跑，口径按那份清单。</div>
+            </div>
+            <div class="msg-agent">三路已经排好。改动都落在同一层编译结果上，气泡和输入框读的是同一份。</div>
+          </div>
+          <div class="composer-seat">
+            <div class="composer-stack" data-composer>
+              <div class="pop" role="listbox" aria-label="文件">
+                <div class="pop-list" id="pop-list-at-search"></div>
+              </div>
+              <div class="composer-shell">
+                <div class="composer-box composer-gutter">@comp<span class="caret"></span></div>
+                <div class="composer-gutter composer-pill-row" data-pills></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="spec-notes" id="notes-at-search"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="board is-noted" id="board-dollar">
+    <div class="board-label">$ 技能</div>
+    <div class="work is-session">
+      <div class="noted-row">
+        <div class="session">
+          <div class="transcript">
+            <div class="msg-user-row">
+              <div class="msg-user-bubble">先把 BUF-102 的验收拆开跑，口径按那份清单。</div>
+            </div>
+            <div class="msg-agent">三路已经排好。改动都落在同一层编译结果上，气泡和输入框读的是同一份。</div>
+          </div>
+          <div class="composer-seat">
+            <div class="composer-stack" data-composer>
+              <div class="pop" role="listbox" aria-label="技能">
+                <div class="pop-list" id="pop-list-dollar"></div>
+              </div>
+              <div class="composer-shell">
+                <div class="composer-box composer-gutter">$<span class="caret"></span></div>
+                <div class="composer-gutter composer-pill-row" data-pills></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="spec-notes" id="notes-dollar"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="board is-noted" id="board-empty">
+    <div class="board-label">/ 无匹配</div>
+    <div class="work is-session">
+      <div class="noted-row">
+        <div class="session">
+          <div class="transcript">
+            <div class="msg-user-row">
+              <div class="msg-user-bubble">先把 BUF-102 的验收拆开跑，口径按那份清单。</div>
+            </div>
+            <div class="msg-agent">三路已经排好。改动都落在同一层编译结果上，气泡和输入框读的是同一份。</div>
+          </div>
+          <div class="composer-seat">
+            <div class="composer-stack" data-composer>
+              <div class="pop is-empty" role="listbox" aria-label="命令">
+                <div class="pop-list" id="pop-list-empty"></div>
+              </div>
+              <div class="composer-shell">
+                <div class="composer-box composer-gutter">/xyz<span class="caret"></span></div>
+                <div class="composer-gutter composer-pill-row" data-pills></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="spec-notes" id="notes-empty"></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="sec" id="sec-attach">
+    <h2><b>01</b>队头顺序</h2>
+    <p>carry 在最顶，附件栏在它下面，再是正文。输入框和气泡同一套。</p>
+  </div>
+  <section class="board is-noted" id="board-composer">
+    <div class="board-label">输入框</div>
+    <div class="work is-shot is-noted">
+      <div class="shot-col" data-shot="composer"></div>
+      <ul class="spec-notes" id="notes-attach"></ul>
+    </div>
+  </section>
+  <section class="board" id="board-bubble">
+    <div class="board-label">气泡</div>
+    <div class="work is-shot">
+      <div class="shot-col is-bubble" data-shot="bubble"></div>
+    </div>
+  </section>
+  <script>
+    (function () {
+      const ICO = {
+        plugin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5a2 2 0 1 1 4 0V5h3.5A1.5 1.5 0 0 1 19 6.5V10h1.5a2 2 0 1 1 0 4H19v3.5a1.5 1.5 0 0 1-1.5 1.5H14v-1.5a2 2 0 1 0-4 0V19H6.5A1.5 1.5 0 0 1 5 17.5V14H3.5a2 2 0 1 1 0-4H5V6.5A1.5 1.5 0 0 1 6.5 5H10z"/></svg>',
+        bot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4.5"/><circle cx="12" cy="3" r="1.3"/><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M2 13.5v2"/><path d="M22 13.5v2"/><path d="M9 13v1.6"/><path d="M15 13v1.6"/></svg>',
+        person: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        skill: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+        space: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>',
+        file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        ts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="2.6" width="18.8" height="18.8" rx="3.2"/><path d="M6.4 9.4h5"/><path d="M8.9 9.4v6.4"/><path d="M17.6 10.2a2.2 2 0 0 0-3.4.5c-.5 1.2.6 1.9 1.7 2.3 1.1.4 2.2 1.1 1.7 2.3a2.2 2 0 0 1-3.4.5"/></svg>',
+        json: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.5H7.5A2.5 2.5 0 0 0 5 6v3.2a2.5 2.5 0 0 1-2 2.45v.7a2.5 2.5 0 0 1 2 2.45V18a2.5 2.5 0 0 0 2.5 2.5H9"/><path d="M15 3.5h1.5A2.5 2.5 0 0 1 19 6v3.2a2.5 2.5 0 0 0 2 2.45v.7a2.5 2.5 0 0 0-2 2.45V18a2.5 2.5 0 0 1-2.5 2.5H15"/></svg>',
+        md: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.6"/><path d="M5.6 15.6V8.4l3 3.6 3-3.6v7.2"/><path d="M16.4 8.4v6.2"/><path d="m14.2 12.6 2.2 2.4 2.2-2.4"/></svg>',
+        sh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="3.6" width="19.2" height="16.8" rx="2.8"/><path d="m7 9.6 3 2.7-3 2.7"/><path d="M12.8 15.6h4.4"/></svg>',
+        ref: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>'
+      };
+      const CHIP_ICO = {
+        plugin: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5a2 2 0 1 1 4 0V5h3.5A1.5 1.5 0 0 1 19 6.5V10h1.5a2 2 0 1 1 0 4H19v3.5a1.5 1.5 0 0 1-1.5 1.5H14v-1.5a2 2 0 1 0-4 0V19H6.5A1.5 1.5 0 0 1 5 17.5V14H3.5a2 2 0 1 1 0-4H5V6.5A1.5 1.5 0 0 1 6.5 5H10z"/></svg>',
+        file: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        ref: ICO.ref
+      };
+      const CARRY_ICO = {
+        space: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg>',
+        ref: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+        workflow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg>',
+        annotation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg>'
+      };
+
+      const PILL_ROW =
+        '<span class="pill-btn-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>' +
+        '<span class="pill-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Claude 3.7 Sonnet</span>' +
+        '<span class="pill-spacer"></span>' +
+        '<span class="btn-send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>';
+      const X_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+      const ARROW = '<span class="arrow" aria-hidden="true"><svg viewBox="0 0 40 8" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M39 4H3"/><path d="M7 1 3 4l4 3"/></svg></span>';
+
+      const MENU = [
+        {
+          id: 'buffin', label: 'buffin', icon: 'plugin',
+          items: [
+            { name: 'workflow', desc: '按编排执行一轮', on: true },
+            { name: 'model', desc: '切换本轮模型' },
+            { name: 'init', desc: '初始化当前工作区配置' }
+          ]
+        },
+        {
+          id: 'agent', label: 'agent', icon: 'bot',
+          items: [
+            { name: 'compact', desc: '压缩当前会话' },
+            { name: 'clear', desc: '清空当前会话' },
+            { name: 'status', desc: '查看当前会话状态' },
+            { name: 'help', desc: '列出可用命令' }
+          ]
+        },
+        {
+          id: 'user', label: 'user', icon: 'person',
+          items: [
+            { name: '日报', desc: '生成本周工作摘要' },
+            { name: '验收', desc: '按 BUF-102 口径核对这一轮' },
+            { name: 'give my workflow', desc: '把编排拆成可执行的步骤并写进会话' }
+          ]
+        },
+        {
+          id: 'skill', label: 'skill', icon: 'skill',
+          items: [
+            { name: 'code-review', desc: '按仓库约定审这一轮改动', origin: '项目' },
+            { name: 'codebase-design', desc: '把这一层的接口和边界钉清楚', origin: '项目' },
+            { name: 'diagnosing-bugs', desc: '从现象反推到可复现的原因并给出修复路径', origin: '个人' },
+            { name: 'review', desc: '对照整支相对 main 的改动做审查', origin: '个人' },
+            { name: 'tdd', desc: '先写测试再落实现', origin: 'buffin' },
+            { name: 'find-skills', desc: '按要做的事找出能装的技能', origin: 'buffin' },
+            { name: 'domain-modeling', desc: '钉死这一域的用词和边界', origin: 'agent' }
+          ]
+        }
+      ];
+
+      const FILE_HITS = [
+        { kind: 'file', name: 'ComposerBox.tsx', desc: 'apps/desktop/src/renderer/features/session/components/composer/ComposerBox.tsx', on: true },
+        { kind: 'file', name: 'ComposerSuggestionMenu.tsx', desc: 'apps/desktop/src/renderer/features/session/components/composer/ComposerSuggestionMenu.tsx' },
+        { kind: 'file', name: 'composer-compile.ts', desc: 'apps/desktop/src/renderer/features/session/models/composer-compile.ts' },
+        { kind: 'file', name: 'composer-pop.html', desc: '任务空间 · composer-pop.html' },
+        { kind: 'file', name: 'composer-pop-v2.html', desc: '任务空间 · composer-pop-v2.html' },
+        { kind: 'file', name: 'composer.md', desc: '项目空间 · docs/user/composer.md' }
+      ];
+
+      function toTitleCase(name) {
+        if (!/[A-Za-z]/.test(name)) return name;
+        return name.replace(/-/g, ' ').replace(/[A-Za-z]+/g, function (word) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        });
+      }
+      function pin(letter) {
+        return '<i class="pin pin-in">' + letter + '</i>';
+      }
+      const FILE_EXT = { ts: 'ts', tsx: 'ts', json: 'json', md: 'md', sh: 'sh' };
+      function extIcon(name) {
+        const match = /\.([^.]+)$/.exec(name);
+        const ext = match ? match[1].toLowerCase() : '';
+        return FILE_EXT[ext] || 'file';
+      }
+      function rowHtml(item, fallbackIcon) {
+        const isFile = item.kind === 'file';
+        const iconKey = isFile ? (item.icon || extIcon(item.name)) : (item.icon || fallbackIcon);
+        const origin = item.origin
+          ? '<span class="row-origin">' + item.origin + '</span>' + (item.pinOrigin ? pin(item.pinOrigin) : '')
+          : '';
+        return '<div class="row' + (item.on ? ' is-on' : '') + (isFile ? ' is-file' : '') + '" role="option" aria-selected="' + (item.on ? 'true' : 'false') + '">' +
+          '<div class="row-inner">' +
+            (item.pinHl ? pin(item.pinHl) : '') +
+            '<span class="row-body">' +
+              '<span class="row-icon" aria-hidden="true">' + (ICO[iconKey] || ICO.file) + '</span>' +
+              (item.pinIcon ? pin(item.pinIcon) : '') +
+              '<span class="row-name">' + (isFile ? item.name : toTitleCase(item.name)) + '</span>' +
+              (item.pinName ? pin(item.pinName) : '') +
+              (item.desc ? '<span class="row-desc">' + item.desc + '</span>' : '') +
+              (item.pinDesc ? pin(item.pinDesc) : '') +
+            '</span>' +
+            origin +
+          '</div>' +
+        '</div>';
+      }
+      function groupHtml(group) {
+        const label = group.label
+          ? '<div class="group-label" id="g-' + group.id + '">' + toTitleCase(group.label) + (group.pinLabel ? pin(group.pinLabel) : '') + '</div>'
+          : '';
+        return '<div class="group" role="group"' + (group.label ? ' aria-labelledby="g-' + group.id + '"' : '') + '>' +
+          label +
+          group.items.map(function (item) { return rowHtml(item, group.icon); }).join('') +
+        '</div>';
+      }
+      function renderMenu(host, groups, hint, hintPin) {
+        host.innerHTML = groups.map(groupHtml).join('') +
+          (hint ? '<div class="pop-hint">' + hint + (hintPin ? pin(hintPin) : '') + '</div>' : '');
+      }
+      const SLIDE = '360ms cubic-bezier(0.22, 1, 0.36, 1)';
+      const glides = [];
+      function bindGlide(host) {
+        const rows = Array.prototype.slice.call(host.querySelectorAll('.row'));
+        if (!rows.length) return;
+        let hl = host.querySelector(':scope > .row-hl');
+        if (!hl) {
+          hl = document.createElement('div');
+          hl.className = 'row-hl';
+          hl.setAttribute('aria-hidden', 'true');
+          host.insertBefore(hl, host.firstChild);
+        }
+        let painted = false;
+        function reduceMotion() {
+          return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+        function targetBox(row) {
+          const inner = row.querySelector('.row-inner') || row;
+          const hostRect = host.getBoundingClientRect();
+          const rect = inner.getBoundingClientRect();
+          return {
+            top: rect.top - hostRect.top + host.scrollTop,
+            left: rect.left - hostRect.left + host.scrollLeft,
+            width: rect.width,
+            height: rect.height
+          };
+        }
+        function paint(box, animate) {
+          const useAnim = animate && painted && !reduceMotion();
+          hl.style.transition = useAnim
+            ? 'transform ' + SLIDE + ', width ' + SLIDE + ', height ' + SLIDE
+            : 'none';
+          hl.style.transform = 'translate3d(' + box.left + 'px, ' + box.top + 'px, 0)';
+          hl.style.width = box.width + 'px';
+          hl.style.height = box.height + 'px';
+          hl.style.opacity = '1';
+          if (!useAnim) void hl.offsetWidth;
+          painted = true;
+        }
+        function select(row, animate) {
+          rows.forEach(function (other) {
+            other.classList.remove('is-on');
+            other.setAttribute('aria-selected', 'false');
+          });
+          row.classList.add('is-on');
+          row.setAttribute('aria-selected', 'true');
+          paint(targetBox(row), animate);
+        }
+        rows.forEach(function (row) {
+          row.addEventListener('mouseenter', function () {
+            if (row.classList.contains('is-on') && painted) return;
+            select(row, true);
+          });
+        });
+        function sync(animate) {
+          const on = host.querySelector('.row.is-on') || rows[0];
+          if (on) select(on, animate);
+        }
+        glides.push({ host: host, sync: sync });
+      }
+      function cloneMenu(mutator) {
+        return MENU.map(function (group) {
+          const next = Object.assign({}, group, {
+            items: group.items.map(function (item) { return Object.assign({}, item); })
+          });
+          if (mutator) mutator(next);
+          return next;
+        });
+      }
+
+      document.querySelectorAll('[data-pills]').forEach(function (el) {
+        el.innerHTML = PILL_ROW;
+      });
+
+      const listSlash = document.getElementById('pop-list-slash');
+      renderMenu(listSlash, cloneMenu(function (group) {
+        group.items.forEach(function (item) {
+          item.on = false;
+          if (item.name === 'give my workflow') item.pinName = 'A';
+          if (item.name === 'diagnosing-bugs') {
+            item.pinHl = 'D';
+            item.pinDesc = 'B';
+            item.pinOrigin = 'C';
+            item.on = true;
+          }
+        });
+      }));
+      bindGlide(listSlash);
+
+      const listAt = document.getElementById('pop-list-at');
+      renderMenu(listAt, [{
+        id: 'spaces', icon: 'space',
+        items: [
+          { name: '任务空间', on: true, pinName: 'A' },
+          { name: '项目空间' }
+        ]
+      }], '输入内容以搜索文件', 'B');
+      bindGlide(listAt);
+
+      const filePins = FILE_HITS.map(function (item, i) {
+        const next = Object.assign({}, item);
+        if (i === 0) { next.pinName = 'B'; next.pinDesc = 'C'; }
+        if (item.name === 'composer-pop.html') { next.pinIcon = 'A'; next.pinDesc = 'D'; }
+        return next;
+      });
+      const listAtSearch = document.getElementById('pop-list-at-search');
+      renderMenu(listAtSearch, [{ id: 'files', items: filePins }]);
+      bindGlide(listAtSearch);
+
+      const skillSource = MENU.filter(function (group) { return group.id === 'skill'; })[0];
+      const listDollar = document.getElementById('pop-list-dollar');
+      renderMenu(listDollar, [{
+        id: skillSource.id,
+        label: skillSource.label,
+        icon: skillSource.icon,
+        pinLabel: 'A',
+        items: skillSource.items.map(function (item, index) {
+          return Object.assign({}, item, { on: index === 0 });
+        })
+      }]);
+      bindGlide(listDollar);
+
+      const listEmpty = document.getElementById('pop-list-empty');
+      listEmpty.innerHTML = '<div class="group-label">无匹配命令</div>';
+
+      function svgThumb(w, h, bg, inner) {
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '"><rect width="' + w + '" height="' + h + '" fill="' + bg + '"/>' + inner + '</svg>';
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      }
+      const ATTS = [
+        {
+          id: 'shot', name: 'cover-dark.png', accent: '#4a8f86',
+          src: svgThumb(160, 100, '#1a2426',
+            '<rect x="6" y="8" width="28" height="84" rx="3" fill="#152022"/>' +
+            '<rect x="40" y="12" width="80" height="52" rx="3" fill="#243033"/>' +
+            '<rect x="48" y="20" width="28" height="8" rx="1.5" fill="#4db6a8"/>' +
+            '<rect x="48" y="34" width="56" height="5" rx="1.5" fill="#3d6a66"/>' +
+            '<rect x="48" y="44" width="40" height="5" rx="1.5" fill="#355955"/>' +
+            '<rect x="126" y="12" width="28" height="76" rx="3" fill="#1e2c2e"/>')
+        },
+        {
+          id: 'cover', name: 'banner.png', accent: '#c4845a',
+          src: svgThumb(150, 100, '#d9a06c',
+            '<circle cx="28" cy="28" r="18" fill="#f0c9a0"/>' +
+            '<path d="M0 78 38 48l28 16 84-40V100H0z" fill="#8a5a3c"/>' +
+            '<path d="M86 100 150 54v46z" fill="#6e4630"/>')
+        },
+        {
+          id: 'square', name: 'mark.png', accent: '#6b8cae',
+          src: svgThumb(100, 100, '#243044',
+            '<circle cx="50" cy="50" r="22" fill="#6b8cae"/>' +
+            '<path d="M36 53 46 63l22-26" fill="none" stroke="#e8eef6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>')
+        },
+        {
+          id: 'phone', name: 'rail-narrow.png', accent: '#7c6a9a',
+          src: svgThumb(56, 100, '#2a2433',
+            '<rect x="8" y="4" width="40" height="92" rx="6" fill="#3a3148"/>' +
+            '<rect x="14" y="12" width="28" height="16" rx="2" fill="#7c6a9a"/>' +
+            '<rect x="14" y="34" width="28" height="6" rx="1.5" fill="#5a4c70"/>' +
+            '<rect x="14" y="44" width="22" height="6" rx="1.5" fill="#4a3f5c"/>' +
+            '<rect x="14" y="54" width="28" height="6" rx="1.5" fill="#5a4c70"/>' +
+            '<rect x="14" y="78" width="16" height="6" rx="1.5" fill="#4a3f5c"/>')
+        },
+        {
+          id: 'wide', name: 'timeline.png', accent: '#4a7a9a',
+          src: svgThumb(200, 90, '#1c2830',
+            '<rect x="8" y="16" width="40" height="58" rx="4" fill="#2a3c48"/>' +
+            '<rect x="56" y="16" width="40" height="58" rx="4" fill="#35586a"/>' +
+            '<rect x="104" y="16" width="40" height="58" rx="4" fill="#4a7a9a"/>' +
+            '<rect x="152" y="16" width="40" height="58" rx="4" fill="#2a3c48"/>')
+        },
+        {
+          id: 'chart', name: 'metrics.png', accent: '#6a9a72',
+          src: svgThumb(133, 100, '#1c261e',
+            '<rect x="10" y="58" width="14" height="30" rx="2" fill="#3d6a44"/>' +
+            '<rect x="30" y="42" width="14" height="46" rx="2" fill="#4e8a58"/>' +
+            '<rect x="50" y="22" width="14" height="66" rx="2" fill="#6a9a72"/>' +
+            '<rect x="70" y="34" width="14" height="54" rx="2" fill="#4e8a58"/>' +
+            '<rect x="90" y="48" width="14" height="40" rx="2" fill="#3d6a44"/>' +
+            '<rect x="110" y="28" width="14" height="60" rx="2" fill="#4e8a58"/>')
+        },
+        {
+          id: 'code', name: 'compile-shot.png', accent: '#7a6a4a',
+          src: svgThumb(178, 100, '#1e1c18',
+            '<rect x="10" y="14" width="36" height="6" rx="2" fill="#7a6a4a"/>' +
+            '<rect x="10" y="28" width="120" height="6" rx="2" fill="#4a4438"/>' +
+            '<rect x="10" y="42" width="88" height="6" rx="2" fill="#3a362e"/>' +
+            '<rect x="10" y="56" width="140" height="6" rx="2" fill="#4a4438"/>' +
+            '<rect x="10" y="70" width="64" height="6" rx="2" fill="#2e2c26"/>' +
+            '<rect x="10" y="84" width="108" height="6" rx="2" fill="#3a362e"/>')
+        },
+        {
+          id: 'desk', name: 'desk.jpg', accent: '#8a6a52',
+          src: svgThumb(120, 100, '#3a2e26',
+            '<rect x="0" y="62" width="120" height="38" fill="#5a4638"/>' +
+            '<rect x="14" y="22" width="44" height="32" rx="3" fill="#8a6a52"/>' +
+            '<circle cx="92" cy="30" r="16" fill="#c4a070"/>' +
+            '<rect x="88" y="46" width="8" height="18" rx="2" fill="#8a6a52"/>')
+        }
+      ];
+
+      function chip(o) {
+        const lead = o.thumb
+          ? '<span class="chip-thumb-wrap"><img class="thumb" src="' + o.thumb + '" alt="" /></span>'
+          : '<span class="chip-icon-box">' + (CHIP_ICO[o.icon || o.tone] || CHIP_ICO.file) + '</span>';
+        const style = o.accent ? ' style="--img-accent:' + o.accent + '"' : '';
+        const title = o.title ? ' title="' + o.title + '"' : '';
+        return '<span class="chip tone-' + o.tone + '"' + title + style + '>' + lead + '<span class="lbl">' + o.label + '</span></span>';
+      }
+      function carryPill(o) {
+        return '<span class="carry-pill"><span class="icon">' + CARRY_ICO[o.icon] + '</span><span class="label">' + o.label + '</span></span>';
+      }
+      function attTile(t, opts) {
+        opts = opts || {};
+        const hov = opts.hov ? ' is-hov' : '';
+        const pinHtml = opts.pin ? pin(opts.pin) : '';
+        return '<span class="att' + hov + '" title="' + t.name + '">' +
+          '<img src="' + t.src + '" alt="' + t.name + '" />' +
+          '<span class="att-x" aria-hidden="true">' + X_ICO + '</span>' +
+          '</span>' + pinHtml;
+      }
+      const CARRY_HTML =
+        carryPill({ icon: 'space', label: '空间说明' }) +
+        carryPill({ icon: 'ref', label: '引用说明' }) +
+        carryPill({ icon: 'workflow', label: '工作流说明' }) +
+        carryPill({ icon: 'annotation', label: '3条批注' });
+      function carryRow(host) {
+        const cls = host === 'bubble' ? 'msg-user-carries' : 'composer-gutter composer-carry-strip';
+        return '<div class="' + cls + '"><div class="composer-carry-row">' + CARRY_HTML + '</div></div>';
+      }
+      function attachRow(host, opts) {
+        opts = opts || {};
+        const tiles = ATTS.map(function (t) {
+          return attTile(t, {
+            hov: opts.hovId === t.id,
+            pin: opts.pins && opts.pins[t.id]
+          });
+        }).join('') + (opts.afterPin ? pin(opts.afterPin) : '');
+        const cls = host === 'bubble' ? 'msg-user-attach' : 'composer-gutter composer-attach-strip';
+        return '<div class="' + cls + '"><div class="composer-attach-row">' + tiles + '</div></div>';
+      }
+
+      const shot = ATTS[0];
+      const cover = ATTS[1];
+      const CHIP = {
+        workflow: chip({ tone: 'command', icon: 'plugin', label: 'workflow' }),
+        file: chip({ tone: 'file', icon: 'file', label: 'Chip.tsx', title: 'src/components/Chip.tsx' }),
+        ref: chip({ tone: 'ref', icon: 'ref', label: '验收清单 BUF-102' }),
+        imgShot: chip({ tone: 'image', label: 'cover-dark.png', title: 'assets/cover-dark.png', thumb: shot.src, accent: shot.accent }),
+        imgCover: chip({ tone: 'image', label: 'banner.png', title: 'assets/banner.png', thumb: cover.src, accent: cover.accent })
+      };
+      const BODY_LONG =
+        CHIP.workflow + ' 对照这几张图改 BUF-102 的混排。' + CHIP.imgShot + ' 和 ' + CHIP.imgCover +
+        ' 对着看。把验收拆成三路：一路改 ' + CHIP.file + ' 的记号与省略，一路补会话气泡和输入框的混排，一路盯 daemon 直连。' +
+        '口径按 ' + CHIP.ref + ' 那份，跑完的截图统一放进附件。' +
+        '混排那一路要同时看宽栏和窄栏，两边的气泡长度对不上就先停下来说一声，别自己挑一个。' +
+        'daemon 那一路先不要动接口，把现在的返回结构原样透出来就行，改形状等这轮验收过了再说。' +
+        '本周的进展和风险写进 instruction，周五我要直接拿去过会。' +
+        '第三路等我确认再开。先把 composer-compile 的返回结构贴给我，别先改形状。' +
+        '宽栏 768、窄栏 380 都要过一遍。胶囊在行末剩不下完整一颗时整颗换行，不要挤扁。';
+      const BODY_BUBBLE =
+        CHIP.workflow + ' 对照这几张图改 BUF-102 的混排。' + CHIP.imgShot + ' 和 ' + CHIP.imgCover +
+        ' 对着看。三路按 ' + CHIP.ref + ' 的口径跑，截图进附件。';
+
+      function headStack(host, attachOpts) {
+        return carryRow(host) + attachRow(host, attachOpts || { hovId: host === 'composer' ? 'square' : null });
+      }
+      function composerHtml(opts) {
+        opts = opts || {};
+        const attachOpts = opts.attachOpts || { hovId: 'square' };
+        const body = (opts.body || BODY_LONG) + (opts.suffix || '') + (opts.pinBody ? pin(opts.pinBody) : '') + '<span class="caret"></span>';
+        return '<div class="composer-shell">' +
+          headStack('composer', attachOpts) +
+          '<div class="composer-box composer-gutter is-long">' + body + '</div>' +
+          '<div class="composer-gutter composer-pill-row">' + PILL_ROW + '</div>' +
+        '</div>';
+      }
+      function bubbleHtml() {
+        return '<div class="msg-user-row"><div class="msg-user-bubble">' +
+          headStack('bubble') +
+          BODY_BUBBLE +
+        '</div></div>';
+      }
+
+      const togetherHost = document.querySelector('[data-shot="together"]');
+      togetherHost.innerHTML =
+        '<div class="session">' +
+          '<div class="composer-stack" data-composer>' +
+            '<div class="pop" role="listbox" aria-label="命令"><div class="pop-list" id="pop-list-together"></div></div>' +
+            composerHtml({ suffix: ' /' }) +
+          '</div>' +
+        '</div>';
+      const listTogetherLive = document.getElementById('pop-list-together');
+      renderMenu(listTogetherLive, cloneMenu());
+      bindGlide(listTogetherLive);
+      const togetherBox = togetherHost.querySelector('.composer-box.is-long');
+      if (togetherBox) togetherBox.scrollTop = togetherBox.scrollHeight;
+
+      document.querySelector('[data-shot="composer"]').innerHTML = composerHtml({
+        attachOpts: { hovId: 'square', pins: { shot: 'A', square: 'E' }, afterPin: 'B' },
+        pinBody: 'C',
+        body: BODY_LONG.replace(CHIP.imgShot, CHIP.imgShot + pin('D'))
+      });
+      document.querySelector('[data-shot="bubble"]').innerHTML = bubbleHtml();
+
+      function fillNotes(host, notes) {
+        if (!host) return;
+        host.innerHTML = notes.map(function (n) {
+          return '<li><span class="arrow-cell">' + ARROW + '</span>' +
+            '<i class="pin">' + n.k + '</i>' +
+            '<span>' + (n.cond ? '<span class="cond">' + n.cond + '　</span>' : '') + n.text + '</span></li>';
+        }).join('');
+      }
+      fillNotes(document.getElementById('notes-slash'), [
+        { k: 'A', cond: '命令名、技能名、分组名', text: '每个词首字母大写，空格留下。<b>Give My Workflow</b>。中文不转。' },
+        { k: 'B', cond: '去掉右侧来源之后', text: '描述最多占剩下整体的 <b>80%</b>，超出尾部省略。名字不让位。' },
+        { k: 'C', cond: '只有 skill', text: '来源靠右：<b>项目、个人、buffin、agent</b>。命令行不占这个位置。' },
+        { k: 'D', cond: '换选中', text: '加深框整条在行间滑动，带一点滞后拉动。文字立刻切到新行。' }
+      ]);
+      fillNotes(document.getElementById('notes-at'), [
+        { k: 'A', cond: '默认', text: '只出 <b>任务空间</b>、<b>项目空间</b> 两行。' },
+        { k: 'B', cond: '搜索说明', text: '底栏灰色层级记号，和 Skill 分组名同一档：<b>输入内容以搜索文件</b>。不可点。' }
+      ]);
+      fillNotes(document.getElementById('notes-at-search'), [
+        { k: 'A', cond: '图标', text: '有对应图标用对应的；没有就默认那张纸。' },
+        { k: 'B', cond: '文件名 + 地址', text: '<b>文件名</b>在前，<b>文件地址</b>跟在后面。铺满加深框，超出尾部省略。' },
+        { k: 'C', cond: '工作区', text: '普通工作区只写路径，<b>不加</b>空间头。' },
+        { k: 'D', cond: '空间里', text: '任务空间、项目空间才加对应空间头：<b>任务空间 ·</b> / <b>项目空间 ·</b>。' }
+      ]);
+      fillNotes(document.getElementById('notes-dollar'), [
+        { k: 'A', cond: '和斜杠菜单', text: '和 <b>/</b> 下的 Skill 是同一份菜单。' }
+      ]);
+      fillNotes(document.getElementById('notes-empty'), [
+        { k: 'A', cond: '搜不到', text: '当前字符对不上任何项。菜单<b>收缩成一行</b>，贴着这一行，不多留填充。' },
+        { k: 'B', cond: '这一行', text: '和分组名同一档，只有文字，没有图标。这里写 <b>无匹配命令</b>。' },
+        { k: 'C', cond: '@ 和 $', text: '同一档文字。<b>@</b> 写 <b>无匹配文件</b>，<b>$</b> 写 <b>无匹配技能</b>。条目未满时菜单也贴着内容，不多留填充。' }
+      ]);
+      fillNotes(document.getElementById('notes-attach'), [
+        { k: 'A', text: '格子<b>正方形</b>，框高一致，约两行行高。从原图<b>正中取出</b>这一块。目前栏里只放图片。' },
+        { k: 'E', cond: '点淡 X', text: '去掉栏里这张图，正文里对应的<b>胶囊也删掉</b>。' },
+        { k: 'B', cond: '一行装不下', text: '往下<b>折行</b>，不横向滚。最多 <b>8</b> 张。' },
+        { k: 'C', cond: '超过约 9 行', text: '正文自己<b>滚动</b>。carry 和附件栏不跟着滚，钉在队头。' },
+        { k: 'D', cond: '拿掉 image chip', text: '附件栏里的图<b>还在</b>。发出时由后端把这些没胶囊的图接到文末，界面不另画一态。' }
+      ]);
+
+      function pinPopHeights() {
+        const compactShell = document.querySelector('#board-slash .composer-shell');
+        const compactH = compactShell
+          ? compactShell.getBoundingClientRect().height
+          : 108;
+        document.querySelectorAll('[data-composer]').forEach(function (stack) {
+          const shell = stack.querySelector('.composer-shell');
+          const pop = stack.querySelector('.pop');
+          if (!shell || !pop) return;
+          const expanded = stack.querySelector('.composer-attach-strip') || stack.querySelector('.composer-box.is-long');
+          const h = expanded ? compactH : shell.getBoundingClientRect().height;
+          pop.style.setProperty('--composer-h', h + 'px');
+        });
+      }
+      function hugPops() {
+        document.querySelectorAll('.pop').forEach(function (pop) {
+          const list = pop.querySelector('.pop-list');
+          if (!list) return;
+          pop.classList.remove('is-hug');
+          void list.offsetHeight;
+          const overflowing = list.scrollHeight > list.clientHeight + 1;
+          if (!overflowing) pop.classList.add('is-hug');
+        });
+      }
+      function scrollPinRow(list, letter) {
+        const pins = list.querySelectorAll('.pin-in');
+        let row = null;
+        pins.forEach(function (p) {
+          if (p.textContent === letter) row = p.closest('.row') || p.closest('.group-label') || p;
+        });
+        if (!row) return;
+        const top = row.offsetTop - 36;
+        list.scrollTop = Math.max(0, top);
+      }
+
+      pinPopHeights();
+      hugPops();
+      (function () {
+        const userLabel = listSlash.querySelector('#g-user');
+        if (userLabel) listSlash.scrollTop = Math.max(0, userLabel.offsetTop - 8);
+        else scrollPinRow(listSlash, 'A');
+      })();
+      function syncGlides(animate) {
+        glides.forEach(function (g) { g.sync(animate); });
+      }
+      requestAnimationFrame(function () {
+        hugPops();
+        syncGlides(false);
+      });
+      window.addEventListener('resize', function () {
+        pinPopHeights();
+        hugPops();
+        syncGlides(false);
+      });
+
+      const root = document.documentElement;
+      const buttons = document.querySelectorAll('[data-theme-set]');
+      function setTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        buttons.forEach(function (btn) {
+          btn.classList.toggle('is-on', btn.getAttribute('data-theme-set') === theme);
+        });
+      }
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setTheme(btn.getAttribute('data-theme-set'));
+          requestAnimationFrame(function () { syncGlides(false); });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
