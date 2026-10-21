@@ -1,0 +1,6 @@
+interface:
+  display_name: "代码评审视角与原则"
+  short_description: "按项目原则和多个评审视角审查改动，给出有证据、分严重度、可执行的评审结论"
+  default_prompt: "使用 $review-principles，按这个项目的原则评审这次改动，给出结论、证据标注、修法和需要 owner 拍板的事项。"
+policy:
+  allow_implicit_invocation: false
