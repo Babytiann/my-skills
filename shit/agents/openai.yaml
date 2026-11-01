@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shit · 工作区代谢"
+  short_description: "体检 agent 工作区的磁盘、常驻上下文和 skill 仓库结构，确认后安全清理"
+  default_prompt: "使用 $shit 给我的 agent 工作区做一次体检，列出磁盘、常驻上下文和 skill 仓库结构的问题与建议处置，等我勾选后再清理。"

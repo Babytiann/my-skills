@@ -1,0 +1,4 @@
+interface:
+  display_name: "Eat · 知识吸收"
+  short_description: "把 X 帖子、GitHub 项目、网页等外部知识拆解出原理，沉淀为可复用的 skill 和规则"
+  default_prompt: "使用 $eat 吸收这个内容：拆解它的实现原理和可迁移的做法，对照我已有的能力，给出吸收卡，确认后沉淀到合适的位置。"
