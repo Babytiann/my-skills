@@ -1,0 +1,130 @@
+---
+name: vlog-style
+description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化成风格包：用本地测量（ffmpeg、TransNetV2、光流、Apple Vision OCR、beat_this）加 Claude 看抽帧拼图和事件条，得出结构、节奏、卡点、转场、运动、调色、文字、声音的完整选素材加剪辑流程；再按风格包、用户的素材和要求生成逐帧精确的剪辑计划，通过 DaVinci Resolve MCP 搭出可继续精修的时间线，用户要求时才导出成片。用于炼化、学习或复刻某类 vlog 的剪辑风格，按某个风格剪素材，或根据反馈修改风格包。"
+---
+
+# 旅行 vlog 剪辑风格：炼化与复刻
+
+用户找到几条剪得好的旅行 vlog，想学它们共同的剪法，再用自己的素材剪出一条类似的片子。这个 skill 分两半：
+
+- **炼化**：测参考片，写出风格包 `styles/<名字>/`。
+- **复刻**：按风格包挑用户的镜头、定剪辑点、加转场、变速、推拉、文字、调色、配乐，在 DaVinci Resolve 里搭出时间线。
+
+交付的是一条可编辑的 Resolve 时间线，加上标在时间线上的手动收尾清单。成片只在用户要求时导出。默认用中文和用户交流。
+
+细节在 references/ 里，做到哪一步读哪一篇：
+
+| 文件 | 什么时候读 |
+|---|---|
+| [measure.md](references/measure.md) | 炼化：命令顺序、每个测量字段和阈值、Claude 判读清单、labels.json 格式 |
+| [style-schema.md](references/style-schema.md) | 写或审风格包：style.json 每个字段、STYLE.md 模板 |
+| [apply.md](references/apply.md) | 复刻：素材索引、brief、剪辑计划、MCP 搭建顺序、读回格式 |
+| [resolve-routes.md](references/resolve-routes.md) | 任何 Resolve 操作：每个元素走哪条路线、探针清单、常见坑 |
+| [qa.md](references/qa.md) | 交付前：炼化验收和复刻验收清单、已有的教训 |
+| [learnings.md](references/learnings.md) | 开始之前翻一遍；被否掉的做法记在这里 |
+
+## 1. 路径：只有一个根路径
+
+`paths.toml` 是唯一维护路径的地方，里面只有 `root` 是绝对路径（默认 `~/Movies/vlog-style`）。迁移到 NAS 时整个目录搬过去，只改这一行；Resolve 工程里存的是绝对媒体路径，迁移后用 `MediaPool.RelinkClips` 指回新 root。`VLOG_STYLE_ROOT` 环境变量可以临时覆盖 root（测试用）。
+
+```
+<root>/
+  styles/<名字>/     stills/（≤10 张低清关键帧）、luts/、drx/、fusion/
+  projects/<项目>/   footage/（原始素材，只读）、proxies/、index/、plan/、qa/
+  cache/refs/<id>/   参考片下载、代理、抽帧、拼图、事件条；炼化完移进废纸篓
+```
+
+- 风格包的文字部分（STYLE.md、style.json、sources.md）放在仓库里的 `vlog-style/styles/<名字>/`，派生素材放在 root 下。
+- 所有 JSON 和 Markdown 里只写相对路径：项目文件相对 root，风格包素材相对风格目录。
+- 只在调用工具的那一刻用 `scripts/paths.py resolve` 拼绝对路径，不写回任何文件。`paths.py check` 能查出违规的文件。
+
+## 2. 环境
+
+| 依赖 | 用途 | 说明 |
+|---|---|---|
+| ffmpeg / ffprobe | 探测、代理、音频、响度 | VideoToolbox 硬解硬编，不行时回退到 libx264 |
+| uv | 运行带依赖的脚本 | 脚本头部用 PEP 723 写依赖，`uv run --python 3.13 --script`；不维护 venv |
+| xcrun swift | `vision_ocr.swift` | Apple Vision 中文 OCR，直接解释执行，不留编译产物 |
+| opencli + yt-dlp | 下载 B 站视频 | 借 Chrome 的登录状态；1080p 就够 |
+| `trash` | 清理 | 一律移进废纸篓，不用 `rm` |
+| davinci-resolve MCP | 实时搭时间线 | samuelgursky/davinci-resolve-mcp，注册为 `davinci-resolve` 和 `davinci-resolve-advanced`；注册后要重启 Claude Code 才看得到工具 |
+
+第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `~/.cache/torch/hub/checkpoints/beat_this-final0.ckpt`，没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。
+
+纯标准库的脚本用 `python3 -I -B` 运行，其余用 uv。下载下来的文件只作为参数传给脚本，不在下载目录里运行任何东西。
+
+## 3. 四种模式
+
+| 模式 | 用户怎么说 | 产出 |
+|---|---|---|
+| **distill 炼化** | 「学一下这几个视频的剪法」「炼化这个 vlog」 | `styles/<名字>/` 风格包，用户审过 STYLE.md |
+| **apply 复刻** | 「按这个风格剪我的素材」 | `projects/<项目>/plan/cut_plan.json`，用户确认后在 Resolve 里搭出时间线 |
+| **refine 改风格** | 「转场太多了」「再加两个参考」 | 改过的风格包；能用新测量说明的改测量，属于口味的写进 STYLE.md 并标出来源 |
+| **export 导出** | 「导出成片」 | Resolve 渲染队列里的任务，用户说开始才渲染 |
+
+## 4. distill：炼化
+
+命令和字段见 [measure.md](references/measure.md)。
+
+1. **取片。** `prep.py ref <BV号|本地文件> --id <id>`。B 站视频下载到 `cache/refs/<id>/src/`；b23.tv 短链先解析成 BV 号。付费和充电专属的视频停下来告诉用户，不绕过。本地文件直接读，不复制也不动。
+2. **OCR。** 对原片跑 `vision_ocr.swift --fps 4`。
+3. **测画面。** `measure_video.py`：剪辑点、转场候选、运动、look card、文字轨迹、事件条、总览图。
+4. **测声音。** `measure_audio.py`：响度、人声段、转写、拍点、onset、换曲候选、压低幅度估算。然后 `measure_video.py --redo text`，用人声段重新给文字分类。
+5. **判读。** `aggregate.py labels` 生成骨架；Claude 看 `sheets/` 和 `strips/`，按 measure.md 的清单把 labels.json 的空格填上。时间以测量为准，标签只补类型和描述；看不准的 `sure` 填 false。字体只判断类别。Claude 听不到声音，声音的结论只来自测量和转写。
+   - 测到的推拉多半是机位在动（无人机、车、步行），要看 `strips/moves_*.jpg` 逐个判 digital / camera，风格里的推拉比例只算 digital。
+   - 转场候选误报很多（暗镜头、运动中切），每条都看事件条再定。
+6. **汇总。** `aggregate.py draft --name <名字> <参考目录>… --out vlog-style/styles/<名字>/style.json`。对不上测量的标签会被拒收，列进 `evidence.rejected_labels`。多个参考时比较参考之间是否一致；只有一个参考时比较它的各章节之间，只出现在少数章节的标为「单一来源」。
+7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md 和 sources.md，补完 style.json 里 Claude 才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
+8. **验收。** 过一遍 [qa.md](references/qa.md) 的炼化清单，再把 STYLE.md 交给用户审。
+9. **试剪。** 用户给几段素材走一遍 apply（工程名 `vlog-style-QA-*`），对照关键帧和统计；问题改回风格包，记进 learnings.md。
+10. **清理。** 用户确认风格包之后，`cleanup.py trash <id> --yes`，把 `cache/refs/<id>` 移进废纸篓。先不加 `--yes` 跑一遍，给用户看要移走什么。
+
+## 5. apply：复刻
+
+详细步骤见 [apply.md](references/apply.md)。
+
+1. `paths.py init --project <项目>`，用户把素材放进 `footage/`。
+2. `prep.py footage` 检查帧率、可变帧率、传输特性，生成代理。
+3. 逐片段 `measure_video.py --skip strips` 和 `measure_audio.py`；Claude 看总览图写 `index/tags.json`；`aggregate.py footage` 生成 `index/footage.json`。
+4. 音乐：`measure_audio.py --music <曲子> --out index/beats.json`。
+5. 和用户一起写 `plan/brief.json`：时长、章节和标签、地点标题、音乐、不用和优先用的片段。
+6. `plan_cut.py --style <名字> --project <项目> --explain`，有人声时再跑 `duck.py`。把计划表和总览图给用户看，**确认后才进 Resolve**。
+7. 用户同意后，用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。
+8. 验收：`compare.py readback`、导出静帧跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
+9. 交付时间线，向用户说明手动收尾清单（标记在时间线开头，第一条是手动设置播放帧率）。
+
+## 6. refine：按反馈改风格
+
+- 先判断反馈是「测错了」还是「口味不同」。测错了就查测量和标签，修正后重新 `aggregate.py draft`；口味不同就直接改 style.json 和 STYLE.md 对应小节，写明「用户调整」和日期。
+- 补参考：新参考走 distill 的第 1–5 步，再把新旧参考一起 `aggregate.py draft`；basis 从单参考的章节比较变成多参考比较，一致性结论要重写。旧参考的缓存已经清掉了，就按 sources.md 的链接重新下。
+- 被否掉的做法记进 learnings.md。
+
+## 7. export：导出
+
+只在用户明确要求时做。先保存工程，再用 `render prepare_delivery_job` 排队：母版用 ProRes 422 HQ，发布用 H.265 Main10；传 `CustomName`。用户说开始才开始渲染。
+
+## 8. 规矩
+
+- **不上传。** 参考片和用户素材都不发给任何视频理解服务，分析只在本机做。
+- **版权。** 参考片只用于本地研究剪法。风格包只存测量出的参数和中性描述，不带参考片的画面、音乐、字体进用户的成片；参考片用完移进废纸篓。不绕过付费或充电内容，不给 opencli 传 `--force`。
+- **Resolve。** 打开 Resolve、新建或切换工程、调用实时 MCP 之前先问用户。不在用户正在剪的工程上直接试验，试验用 `vlog-style-QA-*` 一次性工程。不在仓库里跑 MCP 的 `install.py`。
+- **装东西、改配置先问。** 包括下载模型以外的任何安装、改 Resolve 偏好设置、改 MCP 注册。
+- **只读回不算通过。** 调色、标题、Fusion 有没有生效要看导出的静帧。
+- **删除一律用 `trash`。** 用户的本地参考文件和原始素材永远不动。
+
+## 9. 测试
+
+改了脚本之后在 `scripts/` 下跑：
+
+```sh
+for t in test_paths test_stats test_plan_cut test_tools; do python3 -I -B $t.py; done
+uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg、uv、xcrun
+```
+
+`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare，检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。`KEEP=1` 保留临时目录，方便查看拼图。
+
+## 10. 当前状态
+
+- 测量、汇总、剪辑计划、压低、读回和调色对照已经写完，合成测试全部通过。
+- Resolve 探针还没跑：路线表里标「待探针」的项（fusion 转场、Dip To Color、动态推拉、标题时间线、DRX、字幕烧录、变速）在本机都没验证过。第一次真实 apply 之前，先征得用户同意，按 resolve-routes.md 的探针清单跑一遍，把结论写回路线表。
+- 第一个参考是 BV1sHqPBLExZ（Linksphotograph《当太阳不再升起》第 1 集，约 30 分钟，内嵌字幕），已炼成 `styles/polar-night/` 草稿，等用户审 STYLE.md。只有一个参考，按章节比较一致性；参考缓存在用户确认前保留。

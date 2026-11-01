@@ -1,0 +1,13 @@
+{
+ "project": "fixture",
+ "duration_s": 90,
+ "seed": 7,
+ "chapters": [
+  {"name": "特罗姆瑟", "tags": ["tromso"], "title": "特罗姆瑟 · 挪威"},
+  {"name": "罗弗敦", "tags": ["lofoten"], "title": "罗弗敦群岛"}
+ ],
+ "hook_tags": ["aurora"],
+ "ending_tags": ["dusk"],
+ "music": [{"source": "projects/fixture/music/track.wav", "start_s": 0}],
+ "avoid": ["C0005"]
+}

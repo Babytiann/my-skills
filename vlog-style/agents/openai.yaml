@@ -1,0 +1,4 @@
+interface:
+  display_name: "旅行 vlog 剪辑风格炼化"
+  short_description: "把好看的旅行 vlog 炼成风格包，再按风格包用你的素材在 DaVinci Resolve 里剪出类似的片子"
+  default_prompt: "使用 $vlog-style，炼化这个参考视频的剪辑风格，写成风格包；或者按已有风格包剪我的素材，在 DaVinci Resolve 里搭出可编辑的时间线。"

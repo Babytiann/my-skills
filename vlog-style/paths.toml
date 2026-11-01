@@ -1,0 +1,9 @@
+# vlog-style 的路径表。
+# root 是唯一的绝对路径，迁移到 NAS 时只改这一行。
+# 临时换根（跑测试、试挂载点）用环境变量 VLOG_STYLE_ROOT，不用改这个文件。
+root = "~/Movies/vlog-style"
+
+[dirs]                  # 以下全部相对 root
+styles   = "styles"     # 风格包的本地派生素材：stills/ luts/ drx/ fusion/
+projects = "projects"   # 每个复刻项目：footage/ proxies/ index/ plan/ qa/
+cache    = "cache"      # 临时文件，炼化结束后移进废纸篓

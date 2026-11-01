@@ -1,0 +1,34 @@
+{
+ "schema_version": 1,
+ "name": "fixture",
+ "summary": "测试用风格：慢节奏纪录片式旅行片",
+ "sources": [{"id": "SYNTH", "measured": "2026-11-01"}],
+ "basis": "single_reference_chapters",
+ "deliverable": {"fps": 30, "width": 3840, "height": 2160, "letterbox": null},
+ "structure": {"sections": [
+  {"role": "hook", "share": 0.1, "shot_len_s": {"median": 1.5, "mad": 0.4}},
+  {"role": "intro", "share": 0.1, "shot_len_s": {"median": 3.0, "mad": 0.8}, "transition_in": "dip_to_black"},
+  {"role": "chapter", "share": 0.7, "shot_len_s": {"median": 4.0, "mad": 1.2}},
+  {"role": "ending", "share": 0.1, "shot_len_s": {"median": 5.0, "mad": 1.0}}
+ ]},
+ "selection": {"shot_types": {"wide": 0.5, "medium": 0.3, "close": 0.2}, "max_shake": 0.5},
+ "rhythm": {"shot_len_s": {"median": 3.5, "mad": 1.2}, "min_shot_s": 0.8},
+ "beat": {"hit_rate": 0.6, "baseline": 0.2, "offset_frames": -1, "use_downbeats": false, "confidence": "ok"},
+ "transitions": [
+  {"type": "hard_cut", "share": 0.8},
+  {"type": "dissolve", "share": 0.15, "frames": 12, "where": "any"},
+  {"type": "whip", "share": 0.05, "frames": 8, "where": "chapter_boundary"}
+ ],
+ "motion": {"push_in": {"share": 0.3, "scale_end": {"median": 1.08}}, "slow_mo": {"share": 0.2, "speed": 0.5}},
+ "effects": [{"type": "grain", "strength": 0.2}],
+ "grade": {"summary": "冷蓝暗调", "look": {"contrast_L": 18.0}, "lut": null, "drx": null, "grain": null},
+ "text": {
+  "title": {"font_class": "黑体", "fallback_fonts": ["PingFang SC"], "height_frac": 0.06, "position": [0.5, 0.5],
+            "in": "fade", "out": "fade", "duration_s": 3.0, "offset_s": 1.0, "template": "Templates/Edit/Titles/Fade On", "per": "chapter"}
+ },
+ "audio": {"bpm": {"median": 120}, "mood": "舒缓", "lufs": -16, "duck_db": 12},
+ "resolve": [
+  {"element": "镜头光斑", "route": "manual", "status": "manual"},
+  {"element": "叠化", "route": "live_api", "status": "verified"}
+ ]
+}

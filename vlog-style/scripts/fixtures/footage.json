@@ -1,0 +1,1038 @@
+{
+ "clips": [
+  {
+   "id": "C0000",
+   "source": "projects/fixture/footage/C0000.MP4",
+   "fps": 29.97,
+   "frames": 396,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 299,
+     "shot_type": "wide",
+     "tags": [
+      "tromso",
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.62,
+     "exposure_ok": true,
+     "shake": 0.48,
+     "best": 149,
+     "speech": [
+      [
+       10,
+       60
+      ]
+     ]
+    },
+    {
+     "start": 299,
+     "end": 396,
+     "shot_type": "medium",
+     "tags": [
+      "tromso",
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.44,
+     "exposure_ok": true,
+     "shake": 0.01,
+     "best": 347,
+     "speech": [
+      [
+       309,
+       359
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C0001",
+   "source": "projects/fixture/footage/C0001.MP4",
+   "fps": 59.94,
+   "frames": 1583,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 410,
+     "shot_type": "medium",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.54,
+     "exposure_ok": true,
+     "shake": 0.8,
+     "best": 205,
+     "speech": []
+    },
+    {
+     "start": 410,
+     "end": 959,
+     "shot_type": "close",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "pan",
+     "sharp": 0.9,
+     "exposure_ok": true,
+     "shake": 0.38,
+     "best": 684,
+     "speech": []
+    },
+    {
+     "start": 959,
+     "end": 1583,
+     "shot_type": "wide",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.49,
+     "exposure_ok": true,
+     "shake": 0.51,
+     "best": 1271,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0002",
+   "source": "projects/fixture/footage/C0002.MP4",
+   "fps": 59.94,
+   "frames": 1624,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 584,
+     "shot_type": "close",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.84,
+     "exposure_ok": true,
+     "shake": 0.54,
+     "best": 292,
+     "speech": []
+    },
+    {
+     "start": 584,
+     "end": 865,
+     "shot_type": "wide",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.85,
+     "exposure_ok": true,
+     "shake": 0.47,
+     "best": 724,
+     "speech": []
+    },
+    {
+     "start": 865,
+     "end": 1303,
+     "shot_type": "medium",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.42,
+     "exposure_ok": true,
+     "shake": 0.69,
+     "best": 1084,
+     "speech": []
+    },
+    {
+     "start": 1303,
+     "end": 1624,
+     "shot_type": "close",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.83,
+     "exposure_ok": true,
+     "shake": 0.7,
+     "best": 1463,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0003",
+   "source": "projects/fixture/footage/C0003.MP4",
+   "fps": 29.97,
+   "frames": 710,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 423,
+     "shot_type": "wide",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.64,
+     "exposure_ok": true,
+     "shake": 0.64,
+     "best": 211,
+     "speech": []
+    },
+    {
+     "start": 423,
+     "end": 689,
+     "shot_type": "medium",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "pan",
+     "sharp": 0.96,
+     "exposure_ok": true,
+     "shake": 0.7,
+     "best": 556,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0004",
+   "source": "projects/fixture/footage/C0004.MP4",
+   "fps": 59.94,
+   "frames": 608,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 329,
+     "shot_type": "medium",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "pan",
+     "sharp": 0.53,
+     "exposure_ok": true,
+     "shake": 0.77,
+     "best": 164,
+     "speech": []
+    },
+    {
+     "start": 329,
+     "end": 608,
+     "shot_type": "close",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "static",
+     "sharp": 0.78,
+     "exposure_ok": true,
+     "shake": 0.24,
+     "best": 468,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0005",
+   "source": "projects/fixture/footage/C0005.MP4",
+   "fps": 59.94,
+   "frames": 1148,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 494,
+     "shot_type": "close",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.61,
+     "exposure_ok": false,
+     "shake": 0.47,
+     "best": 247,
+     "speech": [
+      [
+       10,
+       60
+      ]
+     ]
+    },
+    {
+     "start": 494,
+     "end": 1118,
+     "shot_type": "wide",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "pan",
+     "sharp": 0.94,
+     "exposure_ok": false,
+     "shake": 0.55,
+     "best": 806,
+     "speech": [
+      [
+       504,
+       554
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C0006",
+   "source": "projects/fixture/footage/C0006.MP4",
+   "fps": 29.97,
+   "frames": 852,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 402,
+     "shot_type": "wide",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.99,
+     "exposure_ok": true,
+     "shake": 0.54,
+     "best": 201,
+     "speech": []
+    },
+    {
+     "start": 402,
+     "end": 575,
+     "shot_type": "medium",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.92,
+     "exposure_ok": true,
+     "shake": 0.77,
+     "best": 488,
+     "speech": []
+    },
+    {
+     "start": 575,
+     "end": 852,
+     "shot_type": "close",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.74,
+     "exposure_ok": true,
+     "shake": 0.57,
+     "best": 713,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0007",
+   "source": "projects/fixture/footage/C0007.MP4",
+   "fps": 59.94,
+   "frames": 757,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 757,
+     "shot_type": "medium",
+     "tags": [
+      "dusk",
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.74,
+     "exposure_ok": true,
+     "shake": 0.23,
+     "best": 378,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0008",
+   "source": "projects/fixture/footage/C0008.MP4",
+   "fps": 59.94,
+   "frames": 563,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 563,
+     "shot_type": "close",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "pan",
+     "sharp": 0.99,
+     "exposure_ok": true,
+     "shake": 0.07,
+     "best": 281,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0009",
+   "source": "projects/fixture/footage/C0009.MP4",
+   "fps": 29.97,
+   "frames": 767,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 255,
+     "shot_type": "wide",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.49,
+     "exposure_ok": true,
+     "shake": 0.24,
+     "best": 127,
+     "speech": []
+    },
+    {
+     "start": 255,
+     "end": 628,
+     "shot_type": "medium",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "pan",
+     "sharp": 0.92,
+     "exposure_ok": true,
+     "shake": 0.04,
+     "best": 441,
+     "speech": []
+    },
+    {
+     "start": 628,
+     "end": 767,
+     "shot_type": "close",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.43,
+     "exposure_ok": true,
+     "shake": 0.57,
+     "best": 697,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0010",
+   "source": "projects/fixture/footage/C0010.MP4",
+   "fps": 59.94,
+   "frames": 915,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 820,
+     "shot_type": "medium",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.99,
+     "exposure_ok": true,
+     "shake": 0.4,
+     "best": 410,
+     "speech": [
+      [
+       10,
+       60
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C0011",
+   "source": "projects/fixture/footage/C0011.MP4",
+   "fps": 59.94,
+   "frames": 1796,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 443,
+     "shot_type": "close",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.45,
+     "exposure_ok": true,
+     "shake": 0.48,
+     "best": 221,
+     "speech": []
+    },
+    {
+     "start": 443,
+     "end": 703,
+     "shot_type": "wide",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "pan",
+     "sharp": 0.52,
+     "exposure_ok": true,
+     "shake": 0.33,
+     "best": 573,
+     "speech": []
+    },
+    {
+     "start": 703,
+     "end": 1345,
+     "shot_type": "medium",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.49,
+     "exposure_ok": true,
+     "shake": 0.03,
+     "best": 1024,
+     "speech": []
+    },
+    {
+     "start": 1345,
+     "end": 1796,
+     "shot_type": "close",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "pan",
+     "sharp": 0.59,
+     "exposure_ok": true,
+     "shake": 0.77,
+     "best": 1570,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0012",
+   "source": "projects/fixture/footage/C0012.MP4",
+   "fps": 29.97,
+   "frames": 830,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 244,
+     "shot_type": "wide",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "pan",
+     "sharp": 0.68,
+     "exposure_ok": true,
+     "shake": 0.42,
+     "best": 122,
+     "speech": []
+    },
+    {
+     "start": 244,
+     "end": 576,
+     "shot_type": "medium",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "static",
+     "sharp": 0.76,
+     "exposure_ok": true,
+     "shake": 0.45,
+     "best": 410,
+     "speech": []
+    },
+    {
+     "start": 576,
+     "end": 830,
+     "shot_type": "close",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "pan",
+     "sharp": 0.96,
+     "exposure_ok": true,
+     "shake": 0.41,
+     "best": 703,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0013",
+   "source": "projects/fixture/footage/C0013.MP4",
+   "fps": 59.94,
+   "frames": 1048,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 714,
+     "shot_type": "medium",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.54,
+     "exposure_ok": true,
+     "shake": 0.24,
+     "best": 357,
+     "speech": []
+    },
+    {
+     "start": 714,
+     "end": 1048,
+     "shot_type": "close",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "pan",
+     "sharp": 0.71,
+     "exposure_ok": true,
+     "shake": 0.44,
+     "best": 881,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0014",
+   "source": "projects/fixture/footage/C0014.MP4",
+   "fps": 59.94,
+   "frames": 494,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 494,
+     "shot_type": "close",
+     "tags": [
+      "aurora",
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.75,
+     "exposure_ok": true,
+     "shake": 0.02,
+     "best": 247,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0015",
+   "source": "projects/fixture/footage/C0015.MP4",
+   "fps": 29.97,
+   "frames": 645,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 328,
+     "shot_type": "wide",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.44,
+     "exposure_ok": true,
+     "shake": 0.5,
+     "best": 164,
+     "speech": [
+      [
+       10,
+       60
+      ]
+     ]
+    },
+    {
+     "start": 328,
+     "end": 601,
+     "shot_type": "medium",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "pan",
+     "sharp": 0.81,
+     "exposure_ok": true,
+     "shake": 0.28,
+     "best": 464,
+     "speech": [
+      [
+       338,
+       388
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C0016",
+   "source": "projects/fixture/footage/C0016.MP4",
+   "fps": 59.94,
+   "frames": 1411,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 726,
+     "shot_type": "medium",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "pan",
+     "sharp": 0.41,
+     "exposure_ok": false,
+     "shake": 0.05,
+     "best": 363,
+     "speech": []
+    },
+    {
+     "start": 726,
+     "end": 1411,
+     "shot_type": "close",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "static",
+     "sharp": 0.98,
+     "exposure_ok": false,
+     "shake": 0.2,
+     "best": 1068,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0017",
+   "source": "projects/fixture/footage/C0017.MP4",
+   "fps": 59.94,
+   "frames": 1081,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 630,
+     "shot_type": "close",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "static",
+     "sharp": 0.59,
+     "exposure_ok": true,
+     "shake": 0.29,
+     "best": 315,
+     "speech": []
+    },
+    {
+     "start": 630,
+     "end": 1075,
+     "shot_type": "wide",
+     "tags": [
+      "lofoten"
+     ],
+     "motion": "pan",
+     "sharp": 0.62,
+     "exposure_ok": true,
+     "shake": 0.48,
+     "best": 852,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0018",
+   "source": "projects/fixture/footage/C0018.MP4",
+   "fps": 29.97,
+   "frames": 437,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 244,
+     "shot_type": "wide",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.86,
+     "exposure_ok": true,
+     "shake": 0.02,
+     "best": 122,
+     "speech": []
+    },
+    {
+     "start": 244,
+     "end": 437,
+     "shot_type": "medium",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.84,
+     "exposure_ok": true,
+     "shake": 0.25,
+     "best": 340,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0019",
+   "source": "projects/fixture/footage/C0019.MP4",
+   "fps": 59.94,
+   "frames": 772,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 769,
+     "shot_type": "medium",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.54,
+     "exposure_ok": true,
+     "shake": 0.15,
+     "best": 384,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0020",
+   "source": "projects/fixture/footage/C0020.MP4",
+   "fps": 59.94,
+   "frames": 1053,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 700,
+     "shot_type": "close",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "pan",
+     "sharp": 0.46,
+     "exposure_ok": true,
+     "shake": 0.26,
+     "best": 350,
+     "speech": [
+      [
+       10,
+       60
+      ]
+     ]
+    },
+    {
+     "start": 700,
+     "end": 1053,
+     "shot_type": "wide",
+     "tags": [
+      "tromso"
+     ],
+     "motion": "static",
+     "sharp": 0.9,
+     "exposure_ok": true,
+     "shake": 0.35,
+     "best": 876,
+     "speech": [
+      [
+       710,
+       760
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C0021",
+   "source": "projects/fixture/footage/C0021.MP4",
+   "fps": 29.97,
+   "frames": 803,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 175,
+     "shot_type": "wide",
+     "tags": [
+      "lofoten",
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.6,
+     "exposure_ok": true,
+     "shake": 0.52,
+     "best": 87,
+     "speech": []
+    },
+    {
+     "start": 175,
+     "end": 586,
+     "shot_type": "medium",
+     "tags": [
+      "lofoten",
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.67,
+     "exposure_ok": true,
+     "shake": 0.18,
+     "best": 380,
+     "speech": []
+    },
+    {
+     "start": 586,
+     "end": 745,
+     "shot_type": "close",
+     "tags": [
+      "lofoten",
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.72,
+     "exposure_ok": true,
+     "shake": 0.15,
+     "best": 665,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0022",
+   "source": "projects/fixture/footage/C0022.MP4",
+   "fps": 59.94,
+   "frames": 1543,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 792,
+     "shot_type": "medium",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "pan",
+     "sharp": 0.51,
+     "exposure_ok": true,
+     "shake": 0.22,
+     "best": 396,
+     "speech": []
+    },
+    {
+     "start": 792,
+     "end": 1543,
+     "shot_type": "close",
+     "tags": [
+      "aurora"
+     ],
+     "motion": "static",
+     "sharp": 0.79,
+     "exposure_ok": true,
+     "shake": 0.65,
+     "best": 1167,
+     "speech": []
+    }
+   ]
+  },
+  {
+   "id": "C0023",
+   "source": "projects/fixture/footage/C0023.MP4",
+   "fps": 59.94,
+   "frames": 934,
+   "width": 3840,
+   "height": 2160,
+   "shots": [
+    {
+     "start": 0,
+     "end": 325,
+     "shot_type": "close",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.58,
+     "exposure_ok": true,
+     "shake": 0.64,
+     "best": 162,
+     "speech": []
+    },
+    {
+     "start": 325,
+     "end": 743,
+     "shot_type": "wide",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "pan",
+     "sharp": 0.61,
+     "exposure_ok": true,
+     "shake": 0.33,
+     "best": 534,
+     "speech": []
+    },
+    {
+     "start": 743,
+     "end": 934,
+     "shot_type": "medium",
+     "tags": [
+      "dusk"
+     ],
+     "motion": "static",
+     "sharp": 0.65,
+     "exposure_ok": true,
+     "shake": 0.74,
+     "best": 838,
+     "speech": []
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,537 @@
+{
+ "schema_version": 1,
+ "name": "polar-night",
+ "summary": "纪录片式旅行 vlog：旁白和底部字幕带着走，4–5 秒一刀、97% 硬切；镜头的运动来自无人机、车和步行，不靠后期推拉；冷蓝暗调跟着光走；左侧时间戳和黑底叙事卡交代时间地点",
+ "sources": [
+  {
+   "id": "BV1sHqPBLExZ",
+   "url": "https://www.bilibili.com/video/BV1sHqPBLExZ",
+   "measured": "2026-11-01",
+   "title": "当太阳不再升起，我们的世界会变成什么样？（第 1 集「0.9 度的太阳」，Linksphotograph）"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1786.4,
+   "mad": 0.0,
+   "p10": 1786.4,
+   "p90": 1786.4,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0256,
+    "shot_len_s": {
+     "median": 4.688,
+     "mad": 1.051,
+     "p10": 2.265,
+     "p90": 6.463,
+     "n": 10
+    },
+    "notes": "冷开场：旁白发问，配人物剪影和冷蓝远景，第一个时间戳在 8 s 左右出现"
+   },
+   {
+    "role": "intro",
+    "share": 0.049,
+    "shot_len_s": {
+     "median": 5.255,
+     "mad": 1.185,
+     "p10": 3.603,
+     "p90": 10.407,
+     "n": 14
+    },
+    "transition_in": "dip_to_black",
+    "notes": "从黑场进入；交代背景和行程，可以对镜头讲；末尾接黑底叙事卡和集标题卡"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8869,
+    "shot_len_s": {
+     "median": 4.805,
+     "mad": 1.935,
+     "p10": 2.169,
+     "p90": 11.221,
+     "n": 270
+    },
+    "notes": "一章一个地点或一个时段，章首 4 s 左右出左侧时间戳；章节之间直接硬切"
+   },
+   {
+    "role": "interlude",
+    "share": 0.0276,
+    "shot_len_s": {
+     "median": 3.203,
+     "mad": 0.534,
+     "p10": 2.302,
+     "p90": 4.538,
+     "n": 11
+    },
+    "notes": "参考里是赞助口播；brief 里给 interlude_tags 才剪，否则跳过"
+   },
+   {
+    "role": "ending",
+    "share": 0.0109,
+    "shot_len_s": {
+     "median": 2.502,
+     "mad": 2.136,
+     "p10": 0.234,
+     "p90": 6.99,
+     "n": 6
+    },
+    "transition_in": "dip_to_black",
+    "notes": "淡出进黑底叙事卡，再接下集预告和系列名，全部淡入淡出"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 0.932,
+  "shot_types": {
+   "wide": 0.402,
+   "medium": 0.214,
+   "aerial": 0.157,
+   "selfie": 0.142,
+   "detail": 0.075,
+   "close": 0.011
+  },
+  "opening": "冷开场：旁白发问，配目的地的人物剪影和冷蓝远景，左侧叠时间戳",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 4.705,
+   "mad": 1.835,
+   "p10": 2.169,
+   "p90": 11.078,
+   "n": 311
+  },
+  "cuts_per_min": 10.41,
+  "min_shot_s": 1.55
+ },
+ "beat": {
+  "hit_rate": 0.2917,
+  "baseline": 0.0631,
+  "offset_frames": 0,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.971
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0161,
+   "frames": 8,
+   "where": "any"
+  },
+  {
+   "type": "dissolve",
+   "share": 0.0129,
+   "frames": 27,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0557,
+   "amplitude_px": 2.9
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "photo_insert",
+   "shot": 74,
+   "note": "竖拍/3:2 照片加黑边居中，1–4 s 一张，连成小相册（还有 142–145、154–157、241–243）"
+  },
+  {
+   "type": "split_screen",
+   "shot": 276,
+   "note": "左右对比 2018 / 2025，下方标年份"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 282,
+   "note": "左上角小窗"
+  },
+  {
+   "type": "glitch_bars",
+   "shot": 101,
+   "note": "0.7 s 彩条，单次"
+  },
+  {
+   "type": "cg_insert",
+   "shot": 10,
+   "note": "地球 CG，配科普旁白"
+  },
+  {
+   "type": "ai_generated_insert",
+   "shot": 176,
+   "note": "176–181 有 Veo 水印：生成的木屋/桑拿画面配历史旁白。内容素材，不复刻"
+  }
+ ],
+ "grade": {
+  "summary": "极夜冷蓝暗调：暗部和中间调偏蓝，暗部占比高，对比偏低；日出日落、室内灯光保留暖色，不往冷色拉",
+  "look": {
+   "L01": {
+    "median": 1.227,
+    "mad": 0.97
+   },
+   "L50": {
+    "median": 26.63,
+    "mad": 12.414
+   },
+   "L99": {
+    "median": 63.446,
+    "mad": 7.434
+   },
+   "Lstd": {
+    "median": 15.185,
+    "mad": 3.487
+   },
+   "shadow": {
+    "median": 0.393,
+    "mad": 0.238
+   },
+   "chroma": {
+    "median": 15.16,
+    "mad": 5.369
+   },
+   "sh_a": {
+    "median": 2.719,
+    "mad": 2.281
+   },
+   "sh_b": {
+    "median": -5.594,
+    "mad": 8.883
+   },
+   "mid_a": {
+    "median": 2.336,
+    "mad": 3.391
+   },
+   "mid_b": {
+    "median": -6.821,
+    "mad": 13.031
+   },
+   "hi_a": {
+    "median": 0.016,
+    "mad": 2.016
+   },
+   "hi_b": {
+    "median": -1.906,
+    "mad": 5.946
+   },
+   "vignette": {
+    "median": 0.895,
+    "mad": 0.367
+   },
+   "hue_hist": [
+    0.0186,
+    0.0642,
+    0.0255,
+    0.0016,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0387,
+    0.8382,
+    0.0098,
+    0.0035
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "宋体",
+   "fallback_fonts": [
+    "Songti SC",
+    "STSong"
+   ],
+   "height_frac": 0.0689,
+   "position": [
+    0.101,
+    0.512
+   ],
+   "color": [
+    0.855,
+    0.863,
+    0.867
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 3.75,
+   "offset_s": 4.07,
+   "template": "Text+",
+   "per": "chapter"
+  },
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0607,
+   "position": [
+    0.501,
+    0.487
+   ],
+   "color": [
+    0.859,
+    0.859,
+    0.859
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 2.0,
+   "offset_s": 0.1,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0418,
+   "position": [
+    0.5,
+    0.952
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 80.0,
+   "mad": 0.0,
+   "p10": 80.0,
+   "p90": 80.0,
+   "n": 1
+  },
+  "mood": "旁白主导（人声 65%），音乐低速铺底；Claude 听不到，只按测量推断",
+  "lufs": -15.9,
+  "duck_db": 0.4,
+  "sfx": [],
+  "music_changes": "约每章 21.8 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "probe",
+   "how": "add_transition Dip To Color Dissolve"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "probe",
+   "how": "单独时间线 insert_fusion_title + set_title_text，再放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "probe",
+   "how": "set_subtitle_preset；烧录未验证，备选 Fusion 标题"
+  },
+  {
+   "element": "调色",
+   "route": "offline_drx",
+   "status": "probe",
+   "how": "look DRX（LUT+CDL+颗粒）每段套用一次"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "Day2 拉普兰的早晨@133": 5.1715,
+     "里斯山国家公园徒步@272": 4.972,
+     "日落、扎营、极光@686": 5.205,
+     "风暴、小木屋、桑拿@1005": 4.905,
+     "回到市区 Rovaniemi@1432": 3.67
+    },
+    "spread": 0.3087
+   },
+   "transitions": {
+    "冷开场：假如太阳不再升起@0": {
+     "hard_cut": 8,
+     "dissolve": 1
+    },
+    "极夜科普 + 前往拉普兰@46": {
+     "dip_to_black": 1,
+     "hard_cut": 13
+    },
+    "Day2 拉普兰的早晨@133": {
+     "hard_cut": 22
+    },
+    "里斯山国家公园徒步@272": {
+     "hard_cut": 73
+    },
+    "日落、扎营、极光@686": {
+     "hard_cut": 39
+    },
+    "帐篷里的赞助口播@956": {
+     "hard_cut": 11
+    },
+    "风暴、小木屋、桑拿@1005": {
+     "hard_cut": 74,
+     "dip_to_black": 1,
+     "dissolve": 2
+    },
+    "回到市区 Rovaniemi@1432": {
+     "hard_cut": 58,
+     "dissolve": 1
+    },
+    "结尾叙事卡 + 下集预告@1767": {
+     "dip_to_black": 3,
+     "hard_cut": 3
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "Day2 拉普兰的早晨@133": 0.3182,
+     "里斯山国家公园徒步@272": 0.2192,
+     "日落、扎营、极光@686": 0.1282,
+     "风暴、小木屋、桑拿@1005": 0.2338,
+     "回到市区 Rovaniemi@1432": 0.1864
+    },
+    "spread": 0.8668
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "Day2 拉普兰的早晨@133": 32.898,
+     "里斯山国家公园徒步@272": 43.9515,
+     "日落、扎营、极光@686": 14.294,
+     "风暴、小木屋、桑拿@1005": 17.827,
+     "回到市区 Rovaniemi@1432": 19.063
+    },
+    "spread": 1.5558
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "Day2 拉普兰的早晨@133": 13.726,
+     "里斯山国家公园徒步@272": 18.3285,
+     "日落、扎营、极光@686": 12.125,
+     "风暴、小木屋、桑拿@1005": 13.0315,
+     "回到市区 Rovaniemi@1432": 16.332
+    },
+    "spread": 0.452
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "Day2 拉普兰的早晨@133": -21.297,
+     "里斯山国家公园徒步@272": -17.4375,
+     "日落、扎营、极光@686": -9.2035,
+     "风暴、小木屋、桑拿@1005": 3.984,
+     "回到市区 Rovaniemi@1432": 12.484
+    },
+    "spread": 3.6705
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "Day2 拉普兰的早晨@133": 20.225,
+     "里斯山国家公园徒步@272": 16.469,
+     "日落、扎营、极光@686": 13.518,
+     "风暴、小木屋、桑拿@1005": 15.05,
+     "回到市区 Rovaniemi@1432": 14.1395
+    },
+    "spread": 0.4456
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1sHqPBLExZ",
+    "n_cuts": 72,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.72,
+    "bpm": 83.33,
+    "hit_rate": 0.2917,
+    "baseline": 0.0631,
+    "lift": 4.626,
+    "downbeat_hit_rate": 0.2361,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 63,
+    "judged": 14,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 30,
+    "judged": 10,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 39,
+  "onsets_per_min": 167.0,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ }
+}
