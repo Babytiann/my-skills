@@ -107,7 +107,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 
 - **不上传。** 参考片和用户素材都不发给任何视频理解服务，分析只在本机做。
 - **版权。** 参考片只用于本地研究剪法。风格包只存测量出的参数和中性描述，不带参考片的画面、音乐、字体进用户的成片；参考片用完移进废纸篓。不绕过付费或充电内容，不给 opencli 传 `--force`。
-- **Resolve。** 打开 Resolve、新建或切换工程、调用实时 MCP 之前先问用户。不在用户正在剪的工程上直接试验，试验用 `vlog-style-QA-*` 一次性工程。不在仓库里跑 MCP 的 `install.py`。
+- **Resolve。** 建工程、切工程由脚本自动完成，用户不用操作界面（做法见 resolve-routes.md「自动建工程」）。切走前先保存当前工程。不在用户正在剪的工程上直接试验，试验用 `vlog-style-QA-*` 一次性工程。不在仓库里跑 MCP 的 `install.py`。碰到只能人点的对话框就停下来告诉用户。
 - **装东西、改配置先问。** 包括下载模型以外的任何安装、改 Resolve 偏好设置、改 MCP 注册。
 - **只读回不算通过。** 调色、标题、Fusion 有没有生效要看导出的静帧。
 - **删除一律用 `trash`。** 用户的本地参考文件和原始素材永远不动。
@@ -126,5 +126,5 @@ uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg
 ## 10. 当前状态
 
 - 测量、汇总、剪辑计划、压低、读回和调色对照已经写完，合成测试全部通过。
-- Resolve 探针还没跑：路线表里标「待探针」的项（fusion 转场、Dip To Color、动态推拉、标题时间线、DRX、字幕烧录、变速）在本机都没验证过。第一次真实 apply 之前，先征得用户同意，按 resolve-routes.md 的探针清单跑一遍，把结论写回路线表。
-- 第一个参考是 BV1sHqPBLExZ（Linksphotograph《当太阳不再升起》第 1 集，约 30 分钟，内嵌字幕），已炼成 `styles/polar-night/` 草稿，等用户审 STYLE.md。只有一个参考，按章节比较一致性；参考缓存在用户确认前保留。
+- Resolve 探针 2026-11-02 在本机（Studio 21.1.1.10 + MCP 4.15.3）跑完，12 项都有结论，写进了 resolve-routes.md 的「本机」一列和常见坑。换了路线的：标题写字（`fusion_comp bulk_set_inputs`）、调色（中性 DRX + merge + `graph set_lut`）、片段音量（`AudioVolume`）、推拉（最小 `.comp` 模板）、字幕 .srt（空时间线上旧式 append）。变速曲线的离线 `.drt` 否掉，改手动。还没探针：划像、遮幅、Glow。否掉的做法见 learnings.md 2026-11-02。Resolve 或 MCP 升级后重跑探针。
+- 第一个参考是 BV1sHqPBLExZ（Linksphotograph《当太阳不再升起》第 1 集，约 30 分钟，内嵌字幕），已炼成 `styles/polar-night/`，用户已审过 STYLE.md。只有一个参考，按章节比较一致性；参考缓存已清。

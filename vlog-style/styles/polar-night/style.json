@@ -357,26 +357,26 @@
   {
    "element": "黑场过渡",
    "route": "live_api",
-   "status": "probe",
-   "how": "add_transition Dip To Color Dissolve"
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
   },
   {
    "element": "地点标题/章节卡",
    "route": "live_api",
-   "status": "probe",
-   "how": "单独时间线 insert_fusion_title + set_title_text，再放到 V3"
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
   },
   {
    "element": "字幕",
    "route": "live_api",
-   "status": "probe",
-   "how": "set_subtitle_preset；烧录未验证，备选 Fusion 标题"
+   "status": "verified",
+   "how": "导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录"
   },
   {
    "element": "调色",
    "route": "offline_drx",
-   "status": "probe",
-   "how": "look DRX（LUT+CDL+颗粒）每段套用一次"
+   "status": "verified",
+   "how": "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"
   },
   {
    "element": "音乐压低",

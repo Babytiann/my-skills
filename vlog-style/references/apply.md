@@ -107,26 +107,57 @@ python3 -I -B duck.py --project <项目>          # 有人声又有音乐时
 ## 7. 用 MCP 搭时间线
 
 前提：
-- 用户同意打开或新建工程。
+- 用户确认了上一节的剪辑计划。建工程、切工程由脚本完成，用户不用操作 Resolve 界面；Resolve 没开时 MCP 会自己启动它。
 - Resolve 偏好设置 System > General 里「External scripting using」为 Local。
 - 本会话里能看到 MCP 工具。注册 MCP 之后要重启 Claude Code 才能看到。
 
-工具名以 MCP 工具列表为准。每一步都检查返回值，失败不会报错（见 resolve-routes.md 常见坑第 1 条）。
+工具名以 MCP 工具列表为准，下面的调用都在 21.1.1.10 + MCP 4.15.3 上探针过（resolve-routes.md）。每一步都检查返回值，失败不会报错（常见坑第 1 条）。每一步做完都 `save`：Resolve 崩溃后重开不弹窗，但没保存的改动会丢。MCP 的破坏性操作会把当前文件夹留在 Archive 上，append 或导入之前先 `media_pool set_current_folder {path:"Master"}`。
 
-1. **工程。** 先保存用户当前的工程。新建 `vlog-<项目>-v<n>`；试剪用 `vlog-style-QA-<项目>`。
-2. **设置。** 分辨率、帧率取 `cut_plan.timeline`，色彩管理设为 Rec.709 Gamma 2.4。必须在导入任何媒体之前设好：帧率在时间线有媒体后就锁定了，WAV 也会锁定导入时的帧率。
+1. **工程。** 先 `save` 用户当前的工程，再按 resolve-routes.md「自动建工程」新建 `vlog-<项目>-v<n>`（试剪用 `vlog-style-QA-<项目>`）：advanced server 生成空 `.drp` → `safe_project_import`（先 dry_run）→ `load` → 马上 `save`。不在用户正在剪的工程上直接改。
+2. **设置。** 先删掉模板自带的空时间线（confirm_token 两步），再写帧率：`timelineFrameRate` 只有工程里一条时间线都没有时才写得进去。帧率和分辨率取 `cut_plan.timeline`，色彩管理设为 Rec.709 Gamma 2.4。分辨率本机没探针，写完读回。播放帧率写不进去，进手动收尾清单。这些都要在导入任何媒体之前做完：WAV 会锁定导入时的帧率。然后建主时间线，按需要加轨道。
 3. **导入。** 用 `paths.py resolve <相对路径>` 现拼绝对路径，导入 `video[].source`、压低版音乐床（`plan/ducked.json` 里的 `bed`）和原始音乐。绝对路径不写进任何文件。
-4. **放片段。** 用 V1 的全部条目一次 append：每条 clipInfo 是 mediaPoolItem、`startFrame=src_in`、`endFrame=src_out`、`recordFrame=起始帧+rec_in`、`trackIndex`。`audio: mute` 的条目只放视频（mediaType 1）。先读回时间线起始帧，不要假设从 0 开始。
-5. **读回核对。** 读回每个条目，整理成 compare.py 的格式（见下一节），跑 `compare.py readback`。不通过就删掉这条时间线，查原因后重建新版本。已经放上去的条目无法移动或修剪。
-6. **转场。** 从最后一条往前，对有 `transition_out` 的条目按 `transition_out.resolve` 的 type 和 category 加转场，位置在条目尾部。
-7. **变速。** 对 `speed` 不是 1 的条目调 `set_speed`。时间线是 50p 或 60p 时再加 `set_retime optical_flow`。append 后再改速度时时长会不会变，等探针第 10 项确认；不行就整条时间线改由 advanced server 生成 `.drt` 再导入。
-8. **推拉。** 对有 `motion` 的条目，用 ImportFusionComp 导入 Transform 关键帧 comp，从 `from` 缩放到 `to`。comp 模板在探针时做好，放在 `<root>/styles/<风格>/fusion/`。
-9. **标题。** `titles[]` 每条单独建一个时间线，在里面 `insert_fusion_title`（`template`）+ `set_title_text`，再回到主时间线，把那个时间线当片段放到 V3 的 `rec_in`，时长为 `rec_out − rec_in`。`style.position` 的原点在左上，Fusion 的 Center 原点在左下，写入时 y 要换成 1 − y。
-10. **调色。** 有 `grade.drx` 时每个条目套用一次（套用会替换整个节点图）；只有 LUT 时用 `set_lut`。
-11. **声音。** 压低版音乐床放 A2，原始音乐放 A3 并静音。片尾淡出等用 `set_fades`。
-12. **字幕。** 按 style.text.subtitle 做，路线见 resolve-routes.md。
-13. **标记。** `markers[]` 打到时间线上；`Timeline.AddMarker` 用相对时间线起点的帧号，直接用 `rec`。第一个标记是手动收尾清单，其中包括手动设置播放帧率。
-14. **保存工程。**
+4. **字幕文件（有 .srt 时）。** 导入 .srt 后，**在放任何片段之前**用只传 `clip_ids` 的旧式 append 把它放到空的主时间线上，字幕按 .srt 里的时间落位。带 clipInfos 的 append 放 .srt 会让 Resolve 崩溃。
+5. **放片段。** 用 V1 的全部条目一次 append：每条 clipInfo 是 mediaPoolItem、`startFrame=src_in`、`endFrame=src_out`、`recordFrame=rec_in`（MCP 的 `record_frame` 默认相对起点）、`trackIndex`。`speed` 不是 1 的条目 `endFrame` 另算，见第 8 步。`audio: mute` 的条目只放视频（mediaType 1）。先读回时间线起始帧，不要假设从 0 开始。
+6. **读回核对。** 读回每个条目，整理成 compare.py 的格式（见下一节），跑 `compare.py readback`。源帧号用 `get_source_start_frame` / `get_source_end_frame`，不用 snapshot（混帧率素材差一帧）。不通过就删掉这条时间线，查原因后重建新版本。已经放上去的条目无法移动或修剪。
+7. **转场。** 从最后一条往前，对有 `transition_out` 的条目按 `transition_out.resolve` 的 type 和 category 加转场，传短名，`position:end`、`alignment:center`。返回 `success:false` 多半是余量不够，改成硬切并告诉用户。
+8. **变速。** 对 `speed` 不是 1 的条目调 `set_speed {options:{Percentage: speed × 100}}`。改速度不改条目在时间线上的时长，条目从源入点起按新速度播。cut_plan 里的 `src_out` 是放慢后实际播到的位置，所以第 5 步 append 这类条目时 `endFrame` 要按 100% 速度算：`src_in + round((rec_out − rec_in) × source_fps / 时间线帧率)`，素材在 `src_out` 之后要有这么长；读回时长不对就把这条改成 100% 并告诉用户。时间线是 50p 或 60p 时再加 `set_retime optical_flow`。套完在条目首尾导出静帧核对源帧。变速曲线没有可用的自动路线（离线 `.drt` 本机否掉），写进手动收尾清单。
+9. **推拉。** 对有 `motion` 的条目，每条写一个 `.comp`（写到项目的 `plan/fusion/<条目 id>.comp`），用 `timeline_item_fusion import_comp {path, track_type:"video", track_index:1, item_index}` 挂上。`N = rec_out − rec_in − 1`，`a = from`，`b = to`；comp 第 0 帧是条目第一帧，末帧关键帧必须放在 N。导出首、中、尾三张静帧核对缩放。模板不写素材路径，MediaIn 自动绑定到条目的素材：
+
+   ```
+   Composition {
+   	Tools = ordered() {
+   		MediaIn1 = Loader { Inputs = { }, },
+   		Transform1Size = BezierSpline {
+   			SplineColor = { Red = 225, Green = 0, Blue = 225 },
+   			NameSet = true,
+   			KeyFrames = {
+   				[0] = { a, RH = { N/3, a + (b − a)/3 }, Flags = { Linear = true } },
+   				[N] = { b, LH = { 2N/3, a + 2(b − a)/3 }, Flags = { Linear = true } }
+   			}
+   		},
+   		Transform1 = Transform {
+   			Inputs = {
+   				Size = Input { SourceOp = "Transform1Size", Source = "Value", },
+   				Input = Input { SourceOp = "MediaIn1", Source = "Output", },
+   			},
+   		},
+   		MediaOut1 = Saver {
+   			Inputs = {
+   				Index = Input { Value = "0", },
+   				Input = Input { SourceOp = "Transform1", Source = "Output", },
+   			},
+   		},
+   	},
+   }
+   ```
+
+   花括号里的 a、b、N 写成算好的数字。
+10. **标题。** `titles[]` 每条单独建一个时间线，在里面 `insert_fusion_title`（`template`），再用 `fusion_comp bulk_set_inputs` 写标题条目 comp 里 `Template` 节点的 StyledText、Font、Style、Size、Center（不用 `set_title_text`：它只是猜着用 SetProperty 写文字，也不管字体）。两种字体（比如衬线时间 + 黑体地名）：在同一个 comp 里 `add_tool` 一个 TextPlus（`Line2`）和一个 Merge，Background ← Template，Foreground ← Line2，MediaOut1.Input ← Merge1。`style.position` 的原点在左上，Fusion 的 Center 原点在左下，写入时 y 要换成 1 − y。回到主时间线，把标题时间线当片段放到 V3 的 `rec_in`，`endFrame` 给 `rec_out − rec_in`，超过 5 秒也行。标题时间线的媒体池条目 id 要用只读 Python 脚本按名字在媒体池里找。导出静帧核对文字。
+11. **调色。** 风格包的 look DRX 要按这个配方生成：`drx generate` 出一张中性图做底，`drx merge` 把 CDL 和颗粒作为 newNodes 加进去（底图里不要放真实节点，会被有损重写；不要用 `drx lut_apply`，它会丢掉一级调色）。每个条目 `safe_apply_drx` 套一次（套用会替换整个节点图，confirm_token 两步），再 `graph set_lut` 把 LUT 套到节点 1。LUT 先 `lut install` 装进 MCP 子目录并 `refresh_luts`。只有 LUT 时直接 `graph set_lut`。导出静帧跑 `compare.py look`。
+12. **声音。** 压低版音乐床放 A2，原始音乐放 A3 并静音。片段音量用 `timeline_item set_property {key:"AudioVolume", value:<dB>}`，不要用 `set_audio Volume`（它写的是旧键，什么都不改）。片尾淡出等用 `set_fades {options:{FadeIn, FadeOut}}`，整数帧。
+13. **字幕样式。** 按 style.text.subtitle 调 `timeline_ai set_subtitle_preset`（先 dry_run），用 `inputs` 写 font、fontStyle、size、position。它会导出再导入出一条新的修订时间线，原时间线归档保留，所以放在其他步骤之后、打标记之前做，后面的步骤都在新时间线上。静帧里看不到字幕，要烧录渲染一小段核对位置（换算见风格包 STYLE.md）。导出成片时设 `ExportSubtitle:true`、`SubtitleFormat:"BurnIn"`。
+14. **标记。** `markers[]` 打到时间线上；`Timeline.AddMarker` 用相对时间线起点的帧号，直接用 `rec`。第一个标记是手动收尾清单，其中包括手动设置播放帧率。
+15. **保存工程。**
 
 ## 8. 验收
 

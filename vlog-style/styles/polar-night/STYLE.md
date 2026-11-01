@@ -115,7 +115,7 @@ look card（每个镜头关键帧的 Lab 中位数 ± MAD，测之前遮掉字�
 | 暗角 | 0.90 | 见第 8 节 |
 
 - **跟着光走：不一致。** 各章中间调的 b 从 −21 到 +12：白天户外两章 −17 到 −21、L50 33–44；日落扎营 −9，风暴木屋 +4，市区 +12，这三章 L50 14–19。复刻时不要套一个统一的冷色 LUT，而是让户外蓝调时刻更冷、室内灯光保留暖色。
-- LUT / DRX 还没做：要等 Resolve 探针确认 DRX 和 CDL 能用。
+- LUT / DRX 还没做。本机探针（2026-11-02）已确认 CDL、颗粒、LUT 都能套上，做法见第 12 节「调色」；第一次 apply 时按上面的分章思路做 DRX。
 - 核对：每章导出 2–3 张静帧跑 `compare.py look`。容差取 MAD，各章差得大，所以容差很宽。白天户外的静帧还要额外对照 stills/ 里的冷色帧，室内的对照暖色帧。
 
 ## 10. 文字
@@ -158,19 +158,22 @@ look card（每个镜头关键帧的 Lab 中位数 ± MAD，测之前遮掉字�
 
 | 元素 | 路线 | 本机状态 |
 |---|---|---|
-| 剪辑点 | append_to_timeline clipInfos，逐条读回 | 已验证（贡献者） |
-| 叠化 | add_transition Cross Dissolve，从后往前加 | 已验证（贡献者） |
-| 黑场过渡 | add_transition Dip To Color Dissolve | 待探针 |
-| 时间戳 / 叙事卡 | 单独时间线 insert_fusion_title + set_title_text，再放到 V3 | 待探针 |
-| 字幕 | set_subtitle_preset；烧录未验证，备选 Fusion 标题 | 待探针 |
-| 调色 | look DRX（LUT + CDL），每段套一次 | 待探针 |
+| 剪辑点 | append_to_timeline clipInfos，逐条读回 | 已验证（本机探针 2026-11-02） |
+| 叠化 | add_transition Cross Dissolve，从后往前加 | 已验证（本机探针 2026-11-02） |
+| 黑场过渡 | add_transition Dip To Color Dissolve，从后往前加 | 已验证（本机探针 2026-11-02） |
+| 时间戳 / 叙事卡 | 单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 的文字和字体；两种字体用第二个 Text+ 加 Merge；整条时间线放到 V3 | 已验证（本机探针 2026-11-02，换了写字路线：set_title_text 只是猜着用 SetProperty 写文字，也不管字体） |
+| 字幕 | 导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录 | 已验证（本机探针 2026-11-02）。位置换算见下 |
+| 调色 | 中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1 | 已验证（本机探针 2026-11-02，换了路线：drx lut_apply 会丢一级调色） |
 | 音乐压低 | duck.py 渲染压低版音乐床，放 A2 | 离线可用 |
-| 淡入淡出 | set_fades，片尾淡出也用它 | 已验证（贡献者） |
+| 淡入淡出 | set_fades，片尾淡出也用它 | 已验证（贡献者）；本机探针验证了音频 set_fades |
+
+字幕位置换算（本机探针实测）：set_subtitle_preset 的 `position [0.5, 0.06]` + `size 0.042` 烧出来中心 y 0.925、字高 3.5%。要对上本风格的中心 y 0.952、字高 4.2%，估算用 `position [0.5, 0.027]` + `size 0.05`，套完渲一小段量一次。
 
 手动收尾（标在时间线开头）：
 1. 设置播放帧率。
 2. 照片插入、分屏、画中画这类可选手法，需要时手动做。
-3. 时间戳的两种字体（衬线时间 + 黑体地名）在一个 Text+ 里分行设置，探针后确认能不能用 API 写。
+
+时间戳的两种字体（衬线时间 + 黑体地名）不用手动了：同一个标题 comp 里 Template 写时间（Songti SC Light），再加一个 Text+ 写地名（PingFang SC），Merge 叠在一起。本机探针验证过。
 
 不用的路线：动态推拉（Fusion Transform）、甩镜、急推、闪白、变速曲线、抖动 DRX。这个风格用不到。
 
