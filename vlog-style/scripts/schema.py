@@ -57,9 +57,10 @@ STYLE = {
         "name": {"type": "string"},
         "summary": {"type": "string"},
         "sources": {"type": "array", "minItems": 1, "items": {
-            "type": "object", "required": ["id", "measured"],
-            "properties": {"id": {"type": "string"}, "url": {"type": "string"},
-                           "measured": {"type": "string"}, "title": {"type": "string"}}}},
+            "type": "object", "required": ["id", "url", "title", "measured"],
+            "properties": {"id": {"type": "string"}, "url": {"type": "string"},  # empty only for a local file
+                           "measured": {"type": "string"}, "title": {"type": "string"},
+                           "author": {"type": "string"}}}},
         "basis": {"type": "string", "enum": ["multi_reference", "single_reference_chapters"]},
         "deliverable": {"type": "object", "required": ["fps", "width", "height"], "properties": {
             "fps": {"type": "number", "minimum": 1}, "width": {"type": "integer", "minimum": 16},
@@ -185,6 +186,9 @@ def check_style(style: dict) -> list[str]:
     errs = validate(style, STYLE)
     if errs:
         return errs
+    for i, src in enumerate(style["sources"]):
+        if not src["title"].strip():
+            errs.append(f"$.sources[{i}].title: empty, every pack must say where it came from")
     shares = sum(s["share"] for s in style["structure"]["sections"])
     if abs(shares - 1.0) > 0.02:
         errs.append(f"$.structure.sections: shares sum to {shares:.3f}, expected 1.0")

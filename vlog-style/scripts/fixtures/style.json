@@ -2,7 +2,7 @@
  "schema_version": 1,
  "name": "fixture",
  "summary": "测试用风格：慢节奏纪录片式旅行片",
- "sources": [{"id": "SYNTH", "measured": "2026-11-01"}],
+ "sources": [{"id": "SYNTH", "url": "", "title": "合成测试片", "measured": "2026-11-01"}],
  "basis": "single_reference_chapters",
  "deliverable": {"fps": 30, "width": 3840, "height": 2160, "letterbox": null},
  "structure": {"sections": [

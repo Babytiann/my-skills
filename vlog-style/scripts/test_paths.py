@@ -45,9 +45,40 @@ class PathsTest(unittest.TestCase):
 
     def test_names(self):
         self.assertEqual(self.p.style("极夜纪录").name, "极夜纪录")
-        for bad in ("a/b", "..", ".hidden", "", "a b"):
+        self.assertEqual(self.p.style("links/polar-night"), self.root / "styles" / "links" / "polar-night")
+        self.assertEqual(self.p.style_refs("misc"), self.root / "styles" / "misc" / "refs")
+        for bad in ("a/b/c", "../x", "links/", "/x", ".h/x", "x/..", "links/refs", "links/stills",
+                    "..", ".hidden", "", "a b"):
             with self.assertRaises(ValueError, msg=bad):
                 self.p.style(bad)
+        for bad in ("a/b", "links/polar-night"):  # refs, projects and groups stay flat
+            with self.assertRaises(ValueError, msg=bad):
+                paths.check_name(bad)
+            with self.assertRaises(ValueError, msg=bad):
+                self.p.style_refs(bad)
+            with self.assertRaises(ValueError, msg=bad):
+                self.p.ref(bad)
+            with self.assertRaises(ValueError, msg=bad):
+                self.p.project(bad)
+
+    def test_style_file_names_existing_packs(self):
+        base = Path(self.tmp.name) / "skill"
+        for name in ("links/polar-night", "misc/one"):
+            d = base / "styles" / name
+            d.mkdir(parents=True)
+            (d / "style.json").write_text("{}", encoding="utf-8")
+        self.assertEqual(paths.style_file("links/polar-night", base),
+                         base / "styles" / "links" / "polar-night" / "style.json")
+        with self.assertRaises(ValueError) as cm:
+            paths.style_file("links", base)  # no creator-level pack yet: list its sub-packs only
+        self.assertIn("links/polar-night", str(cm.exception))
+        self.assertNotIn("misc/one", str(cm.exception))
+        with self.assertRaises(ValueError) as cm:
+            paths.style_file("polar-night", base)  # an old flat name: list everything
+        self.assertIn("links/polar-night", str(cm.exception))
+        self.assertIn("misc/one", str(cm.exception))
+        with self.assertRaises(ValueError):
+            paths.style_file("../x", base)
 
     def test_moving_root_keeps_relative_paths(self):
         rel = "projects/trip/plan/cut_plan.json"

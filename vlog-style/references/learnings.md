@@ -12,6 +12,24 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-05 投稿列表不等于本人投稿：入池前逐条核对 mid
+- 场景：给 Links（mid 3816626）建博主专辑，`opencli bilibili user-videos` 列候选
+- 做法：先按投稿列表挑候选
+- 问题：列表里有别人的合作投稿。逐条查元数据才发现《去了一趟西班牙2.0》《和Links爬了一趟雪山，我悟了。》的 UP 主是影视飓风（mid 946974）
+- 修法：入池前用 `opencli bilibili video` 逐条核对 mid，别人的视频不进专辑，喜欢的话放进 misc，出处写真实的 UP 主。`aggregate.py draft` 合并多个 mid 时打印警告
+
+## 2026-11-05 先清缓存丢了测量：改成先 keep 再 trash
+- 场景：把 polar-night 搬进 `styles/links/`，想把它并进博主级包
+- 做法：炼化确认后直接 `cleanup.py trash`，缓存整个移进废纸篓
+- 问题：measure_video.json、measure_audio.json、labels.json 都在缓存里，一起进了废纸篓。`<root>/cache` 已经不存在，要补参考只能去废纸篓找，找不到就得重新下载重测
+- 修法：新增 `cleanup.py keep <id> --style <博主|misc>`，把剥掉转写和字幕原文的测量留到 `<root>/styles/<博主|misc>/refs/<id>/`。`trash` 拒绝移走有测量却没 keep 过的参考，确实不留的加 `--no-keep`
+
+## 2026-11-05 「复刻时不看原片」写成禁令太死：改成默认加例外
+- 场景：给每个包写出处时，规定 agent 什么时候可以回看参考片
+- 做法：写成「出处只用来人工回溯。复刻时不打开链接、不下载、不看视频」
+- 问题：用户反馈写得太死。包里没写清或标了「存疑」的项、用户要求对照、refine 补测，这些时候确实要回看
+- 修法：默认只靠风格包本身，列出三种可以回看的情况；先查本机的 `refs/` 和 `stills/`，结论写回 STYLE.md，标日期和「回看补充」。见 SKILL.md 第 5 节
+
 ## 2026-11-02 离线 .drt 做变速：速度全错，变速曲线改手动
 - 场景：Resolve 探针第 10 项，工程 vlog-style-QA-probe（29.97），Resolve Studio 21.1.1.10 + MCP 4.15.3
 - 做法：advanced server `capture_media_template` + `assemble` 生成 5 段的 `.drt`（100%、50%、定格、倒放、1→0.5 线性变速），`import_timeline_checked {background:true, require_temp_path:false}` 导入，媒体 6/6 链上，后台 0.7 秒，无弹窗

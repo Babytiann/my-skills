@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 import wave
 from contextlib import redirect_stderr, redirect_stdout
@@ -22,6 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
+import aggregate  # noqa: E402
 import cleanup  # noqa: E402
 import compare  # noqa: E402
 import duck  # noqa: E402
@@ -74,6 +76,117 @@ class CleanupTest(TempRoot):
         self.assertTrue(outside.exists())
         with self.assertRaises(ValueError):
             self.P.ref("../footage")
+
+    def measured_ref(self, ref_id="BV1keep") -> Path:
+        ref = self.P.ref(ref_id)
+        ref.mkdir(parents=True)
+        (ref / "proxy.mp4").write_bytes(b"x" * 2048)
+        mv = {"schema": "measure_video/1", "bvid": ref_id, "measured": "2026-11-01",
+              "text": {"subtitle_band": [0.9, 0.97],
+                       "tracks": [{"i": 0, "kind": "title", "text": "北极圈", "t_in": 7.0},
+                                  {"i": 1, "kind": "subtitle", "text": "旁白第一句", "t_in": 1.0}],
+                       "transcript": [{"t_in": 1.0, "t_out": 2.0, "text": "旁白第一句"}]}}
+        ma = {"speech": [[1.0, 2.0]],
+              "transcript": {"source": "captions", "whisper": None,
+                             "segments": [{"t_in": 1.0, "t_out": 2.0, "text": "旁白第一句"}]}}
+        meta = {"ok": True, "data": [{"field": k, "value": v} for k, v in (
+            ("bvid", ref_id), ("title", "测试片"), ("author", "Links (mid: 3816626)"), ("mid", "3816626"),
+            ("publish_time", "2026-01-07 18:00"), ("duration_sec", "1787"), ("description", "简介原文"))]}
+        for name, data in (("measure_video.json", mv), ("measure_audio.json", ma), ("meta.json", meta),
+                           ("labels.json", {"ref": ref_id, "chapters": []})):
+            (ref / name).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return ref
+
+    def test_trash_wants_measurements_kept_first(self):
+        self.measured_ref()
+        code, _, err = self.run_main(cleanup.main, ["trash", "BV1keep"])
+        self.assertEqual(code, 2)
+        self.assertIn("never kept", err)
+        code, out, _ = self.run_main(cleanup.main, ["trash", "BV1keep", "--no-keep"])
+        self.assertEqual(code, 0)
+        self.assertIn("would trash cache/refs/BV1keep", out)
+
+        code, out, _ = self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links"])
+        self.assertEqual(code, 0)
+        self.assertIn("would keep cache/refs/BV1keep -> styles/links/refs/BV1keep", out)
+        dest = self.P.style_refs("links") / "BV1keep"
+        self.assertFalse(dest.exists())  # dry run writes nothing
+        code, _, _ = self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        self.assertEqual(code, 0)
+        self.assertEqual(sorted(p.name for p in dest.iterdir()),
+                         ["labels.json", "measure_audio.json", "measure_video.json", "meta.json"])
+        kept_text = "".join(p.read_text(encoding="utf-8") for p in dest.iterdir())
+        self.assertNotIn("旁白第一句", kept_text)
+        self.assertNotIn("简介原文", kept_text)
+        mv = json.loads((dest / "measure_video.json").read_text(encoding="utf-8"))
+        self.assertEqual([t["text"] for t in mv["text"]["tracks"]], ["北极圈", ""])
+        self.assertEqual(mv["text"]["transcript"], [])
+        self.assertEqual(mv["measured"], "2026-11-01")
+        ma = json.loads((dest / "measure_audio.json").read_text(encoding="utf-8"))
+        self.assertEqual(ma["speech"], [[1.0, 2.0]])
+        self.assertEqual(ma["transcript"]["segments"], [{"t_in": 1.0, "t_out": 2.0}])
+        meta = json.loads((dest / "meta.json").read_text(encoding="utf-8"))
+        self.assertEqual(set(meta), set(aggregate.META_KEYS))
+        self.assertEqual(meta["author"], "Links")
+        self.assertEqual(aggregate.video_meta(dest), meta)
+        self.assertEqual(paths.check([dest]), [])
+
+        code, out, _ = self.run_main(cleanup.main, ["list"])
+        self.assertEqual(json.loads(out)[0]["kept"], ["styles/links/refs/BV1keep"])
+        code, out, _ = self.run_main(cleanup.main, ["trash", "BV1keep"])
+        self.assertEqual(code, 0)
+        self.assertIn("would trash cache/refs/BV1keep", out)
+
+    def test_keep_refuses_what_it_cannot_re_draft(self):
+        ref = self.measured_ref()
+        code, _, err = self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links/polar-night"])
+        self.assertEqual(code, 2)
+        self.assertIn("top folder", err)
+        (ref / "labels.json").unlink()
+        code, _, err = self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links"])
+        self.assertEqual(code, 2)
+        self.assertIn("labels.json", err)
+        code, _, err = self.run_main(cleanup.main, ["keep", "BV1none", "--style", "links"])
+        self.assertEqual(code, 2)
+        self.assertIn("not a reference", err)
+
+    def test_keep_dates_old_measurements_by_file_time(self):
+        ref = self.measured_ref()
+        mv_path = ref / "measure_video.json"
+        mv = json.loads(mv_path.read_text(encoding="utf-8"))
+        del mv["measured"]  # measured before measure_video wrote the date
+        mv_path.write_text(json.dumps(mv, ensure_ascii=False), encoding="utf-8")
+        when = time.mktime((2026, 1, 8, 12, 0, 0, 0, 0, -1))
+        os.utime(mv_path, (when, when))
+        self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        kept = self.P.style_refs("links") / "BV1keep" / "measure_video.json"
+        self.assertEqual(json.loads(kept.read_text(encoding="utf-8"))["measured"], "2026-01-08")
+
+
+class DraftGuardTest(TempRoot):
+    def test_existing_out_is_not_overwritten(self):
+        out = Path(self.tmp.name) / "style.json"
+        out.write_text("手写的内容", encoding="utf-8")
+        nothing = str(Path(self.tmp.name) / "nothing")
+        with self.assertRaises(SystemExit) as cm:
+            aggregate.main(["draft", "--name", "x", nothing, "--out", str(out)])
+        self.assertIn("--force", str(cm.exception))
+        with self.assertRaises(SystemExit) as cm:  # --force gets past the guard, then needs measurements
+            aggregate.main(["draft", "--name", "x", nothing, "--out", str(out), "--force"])
+        self.assertIn("measure_video", str(cm.exception))
+        self.assertEqual(out.read_text(encoding="utf-8"), "手写的内容")
+
+
+class StyleLookupTest(TempRoot):
+    def test_missing_pack_names_existing_ones(self):
+        code, _, err = self.run_main(plan_cut.main, ["--style", "no-such-pack", "--index", "i", "--brief", "b",
+                                                     "--out", "o"])
+        self.assertEqual(code, 1)
+        self.assertIn("no style pack", err)
+        self.assertIn("links/polar-night", err)
+        with self.assertRaises(SystemExit) as cm:
+            compare.main(["readback", "rb.json", "--plan", "p.json", "--style", "no-such-pack"])
+        self.assertIn("no style pack", str(cm.exception))
 
 
 class EnvelopeTest(unittest.TestCase):

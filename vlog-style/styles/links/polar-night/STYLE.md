@@ -1,4 +1,4 @@
-# polar-night：纪录片式旅行 vlog
+# links/polar-night：纪录片式旅行 vlog
 
 一句话：旁白和底部字幕带着走，4–5 秒一刀、97% 是硬切；镜头的运动来自无人机、车和步行，不靠后期推拉；冷蓝暗调跟着光走；左侧时间戳和黑底叙事卡交代时间地点。
 
@@ -181,4 +181,4 @@ look card（每个镜头关键帧的 Lab 中位数 ± MAD，测之前遮掉字�
 
 - labels 被拒 0 条，未核实 0 条。
 - 这次炼化修过的测量：推拉加了 `zoom_eff`，推拉比例只算 digital；黑场和闪白要两头回到基线；重跑 scan 不叠加挪动；标题颜色取笔画中心；卡片的时机只按章节算。详见 references/qa.md 第 11–15 条和 learnings.md。
-- 验收对照帧：`<root>/styles/polar-night/stills/`，10 张 320 宽关键帧，文件名带镜头序号和用途。
+- 验收对照帧：`<root>/styles/links/polar-night/stills/`，10 张 320 宽关键帧，文件名带镜头序号和用途。

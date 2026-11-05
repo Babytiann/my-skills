@@ -18,7 +18,8 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 | 4. 声音 | `uv run --python 3.13 --script measure_audio.py "$R" --prompt "<地名、人名>"` | `measure_audio.json` |
 | 5. 字幕分类重算 | `uv run --python 3.13 --script measure_video.py "$R" --redo text` | 用人声段重新给文字分类，look 和 strips 会跟着重算 |
 | 6. 标签骨架 | `python3 -I -B aggregate.py labels "$R"` | `labels.json` |
-| 7. 汇总 | `python3 -I -B aggregate.py draft --name <风格名> "$R1" "$R2" … --out <风格包>/style.json` | 通过 schema 校验的 style.json 草稿 |
+| 7. 汇总 | `python3 -I -B aggregate.py draft --name <风格名> "$R1" "$R2" … --out <风格包>/style.json` | 通过 schema 校验的 style.json 草稿。`R` 也可以是 keep 留下的 `styles/<博主\|misc>/refs/<id>`。`--out` 已存在时拒绝覆盖，加 `--force` 才覆盖；不加 `--out` 写到 `$R1/style.draft.json`。参考来自多个 mid 时打印警告 |
+| 8. 留测量 | `python3 -I -B cleanup.py keep <id> --style <博主\|misc> [--yes]` | 不在 `R` 下，在 `<root>/styles/<博主\|misc>/refs/<id>/`：剥掉转写和字幕原文的 measure_video.json、measure_audio.json，labels.json，只留 6 个字段的 meta.json。之后才能 `cleanup.py trash <id>` |
 
 几点说明：
 - **OCR 跑在原片上，不跑代理。** 540p 下字幕只有 20 像素左右高，中文识别不可靠。OCR 默认把原片缩到 1080 高再识别。
@@ -27,7 +28,8 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
   - torch 等依赖约 2 GB，已经下好。
   - beat_this 的权重 81 MB。服务器很慢，下载会被截断，所以不由脚本自动下载，要手动下到 `~/.cache/torch/hub/checkpoints/beat_this-final0.ckpt`。没下好时脚本自动改用 librosa，`beats.engine` 会记为 `librosa`，这时没有重拍。
   - whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。没有人声的片子加 `--no-asr`。
-- **在合成测试片上实测：** 16 秒的片子跑完全部测量约 10 秒。长片的耗时在第一次真实炼化时记到这里。
+- **在合成测试片上实测：** 16 秒的片子跑完全部测量约 10 秒。长片的耗时在第一次真实炼化时记到这里。博主模式的第一批（links 是 29–55 分钟）每步跑完都记一下耗时，再决定更长的片子要不要入池。
+- **先 keep 再 trash。** 留下的测量够重新 draft（结果和用 cache 跑的一样），但没有原片、代理和抽帧，不能重跑 measure 的各阶段。`measure_video.json` 的 `measured` 记的是每次跑的日期；旧文件没有这一项，keep 时用文件修改日期补上。
 
 ## measure_video.py
 

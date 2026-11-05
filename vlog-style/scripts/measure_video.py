@@ -845,6 +845,7 @@ def main(argv: list[str] | None = None) -> int:
         ran.add(st)
         timings[st] = round(time.time() - t0, 1)
         res["timings"] = timings
+        res["measured"] = time.strftime("%Y-%m-%d")
         out_path.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
     c = res.get("cuts", {}).get("counts", {})
     log(f"done: {len(res.get('cuts', {}).get('shots', []))} shots, cuts {c}, "

@@ -136,6 +136,15 @@ class SchemaTest(unittest.TestCase):
         bad["structure"]["sections"][0]["share"] = 0.5
         self.assertTrue(any("shares sum" in e for e in schema.check_style(bad)))
 
+    def test_every_source_says_where_it_came_from(self):
+        for key in ("url", "title"):
+            bad = copy.deepcopy(self.style)
+            del bad["sources"][0][key]
+            self.assertTrue(any(f"missing {key}" in e for e in schema.check_style(bad)), key)
+        bad = copy.deepcopy(self.style)
+        bad["sources"][0]["title"] = " "
+        self.assertTrue(any("sources[0].title" in e for e in schema.check_style(bad)))
+
     def test_bool_is_not_a_number(self):
         self.assertTrue(schema.validate(True, {"type": "number"}))
         self.assertFalse(schema.validate(3, {"type": "number"}))

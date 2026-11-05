@@ -36,6 +36,8 @@ ENV_ROOT = "VLOG_STYLE_ROOT"
 
 STYLE_SUBDIRS = ("stills", "luts", "drx", "fusion")
 PROJECT_SUBDIRS = ("footage", "proxies", "index", "plan", "qa")
+# A creator or misc folder keeps these next to its sub-packs, so a sub-pack can't take the name.
+RESERVED_PIECES = {"refs", *STYLE_SUBDIRS}
 
 NAME_RE = re.compile(r"^[^\W_][\w.-]*$")
 # Absolute paths that should never appear in generated files. Limited to real
@@ -74,7 +76,11 @@ class Paths:
         return self.abs(self.dirs[key])
 
     def style(self, name: str) -> Path:
-        return self.dir("styles") / check_name(name)
+        return self.dir("styles").joinpath(*check_style_name(name).split("/"))
+
+    def style_refs(self, group: str) -> Path:
+        """Kept measurements of a creator album or misc: only ever under root, never in the repo."""
+        return self.dir("styles") / check_name(group) / "refs"
 
     def project(self, name: str) -> Path:
         return self.dir("projects") / check_name(name)
@@ -87,6 +93,30 @@ def check_name(name: str) -> str:
     if not NAME_RE.match(name or ""):
         raise ValueError(f"bad name {name!r}: use letters, digits, '.', '_' or '-'")
     return name
+
+
+def check_style_name(name: str) -> str:
+    """A style pack is NAME or GROUP/NAME: one level of nesting, no more."""
+    parts = (name or "").split("/")
+    if len(parts) > 2:
+        raise ValueError(f"bad style name {name!r}: use NAME or GROUP/NAME")
+    for part in parts:
+        check_name(part)
+    if len(parts) == 2 and parts[1] in RESERVED_PIECES:
+        raise ValueError(f"bad style name {name!r}: {parts[1]!r} is reserved")
+    return name
+
+
+def style_file(name: str, base: Path | None = None) -> Path:
+    """Repo path of a pack's style.json. A missing pack names the ones that do exist."""
+    styles = (base or SKILL_DIR) / "styles"
+    path = styles / check_style_name(name) / "style.json"
+    if path.exists():
+        return path
+    group = styles / name.split("/")[0]
+    found = (group if group.is_dir() else styles).rglob("style.json")
+    packs = sorted(p.parent.relative_to(styles).as_posix() for p in found)
+    raise ValueError(f"no style pack {name!r}; existing: {', '.join(packs) or 'none'}")
 
 
 def load(config: Path = CONFIG) -> Paths:
