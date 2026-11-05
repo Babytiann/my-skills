@@ -241,10 +241,12 @@ class SyntheticTest(unittest.TestCase):
         a = json.loads((self.ref / "measure_audio.json").read_text(encoding="utf-8"))
         self.assertAlmostEqual(a["beats"]["bpm"], 120, delta=1)
 
-    def test_aggregate_draft_feeds_plan_cut(self):
-        py = [sys.executable, "-I", "-B"]
-        run(py + [str(HERE / "aggregate.py"), "labels", str(self.ref)], self.env)
+    def labelled(self) -> Path:
+        """labels.json filled in once, whichever test needs it first."""
         lab_path = self.ref / "labels.json"
+        if lab_path.exists():
+            return lab_path
+        run([sys.executable, "-I", "-B", str(HERE / "aggregate.py"), "labels", str(self.ref)], self.env)
         lab = json.loads(lab_path.read_text(encoding="utf-8"))
         lab["chapters"] = [{"name": "开场", "role": "hook", "t0": 0.0, "t1": 3.0},
                            {"name": "海边", "role": "chapter", "t0": 3.0, "t1": 9.0},
@@ -256,9 +258,17 @@ class SyntheticTest(unittest.TestCase):
         self.assertEqual(len(lab["shots"]), 1, lab["shots"])  # the push-in, prefilled for a move verdict
         lab["shots"][0].update(move="digital", sure=True)
         lab_path.write_text(json.dumps(lab, ensure_ascii=False), encoding="utf-8")
+        return lab_path
+
+    def test_aggregate_draft_feeds_plan_cut(self):
+        py = [sys.executable, "-I", "-B"]
+        lab_path = self.labelled()
         draft = self.tmp / "style.draft.json"
         run(py + [str(HERE / "aggregate.py"), "draft", "--name", "synth", str(self.ref), "--out", str(draft)], self.env)
         style = json.loads(draft.read_text(encoding="utf-8"))
+        src = style["sources"][0]  # a local file: no url, the file name stands in for the title
+        self.assertEqual((src["id"], src["url"], src["title"]), ("synthetic", "", "synthetic.mp4"))
+        self.assertEqual(src["measured"], self.m["measured"])
         types = {t["type"]: t for t in style["transitions"]}
         self.assertEqual(set(types), {"hard_cut", "dissolve", "flash_white"}, types)
         self.assertLessEqual(abs(types["flash_white"]["frames"] - 6), 1, types)
@@ -280,6 +290,45 @@ class SyntheticTest(unittest.TestCase):
         run(UV + [str(HERE / "compare.py"), "look", *map(str, sorted((self.ref / "frames").glob("*.jpg"))),
                   "--style-file", str(draft), "--out", str(look)], self.env)
         self.assertTrue(json.loads(look.read_text(encoding="utf-8"))["ok"])
+
+    def test_keep_then_pool_two_references(self):
+        py = [sys.executable, "-I", "-B"]
+        self.labelled()
+        run(py + [str(HERE / "cleanup.py"), "keep", "synthetic", "--style", "misc", "--yes"], self.env)
+        kept = self.tmp / "root" / "styles" / "misc" / "refs" / "synthetic"
+        text = "".join(p.read_text(encoding="utf-8") for p in kept.glob("*.json"))
+        for line in CAPTIONS:
+            self.assertNotIn(line, text)
+        self.assertIn(TITLE, text)
+        mv = json.loads((kept / "measure_video.json").read_text(encoding="utf-8"))
+        self.assertEqual({t["text"] for t in mv["text"]["tracks"] if t["kind"] != "title"}, {""})
+        self.assertEqual(paths.check([kept]), [])
+        # the kept copy re-drafts exactly what the cache drafts
+        a, b = self.tmp / "from_cache.json", self.tmp / "from_kept.json"
+        run(py + [str(HERE / "aggregate.py"), "draft", "--name", "synth", str(self.ref), "--out", str(a)], self.env)
+        run(py + [str(HERE / "aggregate.py"), "draft", "--name", "synth", str(kept), "--out", str(b)], self.env)
+        self.assertEqual(json.loads(a.read_text(encoding="utf-8")), json.loads(b.read_text(encoding="utf-8")))
+        # two kept references pool across references, and say who made each
+        twin = kept.parent / "synthetic-twin"
+        shutil.copytree(kept, twin)
+        for d, mid in ((kept, "1"), (twin, "2")):
+            (d / "meta.json").write_text(json.dumps({"bvid": f"BV{mid}synth", "title": f"合成片 {mid}",
+                                                     "author": "测试", "mid": mid}, ensure_ascii=False), encoding="utf-8")
+        pooled = self.tmp / "pooled.json"
+        r = subprocess.run(py + [str(HERE / "aggregate.py"), "draft", "--name", "misc/synth", str(kept), str(twin),
+                                 "--out", str(pooled)], env=self.env, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("2 uploaders", r.stderr)
+        style = json.loads(pooled.read_text(encoding="utf-8"))
+        self.assertEqual(style["basis"], "multi_reference")
+        self.assertEqual([(s["title"], s["author"]) for s in style["sources"]], [("合成片 1", "测试"), ("合成片 2", "测试")])
+        self.assertEqual(style["sources"][1]["url"], "https://www.bilibili.com/video/BV2synth")
+        self.assertEqual(schema.check_style(style), [])
+        plan = self.tmp / "pooled_plan.json"
+        fx = HERE / "fixtures"
+        run(py + [str(HERE / "plan_cut.py"), "--style-file", str(pooled), "--index", str(fx / "footage.json"),
+                  "--brief", str(fx / "brief.json"), "--beats", str(fx / "beats.json"), "--out", str(plan)], self.env)
+        self.assertEqual(schema.validate(json.loads(plan.read_text(encoding="utf-8")), schema.PLAN), [])
 
 
 class LumaEventTest(unittest.TestCase):

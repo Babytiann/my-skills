@@ -1,13 +1,13 @@
 ---
 name: vlog-style
-description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化成风格包：用本地测量（ffmpeg、TransNetV2、光流、Apple Vision OCR、beat_this）加 Claude 看抽帧拼图和事件条，得出结构、节奏、卡点、转场、运动、调色、文字、声音的完整选素材加剪辑流程；再按风格包、用户的素材和要求生成逐帧精确的剪辑计划，通过 DaVinci Resolve MCP 搭出可继续精修的时间线，用户要求时才导出成片。用于炼化、学习或复刻某类 vlog 的剪辑风格，按某个风格剪素材，或根据反馈修改风格包。"
+description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化成风格包：用本地测量（ffmpeg、TransNetV2、光流、Apple Vision OCR、beat_this）加 Claude 看抽帧拼图和事件条，得出结构、节奏、卡点、转场、运动、调色、文字、声音的完整选素材加剪辑流程；风格包可以按 B 站博主建专辑（一个博主一个文件夹，多条视频合并），只喜欢某一条视频的放进 misc，每个包都写明出处；再按风格包、用户的素材和要求生成逐帧精确的剪辑计划，通过 DaVinci Resolve MCP 搭出可继续精修的时间线，用户要求时才导出成片。用于炼化、学习或复刻某类 vlog 的剪辑风格，给某个博主建风格专辑，按某个风格剪素材，或根据反馈修改风格包。"
 ---
 
 # 旅行 vlog 剪辑风格：炼化与复刻
 
 用户找到几条剪得好的旅行 vlog，想学它们共同的剪法，再用自己的素材剪出一条类似的片子。这个 skill 分两半：
 
-- **炼化**：测参考片，写出风格包 `styles/<名字>/`。
+- **炼化**：测参考片，写出风格包 `styles/<名字>/`。风格包按 B 站博主分文件夹：博主专辑 `styles/<博主>/` 下一条视频或一个系列一个子包，炼够两条再合并成博主级包；只喜欢某一条视频的放进 `styles/misc/<名字>/`。
 - **复刻**：按风格包挑用户的镜头、定剪辑点、加转场、变速、推拉、文字、调色、配乐，在 DaVinci Resolve 里搭出时间线。
 
 交付的是一条可编辑的 Resolve 时间线，加上标在时间线上的手动收尾清单。成片只在用户要求时导出。默认用中文和用户交流。
@@ -29,12 +29,15 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 
 ```
 <root>/
-  styles/<名字>/     stills/（≤10 张低清关键帧）、luts/、drx/、fusion/
-  projects/<项目>/   footage/（原始素材，只读）、proxies/、index/、plan/、qa/
-  cache/refs/<id>/   参考片下载、代理、抽帧、拼图、事件条；炼化完移进废纸篓
+  styles/<名字>/                 stills/（≤10 张低清关键帧）、luts/、drx/、fusion/
+  styles/<博主|misc>/refs/<id>/  keep 留下的测量（转写和字幕原文已剥掉），重炼、补参考用
+  projects/<项目>/               footage/（原始素材，只读）、proxies/、index/、plan/、qa/
+  cache/refs/<id>/               参考片下载、代理、抽帧、拼图、事件条；炼化完先 keep，再移进废纸篓
 ```
 
-- 风格包的文字部分（STYLE.md、style.json、sources.md）放在仓库里的 `vlog-style/styles/<名字>/`，派生素材放在 root 下。
+- 风格包的文字部分（STYLE.md、style.json、sources.md）放在仓库里的 `vlog-style/styles/<名字>/`，派生素材放在 root 下。博主文件夹本身还有一份 sources.md，记出处和候选视频。
+- 风格包的名字是 `名字` 或 `分组/名字`，只允许一层嵌套。分组是一个博主（比如 `links`）或 `misc`：`--style links` 是博主级合并包，`--style links/polar-night` 是其中的子包。分组目录下要放 `refs/` 和博主级包自己的素材目录，所以子包不能叫 `refs`、`stills`、`luts`、`drx`、`fusion`。ref id、项目名和分组名都不能带 `/`。
+- `refs/` 只在 root 下，不进仓库：仓库是公开的。
 - 所有 JSON 和 Markdown 里只写相对路径：项目文件相对 root，风格包素材相对风格目录。
 - 只在调用工具的那一刻用 `scripts/paths.py resolve` 拼绝对路径，不写回任何文件。`paths.py check` 能查出违规的文件。
 
@@ -57,7 +60,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 
 | 模式 | 用户怎么说 | 产出 |
 |---|---|---|
-| **distill 炼化** | 「学一下这几个视频的剪法」「炼化这个 vlog」 | `styles/<名字>/` 风格包，用户审过 STYLE.md |
+| **distill 炼化** | 「学一下这几个视频的剪法」「炼化这个 vlog」「给这个博主建个风格专辑」「我只喜欢这一条」 | `styles/<名字>/` 风格包（博主专辑的子包 `styles/<博主>/<名字>/`、博主级包 `styles/<博主>/`，或 `styles/misc/<名字>/`），用户审过 STYLE.md |
 | **apply 复刻** | 「按这个风格剪我的素材」 | `projects/<项目>/plan/cut_plan.json`，用户确认后在 Resolve 里搭出时间线 |
 | **refine 改风格** | 「转场太多了」「再加两个参考」 | 改过的风格包；能用新测量说明的改测量，属于口味的写进 STYLE.md 并标出来源 |
 | **export 导出** | 「导出成片」 | Resolve 渲染队列里的任务，用户说开始才渲染 |
@@ -74,12 +77,39 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
    - 测到的推拉多半是机位在动（无人机、车、步行），要看 `strips/moves_*.jpg` 逐个判 digital / camera，风格里的推拉比例只算 digital。
    - 转场候选误报很多（暗镜头、运动中切），每条都看事件条再定。
 6. **汇总。** `aggregate.py draft --name <名字> <参考目录>… --out vlog-style/styles/<名字>/style.json`。对不上测量的标签会被拒收，列进 `evidence.rejected_labels`。多个参考时比较参考之间是否一致；只有一个参考时比较它的各章节之间，只出现在少数章节的标为「单一来源」。
+   - 参考目录可以是 `cache/refs/<id>`，也可以是 keep 留下的 `styles/<博主|misc>/refs/<id>`。
+   - `--out` 已经存在时拒绝覆盖，因为定稿的 style.json 里有手写的项。重炼时不加 `--out`，草稿写到第一个参考目录下的 `style.draft.json`，对照着把变化并回去；确实要整个覆盖才加 `--force`。
+   - 合并的参考来自不同 UP 主（mid）时会打印警告。
 7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md 和 sources.md，补完 style.json 里 Claude 才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
+   - sources.md 开头是出处表：UP 主（名字、mid、空间链接）、视频（标题、链接、发布日期、时长）、测量日期，至少要有视频链接。style.json 的 `sources[]` 由 aggregate 从 meta.json 填好 url、title、author，和出处表对一遍。出处主要给人回溯，复刻时默认不去看原片（见第 5 节）。
 8. **验收。** 过一遍 [qa.md](references/qa.md) 的炼化清单，再把 STYLE.md 交给用户审。
 9. **试剪。** 用户给几段素材走一遍 apply（工程名 `vlog-style-QA-*`），对照关键帧和统计；问题改回风格包，记进 learnings.md。
-10. **清理。** 用户确认风格包之后，`cleanup.py trash <id> --yes`，把 `cache/refs/<id>` 移进废纸篓。先不加 `--yes` 跑一遍，给用户看要移走什么。
+10. **清理。** 用户确认风格包之后，先留测量，再清缓存：
+    - `cleanup.py keep <id> --style <博主|misc> --yes`，把剥掉转写、字幕原文和简介的测量留到 `<root>/styles/<博主|misc>/refs/<id>/`，以后补参考、写博主级包时直接用。`--style` 只写顶层文件夹，不写子包。
+    - `cleanup.py trash <id> --yes`，把 `cache/refs/<id>` 移进废纸篓。有测量却没 keep 过的参考会被拒绝；确实不留的加 `--no-keep`。
+    - 两步都先不加 `--yes` 跑一遍，给用户看要留下什么、要移走什么。
+
+### 博主模式：给一个博主建专辑
+
+1. **列投稿。** `opencli bilibili user-videos <mid> --limit 50 --page <N> --window background -f json`，翻到最后一页。
+2. **核对 UP 主。** 投稿列表里有别人的合作投稿（比如影视飓风的视频会出现在 Links 的列表里），逐条 `opencli bilibili video <BV号> --window background -f json` 看 `mid`。不是这个博主投的不进专辑；用户喜欢的话放进 misc，出处写真实的 UP 主。
+3. **分类。** 旅行片、器材和手机评测、音乐纯享、实验片分开，只挑和要学的风格同类的。都写进 `styles/<博主>/sources.md` 的候选表，每条写状态（入池 / 待炼 / 不入池）和理由。
+4. **挑 3 条给用户确认，确认后才下载。** 挑法听用户的（links 第一批是旅行片里播放量最高的三条）；用户没说就先挑 20–30 分钟的。第一次炼长片时把耗时记进 measure.md。
+5. **逐条炼化。** 每条走上面的第 1–10 步，ref id 直接用 BV 号，第 10 步用 `keep --style <博主>`。一条视频（或同一系列的几集）可以单独成子包 `styles/<博主>/<名字>/`。
+6. **写博主级包。** 炼完至少 2 条之后：`aggregate.py draft --name <博主> "$(python3 -I -B paths.py resolve styles/<博主>/refs)"/* --out vlog-style/styles/<博主>/style.json`，basis 是 multi_reference。节奏按每条视频的中位数比较。调色跟着内容走（polar-night 各章中间调的 b 从 −21 到 +12），博主级包的 look 只写各条一致的部分，调色核对用子包。
+
+### 只要这一条：misc
+
+用户只喜欢某个博主的某一条视频时不建专辑，走同样的第 1–10 步：风格包写到 `styles/misc/<名字>/`，第 10 步用 `keep --style misc`，sources.md 的 UP 主写视频真实的 UP 主。misc 顶层没有合并包。
 
 ## 5. apply：复刻
+
+**什么时候回看参考片。** 默认只靠风格包本身：STYLE.md、style.json 和 `stills/`。风格包就是为了不用每次重看原片，sources.md 的出处主要给人回溯。下面三种情况可以回看：
+- 这次要用的某一项包里没写清，或者标了「存疑」；
+- 用户要求对照原片；
+- refine 时要补测。
+
+回看时先用本机已有的：先查 `<root>/styles/<博主|misc>/refs/` 里的测量和 `stills/`，不够再按出处链接重下这一条；能只看相关的时间段，就只看那一段。用完照旧 keep、trash。回看得出的结论写回 STYLE.md 对应小节，标上日期和「回看补充」，同一个问题下次就不用再看。
 
 详细步骤见 [apply.md](references/apply.md)。
 
@@ -96,7 +126,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 ## 6. refine：按反馈改风格
 
 - 先判断反馈是「测错了」还是「口味不同」。测错了就查测量和标签，修正后重新 `aggregate.py draft`；口味不同就直接改 style.json 和 STYLE.md 对应小节，写明「用户调整」和日期。
-- 补参考：新参考走 distill 的第 1–5 步，再把新旧参考一起 `aggregate.py draft`；basis 从单参考的章节比较变成多参考比较，一致性结论要重写。旧参考的缓存已经清掉了，就按 sources.md 的链接重新下。
+- 补参考：新参考走 distill 的第 1–5 步，再把新旧参考一起 `aggregate.py draft`；basis 从单参考的章节比较变成多参考比较，一致性结论要重写。旧参考的缓存已经清掉了：先用 `<root>/styles/<博主|misc>/refs/` 里 keep 留下的测量，直接传给 `aggregate.py draft`；没留下的先去废纸篓找，找不到再按 sources.md 的链接重新下。重炼不要覆盖定稿的 style.json，见第 4 节第 6 步。
 - 被否掉的做法记进 learnings.md。
 
 ## 7. export：导出
@@ -106,7 +136,9 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 ## 8. 规矩
 
 - **不上传。** 参考片和用户素材都不发给任何视频理解服务，分析只在本机做。
-- **版权。** 参考片只用于本地研究剪法。风格包只存测量出的参数和中性描述，不带参考片的画面、音乐、字体进用户的成片；参考片用完移进废纸篓。不绕过付费或充电内容，不给 opencli 传 `--force`。
+- **refs 不进仓库。** 仓库是公开的。keep 留下的测量虽然剥掉了转写和字幕原文，也只放在 root 下的 `styles/<博主|misc>/refs/`。
+- **每个包都写出处。** sources.md 的出处表和 style.json 的 `sources[]`（url、title 必填）要对得上。博主专辑只收本人投稿的视频，别人的放 misc。
+- **版权。** 参考片只用于本地研究剪法。风格包只存测量出的参数和中性描述，不带参考片的画面、音乐、字体进用户的成片；参考片用完移进废纸篓（测量先 keep）。不绕过付费或充电内容，不给 opencli 传 `--force`。
 - **Resolve。** 建工程、切工程由脚本自动完成，用户不用操作界面（做法见 resolve-routes.md「自动建工程」）。切走前先保存当前工程。不在用户正在剪的工程上直接试验，试验用 `vlog-style-QA-*` 一次性工程。不在仓库里跑 MCP 的 `install.py`。碰到只能人点的对话框就停下来告诉用户。
 - **装东西、改配置先问。** 包括下载模型以外的任何安装、改 Resolve 偏好设置、改 MCP 注册。
 - **只读回不算通过。** 调色、标题、Fusion 有没有生效要看导出的静帧。
@@ -121,10 +153,11 @@ for t in test_paths test_stats test_plan_cut test_tools; do python3 -I -B $t.py;
 uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg、uv、xcrun
 ```
 
-`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare，检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。`KEEP=1` 保留临时目录，方便查看拼图。
+`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare、cleanup keep（再用留下的测量重炼、两份参考合并），检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。`KEEP=1` 保留临时目录，方便查看拼图。
 
 ## 10. 当前状态
 
 - 测量、汇总、剪辑计划、压低、读回和调色对照已经写完，合成测试全部通过。
 - Resolve 探针 2026-11-02 在本机（Studio 21.1.1.10 + MCP 4.15.3）跑完，12 项都有结论，写进了 resolve-routes.md 的「本机」一列和常见坑。换了路线的：标题写字（`fusion_comp bulk_set_inputs`）、调色（中性 DRX + merge + `graph set_lut`）、片段音量（`AudioVolume`）、推拉（最小 `.comp` 模板）、字幕 .srt（空时间线上旧式 append）。变速曲线的离线 `.drt` 否掉，改手动。还没探针：划像、遮幅、Glow。否掉的做法见 learnings.md 2026-11-02。Resolve 或 MCP 升级后重跑探针。
-- 第一个参考是 BV1sHqPBLExZ（Linksphotograph《当太阳不再升起》第 1 集，约 30 分钟，内嵌字幕），已炼成 `styles/polar-night/`，用户已审过 STYLE.md。只有一个参考，按章节比较一致性；参考缓存已清。
+- 第一个参考是 BV1sHqPBLExZ（Linksphotograph《当太阳不再升起》第 1 集，约 30 分钟，内嵌字幕），已炼成 `styles/polar-night/`（2026-11-05 搬到 `styles/links/polar-night/`），用户已审过 STYLE.md。只有一个参考，按章节比较一致性；参考缓存已清，原始测量在有 keep 之前就随缓存进了废纸篓。
+- 2026-11-05 改成按博主建专辑。`styles/links/` 是 Links（mid 3816626）的专辑，候选视频和理由在 `links/sources.md`；第一批三条是用户定的，取旅行片里播放量最高的：最孤独的房子、和李现攀登人生第一座雪山、和李现徒步在西藏库拉岗日，还没下载。`misc/` 还是空的。

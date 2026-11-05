@@ -5,10 +5,13 @@
   python3 -I -B aggregate.py labels REF_DIR
       write REF_DIR/labels.json: every measured event, title and a chapter
       proposal, with blanks for Claude to fill after viewing sheets/ and strips/
-  python3 -I -B aggregate.py draft --name NAME REF_DIR... [--out style.json] [--size 3840x2160]
+  python3 -I -B aggregate.py draft --name NAME REF_DIR... [--out style.json] [--size 3840x2160] [--force]
       reconcile labels with measurements, pool the references (or, with one
       reference, its chapters) and write a schema-checked draft style.json;
-      evidence (consistency, unverified and rejected labels) goes in style.evidence
+      evidence (consistency, unverified and rejected labels) goes in style.evidence.
+      REF_DIR is a cache entry or a kept copy (<root>/styles/<group>/refs/<id>).
+      An existing --out is refused without --force: a finished style.json holds
+      hand-written parts. Without --out the draft goes to REF_DIR/style.draft.json.
   python3 -I -B aggregate.py footage --project NAME
       index/footage.json for plan_cut.py from each clip's measurements plus
       Claude's index/tags.json
@@ -23,6 +26,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -35,6 +39,7 @@ import stats  # noqa: E402
 
 ROLES = ["hook", "intro", "chapter", "interlude", "ending"]
 MOVES = ("digital", "camera")  # what made a measured push/pull: the edit, or the camera moving
+META_KEYS = ("bvid", "title", "author", "mid", "publish_time", "duration_sec")  # all a kept meta.json holds
 MEASURED_TO_TYPE = {"dissolve": "dissolve", "flash_white": "flash_white", "dip_to_black": "dip_to_black",
                     "whip": "whip", "zoom": "zoom", "hard_sample": "hard_cut"}
 DEFAULT_FRAMES = {"dissolve": 12, "dip_to_black": 12, "flash_white": 6, "whip": 8, "zoom": 8,
@@ -69,6 +74,34 @@ ROUTES = {  # element -> (label, route, status, how); statuses from the Resolve 
 
 def load_json(p: Path, default=None):
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else default
+
+
+def video_meta(ref: Path) -> dict:
+    """Whose video this is, from opencli's meta.json (field/value rows) or a kept copy of it."""
+    raw = load_json(ref / "meta.json")
+    if isinstance(raw, dict) and isinstance(raw.get("data"), list):
+        raw = raw["data"]
+    if isinstance(raw, list):
+        raw = {r.get("field"): r.get("value") for r in raw if isinstance(r, dict)}
+    if not isinstance(raw, dict):
+        return {}
+    meta = {k: raw[k] for k in META_KEYS if raw.get(k)}
+    if "author" in meta:  # opencli writes "name (mid: 123)"; the mid has its own field
+        meta["author"] = re.sub(r"\s*\(mid:\s*\d+\)$", "", str(meta["author"]))
+    return meta
+
+
+def source_of(r: dict) -> dict:
+    """One sources[] entry: every pack has to say where it came from. A local file has no url."""
+    meta, mv = r["meta"], r["mv"]
+    bvid = meta.get("bvid") or mv.get("bvid")
+    src = mv.get("source") or {}
+    entry = {"id": r["id"], "url": f"https://www.bilibili.com/video/{bvid}" if bvid else "",
+             "title": meta.get("title") or Path(src.get("path") or src.get("name") or r["id"]).name,
+             "measured": mv.get("measured") or dt.date.today().isoformat()}
+    if meta.get("author"):
+        entry["author"] = meta["author"]
+    return entry
 
 
 def r3(x):
@@ -239,7 +272,7 @@ def analyse_ref(ref: Path) -> dict:
     align = stats.beat_alignment([c["t"] for c in cuts], beats.get("beats") or [], tol=1.0 / fps,
                                  spans=beats.get("nonspeech_spans"), downbeats=beats.get("downbeats")) \
         if beats.get("beats") else {"verdict": "no_beats"}
-    return {"id": ref.name, "mv": mv, "ma": ma, "lab": lab, "rejected": rejected, "unverified": unverified,
+    return {"id": ref.name, "meta": video_meta(ref), "mv": mv, "ma": ma, "lab": lab, "rejected": rejected, "unverified": unverified,
             "fps": fps, "duration": dur, "chapters": chapters, "shots": shots, "trans": trans, "align": align}
 
 
@@ -271,7 +304,6 @@ def look_text(look: dict) -> str:
 
 def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
     single = len(refs) == 1
-    today = dt.date.today().isoformat()
     total = sum(r["duration"] for r in refs)
     all_shots = [s for r in refs for s in r["shots"]]
     all_trans = [t for r in refs for t in r["trans"]]
@@ -521,8 +553,7 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
     src_fps = Counter(round(float(r["mv"]["video"]["source_fps"]), 3) for r in refs).most_common(1)[0][0]
     style = {
         "schema_version": 1, "name": name, "summary": "",
-        "sources": [{"id": r["id"], "url": f"https://www.bilibili.com/video/{r['mv']['bvid']}" if r["mv"].get("bvid") else "",
-                     "measured": today} for r in refs],
+        "sources": [source_of(r) for r in refs],
         "basis": "single_reference_chapters" if single else "multi_reference",
         "deliverable": {"fps": src_fps, "width": size[0], "height": size[1],
                         "duration_s": dist([r["duration"] for r in refs], 1),
@@ -548,11 +579,19 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
 
 
 def cmd_draft(args) -> int:
+    out = Path(args.out).expanduser() if args.out else Path(args.refs[0]).expanduser() / "style.draft.json"
+    if args.out and out.exists() and not args.force:
+        raise SystemExit(f"{out.name} exists and may hold hand-written parts: leave out --out to write "
+                         "REF_DIR/style.draft.json and merge by hand, or add --force")
     refs = [analyse_ref(Path(d).expanduser().resolve()) for d in args.refs]
+    mids = sorted({str(r["meta"]["mid"]) for r in refs if r["meta"].get("mid")})
+    if len(mids) > 1:
+        print(f"warning: references come from {len(mids)} uploaders (mid {', '.join(mids)}); "
+              "a creator album should pool one", file=sys.stderr)
     w, h = (int(x) for x in args.size.lower().split("x"))
     style = build_style(args.name, refs, (w, h))
     errs = schema.check_style(style)
-    out = Path(args.out).expanduser() if args.out else Path(args.refs[0]).expanduser() / "style.draft.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(style, ensure_ascii=False, indent=1), encoding="utf-8")
     ev = style["evidence"]
     print(f"wrote {out.name}: {len(style['structure']['sections'])} sections, "
@@ -622,6 +661,7 @@ def main(argv: list[str] | None = None) -> int:
     dr.add_argument("--name", required=True)
     dr.add_argument("--out")
     dr.add_argument("--size", default="3840x2160")
+    dr.add_argument("--force", action="store_true", help="overwrite an existing --out")
     ft = sub.add_parser("footage")
     ft.add_argument("--project", required=True)
     args = ap.parse_args(argv)

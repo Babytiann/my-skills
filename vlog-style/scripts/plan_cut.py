@@ -546,8 +546,12 @@ def main(argv: list[str] | None = None) -> int:
         beats_default = proj / "index" / "beats.json"
         args.beats = args.beats or (beats_default if beats_default.exists() else None)
         args.out = args.out or proj / "plan" / "cut_plan.json"
-    if args.style:
-        args.style_file = args.style_file or vpaths.SKILL_DIR / "styles" / vpaths.check_name(args.style) / "style.json"
+    if args.style and not args.style_file:
+        try:
+            args.style_file = vpaths.style_file(args.style)
+        except ValueError as exc:
+            print(f"plan_cut: {exc}", file=sys.stderr)
+            return 1
     if not (args.style_file and args.index and args.brief and args.out):
         ap.error("need --style/--style-file, --index, --brief and --out (or --project)")
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731

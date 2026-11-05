@@ -54,7 +54,11 @@ def load_style(args) -> dict | None:
     if getattr(args, "style_file", None):
         return json.loads(Path(args.style_file).expanduser().read_text(encoding="utf-8"))
     if getattr(args, "style", None):
-        return json.loads((vpaths.SKILL_DIR / "styles" / args.style / "style.json").read_text(encoding="utf-8"))
+        try:
+            path = vpaths.style_file(args.style)
+        except ValueError as exc:
+            raise SystemExit(f"compare: {exc}") from None
+        return json.loads(path.read_text(encoding="utf-8"))
     return None
 
 

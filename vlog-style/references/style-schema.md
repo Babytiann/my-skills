@@ -6,9 +6,68 @@
 |---|---|---|
 | `STYLE.md` | 人和 Claude | 按做片顺序写的完整流程，每条都有数值、依据和一致性标注 |
 | `style.json` | plan_cut.py、compare.py | 同一套流程的机器参数，`schema.py style` 校验通过才算数 |
-| `sources.md` | 人 | 参考片链接、UP 主、测量日期、用了哪些章节；参考片本身不保留，需要重测时按链接重新下 |
+| `sources.md` | 人 | 开头是出处表（模板见下）：参考片链接、UP 主、发布日期、时长、测量日期；然后写用了哪些章节。参考片本身不保留，测量 keep 在 root 的 `refs/` 下，需要重测时按链接重新下 |
 
 派生素材不进仓库，放在 `<root>/styles/<名字>/`：`stills/`（不超过 10 张低清关键帧，用于验收对照）、`luts/`、`drx/`、`fusion/`。style.json 里引用它们时写相对风格目录的路径，比如 `"drx": "drx/look.drx"`。
+
+## 两种文件夹：博主专辑和 misc
+
+```
+vlog-style/styles/                    仓库
+  links/                              博主专辑
+    sources.md                        出处表 + 子包表 + 候选视频表
+    STYLE.md, style.json              博主级合并包，炼完 ≥2 条才写（basis = multi_reference）
+    polar-night/                      子包：STYLE.md, style.json, sources.md
+  misc/                               只要这一条的风格，顶层没有合并包
+    README.md
+    <名字>/                           STYLE.md, style.json, sources.md
+
+<root>/styles/                        本机
+  links/refs/<BV号>/                  keep 留下的测量
+  links/polar-night/stills/ …
+  misc/refs/<id>/
+  misc/<名字>/stills/ …
+```
+
+- **调用。** `--style links`（博主级）、`--style links/polar-night`、`--style misc/<名字>`。只允许一层嵌套，子包不能叫 `refs`、`stills`、`luts`、`drx`、`fusion`。找不到包时报错并列出已有的包，比如还没有博主级包时 `--style links` 会列出 `links/` 下的子包。
+- **refs/。** `cleanup.py keep` 写进去：measure_video.json、measure_audio.json（转写和字幕原文剥掉，标题文字保留，labels 要用）、labels.json、meta.json（只留 bvid、title、author、mid、publish_time、duration_sec）。够重新 draft，不够重跑 measure。只在本机，不进仓库。
+- **博主专辑只收本人投稿的视频。** 入池前核对 mid；别人的视频即使出现在投稿列表里，也放进 misc，出处写真实的 UP 主。
+- **博主级包按每条视频比较**（multi_reference）。节奏写各条视频中位数的分布。调色跟着内容走，博主级包只写各条一致的部分，调色核对用子包。
+
+## sources.md 模板
+
+每个包都要有，至少要有视频链接。出处主要给人回溯；复刻时默认只靠风格包本身，什么时候回看原片见 SKILL.md 第 5 节。
+
+子包和 misc 包：
+
+```markdown
+# <包名> 的参考来源
+
+| 项 | 内容 |
+|---|---|
+| 参考 id | <BV号或本地文件名> |
+| 链接 | https://www.bilibili.com/video/<BV号>（本地文件写「本地文件」） |
+| 标题 | <视频标题> |
+| UP 主 | <名字>（mid <mid>，https://space.bilibili.com/<mid>） |
+| 发布日期 | YYYY-MM-DD |
+| 时长 | mm:ss |
+| 测量日期 | YYYY-MM-DD |
+| 用到的部分 | 全片或哪几章；没算进来的段落和原因 |
+
+## 怎么测的
+## 保留了什么
+仓库里的三个文件；`<root>/styles/<博主|misc>/refs/<id>/` 有没有 keep；stills/ 几张。
+## 后续
+回看补充、搬家、重测，每条带日期。
+```
+
+博主文件夹的 sources.md：出处表写 UP 主、空间链接和入池视频（每条一行）；子包表写每个子包出自哪条视频；候选视频表列出看过的投稿：
+
+```markdown
+| 状态 | 标题 | 链接 | 发布 | 时长 | UP 主 | 理由 |
+|---|---|---|---|---|---|---|
+| 入池 / 待炼 / 不入池 | … | https://www.bilibili.com/video/<BV号> | YYYY-MM-DD | mm:ss | <名字>（mid <mid>） | 为什么入池或不入池 |
+```
 
 风格包只放「怎么剪」，不放参考片的画面、音乐、字体，也不放某一次复刻的内容。
 
@@ -20,7 +79,7 @@
 |---|---|---|
 | `schema_version` | 固定为 1 | — |
 | `name`、`summary` | 名字和一句话风格 | summary 由 Claude 写 |
-| `sources[]` | `{id, url, measured, title}` | prep.json |
+| `sources[]` | `{id, url, title, measured, author}`。url、title 必填：B 站视频的 url 是视频链接，本地文件 url 留空、title 用文件名；author 可选 | aggregate 自动填：measured 取 measure_video.json 测量时写下的日期（旧文件没有才用当天），title、author、url 取参考目录里的 meta.json |
 | `basis` | `multi_reference`（多个参考之间比较）或 `single_reference_chapters`（一个参考的各章之间比较） | 参考个数 |
 | `deliverable` | `fps`、`width`、`height`、`duration_s`（分布）、`letterbox`（遮幅宽高比，没有为 null） | 参考片的帧率；尺寸默认 3840×2160，按用户素材定 |
 | `structure.sections[]` | `{role, share, shot_len_s, transition_in, notes}`。role 取 hook / intro / chapter / interlude / ending；share 之和为 1；同一个 role 只写一条，plan_cut 会把 chapter 按 brief 的章节展开 | labels 的章节 + 测量 |
@@ -75,6 +134,7 @@
 
 一句话：……
 依据：<参考片>，<章节数> 章，测量于 <日期>。basis = single_reference_chapters
+出处：见 sources.md
 
 ## 1. 成片规格
 画幅、分辨率、交付帧率、时长范围、遮幅。

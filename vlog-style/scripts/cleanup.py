@@ -1,29 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""List the vlog-style cache and move entries to the Trash.
+"""List the vlog-style cache, keep a reference's measurements, move entries to the Trash.
 
 Reference downloads, proxies, sheets and strips live in <root>/cache/refs/<id>/
-and are not kept once a style pack is accepted. This never deletes: it calls
-`trash` (macOS Trash, recoverable) and refuses anything outside <root>/cache.
-Without --yes it only prints what would move.
+and are not kept once a style pack is accepted. Before they go, `keep` copies
+what a later re-draft needs (measure_video.json, measure_audio.json,
+labels.json, meta.json) to <root>/styles/<group>/refs/<id>/ with transcripts
+and subtitle text stripped, so a creator album can grow without downloading
+the reference again. The kept copy lives under root only, never in the repo.
+
+This never deletes: it calls `trash` (macOS Trash, recoverable) and refuses
+anything outside <root>/cache. A measured reference that was never kept is
+refused too, unless --no-keep. Without --yes it only prints what would happen.
 
 Usage:
   python3 -I -B cleanup.py list
-  python3 -I -B cleanup.py trash REF_ID... [--yes]
-  python3 -I -B cleanup.py trash --all [--yes]
+  python3 -I -B cleanup.py keep REF_ID... --style GROUP [--yes]
+  python3 -I -B cleanup.py trash REF_ID... [--yes] [--no-keep]
+  python3 -I -B cleanup.py trash --all [--yes] [--no-keep]
 """
 
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
+import aggregate  # noqa: E402
 import paths as vpaths  # noqa: E402
 
 
@@ -41,8 +51,11 @@ def listing(P: vpaths.Paths) -> list[dict]:
     for p in sorted(cache.iterdir()):
         kids = sorted(p.iterdir()) if p.is_dir() and p.name == "refs" else [p]
         for k in kids:
-            out.append({"path": P.rel(k), "mb": round(du(k) / 2**20, 1),
-                        "files": sum(1 for _ in k.rglob("*")) if k.is_dir() else 1})
+            row = {"path": P.rel(k), "mb": round(du(k) / 2**20, 1),
+                   "files": sum(1 for _ in k.rglob("*")) if k.is_dir() else 1}
+            if p.name == "refs":
+                row["kept"] = [P.rel(x) for x in kept(P, k.name)]
+            out.append(row)
     return out
 
 
@@ -52,20 +65,107 @@ def inside_cache(P: vpaths.Paths, target: Path) -> bool:
     return t != cache and t.is_relative_to(cache)
 
 
+def kept(P: vpaths.Paths, ref_id: str) -> list[Path]:
+    """Kept copies of one reference under any creator album or misc."""
+    styles = P.dir("styles")
+    if not styles.exists():
+        return []
+    return sorted(p.parent for p in styles.glob(f"*/refs/{glob.escape(ref_id)}/measure_video.json"))
+
+
+# ---------------------------------------------------------------- keep
+
+def load(p: Path):
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def dump(p: Path, data) -> None:
+    p.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def strip_video(mv: dict, mtime: float) -> dict:
+    """Drop what was said or filmed; title text stays, labels point at it."""
+    mv = dict(mv)
+    # files measured before measure_video wrote the date: the file time is the honest one
+    mv.setdefault("measured", time.strftime("%Y-%m-%d", time.localtime(mtime)))
+    text = mv.get("text")
+    if isinstance(text, dict):
+        tracks = [t if t.get("kind") == "title" else dict(t, text="") for t in text.get("tracks", [])]
+        mv["text"] = dict(text, tracks=tracks, transcript=[])
+    return mv
+
+
+def strip_audio(ma: dict) -> dict:
+    """Keep speech timing, drop the words."""
+    ma = dict(ma)
+    tr = ma.get("transcript")
+    if isinstance(tr, dict):
+        def bare(rows):
+            return [{k: v for k, v in r.items() if k != "text"} for r in rows or []]
+        ma["transcript"] = dict(tr, segments=bare(tr.get("segments")),
+                                whisper=bare(tr.get("whisper")) if tr.get("whisper") else None)
+    return ma
+
+
+def keep(P: vpaths.Paths, ids: list[str], group: str, yes: bool) -> int:
+    try:
+        dest_root = P.style_refs(group)
+    except ValueError as exc:
+        print(f"refuse: {exc}; --style takes the top folder (a creator or misc), not GROUP/NAME", file=sys.stderr)
+        return 2
+    plan = []
+    for i in ids:
+        src = P.ref(i)
+        if not src.is_dir() or not inside_cache(P, src):
+            print(f"refuse: {P.rel(src)} is not a reference in the cache", file=sys.stderr)
+            return 2
+        missing = [n for n in ("measure_video.json", "labels.json") if not (src / n).exists()]
+        if missing:
+            print(f"refuse: {i} has no {', '.join(missing)}; measure and label it first", file=sys.stderr)
+            return 2
+        plan.append((src, dest_root / i))
+    for src, dest in plan:
+        verb = "replace" if dest.exists() else "keep"
+        print(f"{verb if yes else 'would ' + verb} {P.rel(src)} -> {P.rel(dest)}")
+    if not yes:
+        print("dry run: add --yes to write the kept copies", file=sys.stderr)
+        return 0
+    for src, dest in plan:
+        dest.mkdir(parents=True, exist_ok=True)
+        mv = src / "measure_video.json"
+        dump(dest / mv.name, strip_video(load(mv), mv.stat().st_mtime))
+        if (src / "measure_audio.json").exists():
+            dump(dest / "measure_audio.json", strip_audio(load(src / "measure_audio.json")))
+        shutil.copyfile(src / "labels.json", dest / "labels.json")
+        meta = aggregate.video_meta(src)
+        if meta:
+            dump(dest / "meta.json", meta)
+    return 0
+
+
+# ---------------------------------------------------------------- main
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list")
+    k = sub.add_parser("keep")
+    k.add_argument("ids", nargs="+")
+    k.add_argument("--style", required=True, help="top folder: a creator album or misc")
+    k.add_argument("--yes", action="store_true")
     t = sub.add_parser("trash")
     t.add_argument("ids", nargs="*")
     t.add_argument("--all", action="store_true")
     t.add_argument("--yes", action="store_true")
+    t.add_argument("--no-keep", action="store_true", help="also trash measured references that were never kept")
     args = ap.parse_args(argv)
     P = vpaths.load()
 
     if args.cmd == "list":
         print(json.dumps(listing(P), ensure_ascii=False, indent=1))
         return 0
+    if args.cmd == "keep":
+        return keep(P, args.ids, args.style, args.yes)
 
     if args.all == bool(args.ids):
         ap.error("give REF_ID... or --all")
@@ -74,6 +174,13 @@ def main(argv: list[str] | None = None) -> int:
     for x in targets:
         if not inside_cache(P, x):
             print(f"refuse: {x} is not inside the cache", file=sys.stderr)
+            return 2
+    if not args.no_keep:
+        unkept = [x for x in targets if (x / "measure_video.json").exists() and not kept(P, x.name)]
+        for x in unkept:
+            print(f"refuse: {P.rel(x)} has measurements that were never kept; run "
+                  f"`cleanup.py keep {x.name} --style <group> --yes` first, or add --no-keep", file=sys.stderr)
+        if unkept:
             return 2
     if not targets:
         print("nothing to trash")
