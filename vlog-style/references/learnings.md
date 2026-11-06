@@ -12,6 +12,48 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-06 `trash --all` 会带走还没测完的参考
+- 场景：第三条还在跑 OCR，另一个会话在规划清理 links 的下载缓存
+- 做法：`cleanup.py trash` 只靠 measure_video.json 判断要不要先 keep
+- 问题：还没跑完 measure_video 的参考没有这个文件，保护不起作用，`trash --all` 会把它和别的缓存一起移走，正在跑的任务就断了。按 id 清也一样，只是不容易点错
+- 修法：`trash` 默认挡住「没有 labels.json 也没有保留副本」和「有进程正在用」的参考，`--all` 跳过并列在 stderr，按 id 时拒绝。有意放弃的下载加 `--unfinished`；正在用的一律不动。`list` 加了 `state`。有保留副本的回看下载不算没测完
+
+## 2026-11-06 博主级 draft 能跑通，但有几项不能直接用
+- 场景：links 博主级包，三条真实参考第一次合并
+- 做法：直接用 `aggregate.py draft` 的结果
+- 问题：`summary` 是空的；`grade.summary`、`audio.mood`、`selection.opening` 只取单条；`text.title` 的位置和 `offset_s` 按标题个数算，一条片子的 7 个标题压过另外两条，`offset_s` 成了 34.78 s（plan_cut 会把标题推迟到段落开始后这么久）；`grade.look` 带着三条相差很大的色偏；`transitions` 带着 `other`（拍摄时做的手挡镜头），plan_cut 按占比可能抽中，Resolve 又搭不出来
+- 修法：逐项手改，写进 links/STYLE.md 的炼化记录。标题的位置和时机取每条视频的中位数；look 只留三条一致的项；`other` 从 `transitions` 去掉，计数留在 evidence。写下一个博主级包时照这个清单过一遍
+
+## 2026-11-06 STYLE.md 里顺手写的数和定性说法没有对过测量
+- 场景：links/first-snow-mountain 和 links/kula-kangri 写完之后复核
+- 做法：照上一条的模板写，「多数」「大部分」这类话凭判读时的印象
+- 问题：「地图多数用 15–20 帧叠化进出」实际是 9 个里 5 个、14–20 帧；「对话撑起大部分时长」实际中景按时长占 49.9%；kula 写的「185 个稳定前进或后退」实际是 104
+- 修法：写完用脚本按 qa.md 逐条核，尤其是「多数」这类词，能换成数字就换
+
+## 2026-11-06 下载超过 60 秒，opencli 就报失败，文件其实是完整的
+- 场景：links/first-snow-mountain（55:12，1.1 GB），`prep.py ref` 调 `opencli bilibili download`
+- 做法：只按 opencli 的退出码和留下的文件判断下载成败，报错时只显示 stderr
+- 问题：两次都报 download failed，stderr 结尾却是 `Download complete`，两次的文件逐字节相同，完整解码 0 错误。opencli 的浏览器命令默认 60 秒超时（`OPENCLI_BROWSER_COMMAND_TIMEOUT`），超时只报错、不中止下载，错误打在 stdout 上。前两条下载 50–58 秒没碰到，这条要 106–132 秒
+- 修法：`prep.py` 下载时把这个超时设成 `DOWNLOAD_TIMEOUT_S`（3600 秒），用户自己设过的值优先；失败时报退出码，stdout 和 stderr 都带上。重下一次退出码为 0
+
+## 2026-11-06 OCR 读到的 `/bpm` 被 paths.py check 当成绝对路径
+- 场景：links/kula-kangri keep 之后跑 `paths.py check`
+- 做法：JSON 里凡是以 `/` 开头的字符串都算绝对路径
+- 问题：片子里指夹血氧仪外壳上印的 `PR /bpm`，`/bpm` 被 OCR 读成了两条标题轨，在 measure_video.json 和 labels.json 里一共报了 6 个绝对路径，其实一个也没有
+- 修法：OCR 文字字段（`text.tracks`、`text.transcript`、`strips.titles`、`titles`、`samples` 的 `text`）以 `/` 开头、又不含真实文件系统根目录的值，`check` 只列成提示，不计数。其他字段照旧
+
+## 2026-11-06 字幕被 OCR 判成标题，keep 之后原文还留着
+- 场景：links/kula-kangri，`cleanup.py keep` 之后查保留的测量里有没有字幕原文
+- 做法：只拿 kind 为 subtitle 的轨去搜
+- 问题：keep 只清 kind 不是 title 的轨。T2357 是一行字幕，OCR 判成了 title，判读时标了 other、note 记 subtitle_misread，14 个字在 measure_video.json 和 labels.json 里共留了 3 处
+- 修法：判读时把误判成标题的字幕记成 note `subtitle_misread`，keep 之后按这个 note 把保留副本里的对应文字清空，再拿缓存里的原文搜一遍，搜不到才算过
+
+## 2026-11-05 PySceneDetect 和 ffmpeg 的帧号在长片上会错开
+- 场景：links/lonely-house（29:22），第一次在长片上跑 measure_video
+- 做法：把 PySceneDetect 给的帧号直接和 ffmpeg 管道里的帧号比较
+- 问题：ffmpeg 的 rawvideo 管道是恒定帧率，时间戳跳的地方会重复一帧；PySceneDetect 用 OpenCV，只数解码出来的帧。代理约每 240 s 跳一帧，全片错开 7 帧。结果两路一致的剪辑点只有 116 个，否掉 147 个 psd 剪辑点，多出 29 个 0.5 s 以下的重复镜头。从碎镜头数量异常发现，比对两路的帧号确认
+- 修法：`measure_video.py` 用 `proxy_clock` 读代理的时间戳，`stats.cfr_index` 把 PySceneDetect 的帧号映射到恒定帧率时钟，错开的帧数记进 `cuts.psd_clock_shift`。重测后一致 296 个，否掉 0 个，碎镜头 5 个
+
 ## 2026-11-05 投稿列表不等于本人投稿：入池前逐条核对 mid
 - 场景：给 Links（mid 3816626）建博主专辑，`opencli bilibili user-videos` 列候选
 - 做法：先按投稿列表挑候选

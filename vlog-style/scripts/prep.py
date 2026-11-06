@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -36,6 +37,10 @@ import paths as vpaths  # noqa: E402
 PROXY_HEIGHT = 540
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".m4v", ".mts", ".mxf", ".avi", ".webm", ".flv"}
 BV_RE = re.compile(r"(BV[0-9A-Za-z]{10})")
+DOWNLOAD_TIMEOUT_S = 3600
+# opencli stops waiting for a browser command after 60 s unless told otherwise, yet lets the
+# command run on: a longer download leaves a complete file and still exits non-zero.
+OPENCLI_TIMEOUT_ENV = "OPENCLI_BROWSER_COMMAND_TIMEOUT"
 
 
 def run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
@@ -163,9 +168,13 @@ def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tup
 
     if not videos():  # re-running prep keeps an earlier download
         # download prints progress, not JSON: judge it by exit code and the file it leaves
-        r = run(["opencli", "bilibili", "download", bv, "--output", str(src_dir), "--quality", quality], timeout=3600)
+        env = {OPENCLI_TIMEOUT_ENV: str(DOWNLOAD_TIMEOUT_S), **os.environ}
+        r = run(["opencli", "bilibili", "download", bv, "--output", str(src_dir), "--quality", quality],
+                timeout=DOWNLOAD_TIMEOUT_S, env=env)
         if r.returncode or not videos():
-            raise SystemExit(f"download failed for {bv}: {(r.stderr or r.stdout).strip()[-400:]}")
+            # opencli reports errors on stdout and progress on stderr
+            raise SystemExit(f"download failed for {bv} (exit {r.returncode})\n"
+                             f"stdout: {r.stdout.strip()[-400:]}\nstderr: {r.stderr.strip()[-400:]}")
     files = videos()
     subs, _ = opencli_json(["subtitle", bv, "--lang", "ai-zh"], timeout=120)
     if subs:

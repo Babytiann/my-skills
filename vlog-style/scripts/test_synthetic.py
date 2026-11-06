@@ -190,6 +190,7 @@ class SyntheticTest(unittest.TestCase):
     def test_cuts(self):
         cuts = self.m["cuts"]["cuts"]
         self.assertEqual(len(cuts), 4, [(c["frame"], c["kind"], c["span"]) for c in cuts])
+        self.assertEqual(self.m["cuts"]["psd_clock_shift"], 0)  # a clean proxy needs no clock mapping
         self.assertEqual(self.cut_near(90)["kind"], "hard")
         self.assertEqual(self.cut_near(390)["kind"], "hard")
         self.cut_near(270)

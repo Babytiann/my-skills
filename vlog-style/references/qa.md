@@ -12,7 +12,7 @@
 - [ ] 调色的 summary 和 look 数值方向一致。比如写了「偏冷」，`mid_b` 就应该为负。
 - [ ] `stills/` 不超过 10 张，是低清关键帧，只用来做验收对照。
 - [ ] STYLE.md 里没有参考片的台词原文大段摘录，也没有画面、音乐、字体文件。
-- [ ] `paths.py check` 对风格包、缓存和 `<root>/styles/<博主|misc>/refs/` 里的 JSON 都报 0 个绝对路径。
+- [ ] `paths.py check` 对风格包、缓存和 `<root>/styles/<博主|misc>/refs/` 里的 JSON 都报 0 个绝对路径。OCR 文字的提示不计入，但要扫一眼确认确实是片子里的字。
 - [ ] sources.md 开头的出处表齐全（UP 主名字、mid、空间链接；视频标题、链接、发布日期、时长；测量日期），链接和 style.json 的 `sources[]` 对得上。
 - [ ] 博主级包至少 2 条入池，而且都是同一个 mid（aggregate 没有打印多 UP 主的警告）；节奏按每条视频的中位数写；look 核对用子包，不用博主级包。
 - [ ] 清缓存之前 keep 过：`cleanup.py list` 里这条参考的 `kept` 不是空的，`refs/` 里没有转写和字幕原文，也没有进仓库。

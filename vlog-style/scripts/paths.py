@@ -10,7 +10,8 @@ trial mount) without touching the file.
 Rules enforced here:
 - files under root are referred to by relative POSIX paths ("projects/x/a.mp4");
 - an absolute path is built only at the moment a tool needs it and is never
-  written back into JSON or Markdown (`check` finds violations).
+  written back into JSON or Markdown (`check` finds violations; OCR text that
+  only looks like a path is listed as a note instead).
 
 Usage:
   python3 -I -B paths.py show
@@ -46,6 +47,10 @@ ABS_IN_TEXT = re.compile(
     r"(?<![\w:/.])(?:~/|/(?:Users|Volumes|private|tmp|var|home|opt|Library|Applications|System|mnt|media)/)"
     r"|\b[A-Za-z]:\\\\?"
 )
+# JSON fields holding text OCR read off the film. A value starting with "/" there
+# is usually on-screen text ("/bpm"), so `check` lists it as a note. One that still
+# names a real filesystem root stays a hit.
+OCR_TEXT_FIELD = re.compile(r"^\$\.(?:text\.(?:tracks|transcript)|strips\.titles|titles|samples)\[\d+\]\.text$")
 
 
 @dataclass(frozen=True)
@@ -159,27 +164,33 @@ def _json_strings(value, where="$"):
             yield from _json_strings(v, f"{where}[{i}]")
 
 
-def find_absolute(path: Path) -> list[str]:
-    """Report absolute paths inside one JSON/MD/TXT file."""
+def scan_file(path: Path) -> tuple[list[str], list[str]]:
+    """Absolute paths inside one JSON/MD/TXT file, and OCR readings that only look like one."""
     text = path.read_text(encoding="utf-8", errors="replace")
-    hits = []
+    hits, notes = [], []
     if path.suffix == ".json":
         try:
             data = json.loads(text)
         except json.JSONDecodeError as exc:
-            return [f"{path}: invalid JSON ({exc})"]
+            return [f"{path}: invalid JSON ({exc})"], []
         for where, s in _json_strings(data):
             if s.startswith(("/", "~/")) or re.match(r"^[A-Za-z]:[\\/]", s):
-                hits.append(f"{path}: {where} = {s[:120]!r}")
+                reading = OCR_TEXT_FIELD.match(where) and s.startswith("/") and not ABS_IN_TEXT.search(s)
+                (notes if reading else hits).append(f"{path}: {where} = {s[:120]!r}")
     else:
         for n, line in enumerate(text.splitlines(), 1):
             if ABS_IN_TEXT.search(line):
                 hits.append(f"{path}:{n}: {line.strip()[:120]}")
-    return hits
+    return hits, notes
 
 
-def check(targets: list[Path]) -> list[str]:
-    hits = []
+def find_absolute(path: Path) -> list[str]:
+    """Report absolute paths inside one JSON/MD/TXT file."""
+    return scan_file(path)[0]
+
+
+def scan(targets: list[Path]) -> tuple[list[str], list[str]]:
+    hits, notes = [], []
     for t in targets:
         files = [t] if t.is_file() else sorted(
             p for p in t.rglob("*") if p.suffix in {".json", ".md", ".txt", ".toml"} and p.is_file()
@@ -187,8 +198,14 @@ def check(targets: list[Path]) -> list[str]:
         for f in files:
             if f.resolve() == CONFIG.resolve():
                 continue  # the one place an absolute root is allowed
-            hits += find_absolute(f)
-    return hits
+            found, noted = scan_file(f)
+            hits += found
+            notes += noted
+    return hits, notes
+
+
+def check(targets: list[Path]) -> list[str]:
+    return scan(targets)[0]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -218,10 +235,12 @@ def main(argv: list[str] | None = None) -> int:
     elif args.cmd == "resolve":
         print(paths.abs(args.rel))
     elif args.cmd == "check":
-        hits = check(args.targets)
+        hits, notes = scan(args.targets)
         for h in hits:
             print(h)
-        print(f"{len(hits)} absolute path(s) found", file=sys.stderr)
+        for n in notes:
+            print(f"note: OCR text, not counted: {n}", file=sys.stderr)
+        print(f"{len(hits)} absolute path(s) found, {len(notes)} OCR note(s)", file=sys.stderr)
         return 1 if hits else 0
     return 0
 

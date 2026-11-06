@@ -183,6 +183,19 @@ def psd_cuts(proxy: Path) -> list[int]:
     return [int(start.frame_num) for start, _ in scenes[1:]]
 
 
+def proxy_clock(proxy: Path, fps: float) -> list[int] | None:
+    """Decoded-frame count -> ffmpeg's constant-rate frame index, from the proxy's packet timestamps."""
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "packet=pts_time",
+                        "-of", "csv=p=0", str(proxy)], capture_output=True, text=True)
+    pts = []
+    for x in r.stdout.split():
+        try:
+            pts.append(float(x.split(",")[0]))
+        except ValueError:
+            continue
+    return stats.cfr_index(pts, fps) if r.returncode == 0 and pts else None
+
+
 def stage_cuts(d: Path, proxy: Path, fps: float, use_psd: bool) -> dict:
     small = read_frames(proxy, 48, 27, flags="bicubic")
     n = len(small)
@@ -203,10 +216,18 @@ def stage_cuts(d: Path, proxy: Path, fps: float, use_psd: bool) -> dict:
         else:
             found.append({"frame": a + (b + 1 - a) // 2, "kind": "gradual", "span": [a, b + 1],
                           "score": score, "src": "transnet"})
-    rejected = []
+    rejected, shift = [], None
     if use_psd:
         log("pyscenedetect cross-check")
+        # PySceneDetect counts decoded frames; the frames above come from ffmpeg's constant-rate pipe,
+        # which repeats a frame where timestamps skip, so a long proxy drifts a frame every few minutes
+        clock = proxy_clock(proxy, fps)
+        shift = clock[-1] - (len(clock) - 1) if clock else None
+        if shift:
+            log(f"proxy timestamps skip {shift} frame(s); psd frames mapped onto the constant-rate clock")
         for f in psd_cuts(proxy):
+            if clock and f < len(clock):
+                f = clock[f]
             hit = next((c for c in found if c["span"][0] - 2 <= f <= max(c["span"][1], c["frame"]) + 2), None)
             if hit:
                 hit["src"] = "both"
@@ -236,6 +257,7 @@ def stage_cuts(d: Path, proxy: Path, fps: float, use_psd: bool) -> dict:
     bounds = [0] + [c["frame"] for c in cuts] + [n]
     shots = [{"i": i, "start": a, "end": b} for i, (a, b) in enumerate(zip(bounds, bounds[1:]))]
     return {"n_frames": n, "fps": fps, "cuts": cuts, "shots": shots, "psd_rejected": rejected,
+            "psd_clock_shift": shift,
             "counts": {"hard": sum(c["kind"] == "hard" for c in cuts),
                        "gradual": sum(c["kind"] == "gradual" for c in cuts),
                        "agree": sum(c["src"] == "both" for c in cuts)}}

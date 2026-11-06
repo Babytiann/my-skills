@@ -37,6 +37,13 @@ class SummaryTest(unittest.TestCase):
     def test_shot_lengths(self):
         self.assertEqual(stats.shot_lengths([2.0, 5.0, 12.0], 0.0, 10.0), [2.0, 3.0, 5.0])
 
+    def test_cfr_index_follows_timestamp_gaps(self):
+        # one frame missing after the third: counting frames would put the rest one early
+        pts = [10 + k / 30 for k in (0, 1, 2, 4, 5)]
+        self.assertEqual(stats.cfr_index(pts, 30.0), [0, 1, 2, 4, 5])
+        self.assertEqual(stats.cfr_index(list(reversed(pts)), 30.0), [0, 1, 2, 4, 5])
+        self.assertEqual(stats.cfr_index([], 30.0), [])
+
 
 class BeatTest(unittest.TestCase):
     beats = [0.5 * k for k in range(240)]  # 120 BPM, 2 min
