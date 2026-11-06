@@ -316,7 +316,7 @@
    },
    "L99": {
     "median": 78.305,
-    "mad": 5.484
+    "mad": 7.7
    },
    "Lstd": {
     "median": 20.805,
@@ -345,19 +345,21 @@
  },
  "text": {
   "title": {
-   "font_class": "装饰体",
+   "font_class": "黑体",
    "fallback_fonts": [
-    "PingFang SC"
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
    ],
-   "height_frac": 0.0667,
+   "height_frac": 0.0627,
    "position": [
     0.501,
     0.391
    ],
    "color": [
-    0.863,
-    0.914,
-    0.973
+    0.918,
+    0.922,
+    0.965
    ],
    "stroke": false,
    "plate": false,

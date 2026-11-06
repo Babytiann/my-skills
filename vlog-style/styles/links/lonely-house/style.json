@@ -297,7 +297,7 @@
    "in": "cut",
    "out": "cut",
    "duration_s": 0.87,
-   "offset_s": 91.16,
+   "offset_s": 0.17,
    "template": "Text+",
    "per": "location"
   },
