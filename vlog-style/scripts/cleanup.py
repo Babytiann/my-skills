@@ -10,14 +10,22 @@ and subtitle text stripped, so a creator album can grow without downloading
 the reference again. The kept copy lives under root only, never in the repo.
 
 This never deletes: it calls `trash` (macOS Trash, recoverable) and refuses
-anything outside <root>/cache. A measured reference that was never kept is
-refused too, unless --no-keep. Without --yes it only prints what would happen.
+anything outside <root>/cache. Without --yes it only prints what would happen.
+
+What trash leaves alone by default, and the way past it:
+  in use      a process has a file open under the reference. Stop that process first.
+  unfinished  no labels.json and no kept copy, so a distill may still be running.
+              REF_ID is refused and --all skips it; --unfinished takes it anyway
+              (an abandoned download, a re-watch clip that was never kept).
+  never kept  measured but not kept. Refused, unless --no-keep.
+
+`list` gives each reference a state: busy, unfinished, measured or kept.
 
 Usage:
   python3 -I -B cleanup.py list
   python3 -I -B cleanup.py keep REF_ID... --style GROUP [--yes]
-  python3 -I -B cleanup.py trash REF_ID... [--yes] [--no-keep]
-  python3 -I -B cleanup.py trash --all [--yes] [--no-keep]
+  python3 -I -B cleanup.py trash REF_ID... [--yes] [--no-keep] [--unfinished]
+  python3 -I -B cleanup.py trash --all [--yes] [--no-keep] [--unfinished]
 """
 
 from __future__ import annotations
@@ -51,10 +59,13 @@ def listing(P: vpaths.Paths) -> list[dict]:
     for p in sorted(cache.iterdir()):
         kids = sorted(p.iterdir()) if p.is_dir() and p.name == "refs" else [p]
         for k in kids:
+            if k.name.startswith("."):  # .DS_Store and friends are not cache entries
+                continue
             row = {"path": P.rel(k), "mb": round(du(k) / 2**20, 1),
                    "files": sum(1 for _ in k.rglob("*")) if k.is_dir() else 1}
             if p.name == "refs":
                 row["kept"] = [P.rel(x) for x in kept(P, k.name)]
+                row["state"] = ref_state(P, k)
             out.append(row)
     return out
 
@@ -71,6 +82,28 @@ def kept(P: vpaths.Paths, ref_id: str) -> list[Path]:
     if not styles.exists():
         return []
     return sorted(p.parent for p in styles.glob(f"*/refs/{glob.escape(ref_id)}/measure_video.json"))
+
+
+def busy(path: Path) -> list[str]:
+    """Pids with a file open under path. Without lsof the check is skipped."""
+    tool = shutil.which("lsof")
+    if not tool:
+        return []
+    return subprocess.run([tool, "-t", "+D", str(path)], capture_output=True, text=True).stdout.split()
+
+
+def unfinished(P: vpaths.Paths, x: Path) -> bool:
+    """A reference with no labels and no kept copy; a re-watch of a kept one does not count."""
+    return (x.is_dir() and x.parent.name == "refs"
+            and not (x / "labels.json").exists() and not kept(P, x.name))
+
+
+def ref_state(P: vpaths.Paths, ref: Path) -> str:
+    if busy(ref):
+        return "busy"
+    if kept(P, ref.name):
+        return "kept"
+    return "unfinished" if unfinished(P, ref) else "measured"
 
 
 # ---------------------------------------------------------------- keep
@@ -158,6 +191,8 @@ def main(argv: list[str] | None = None) -> int:
     t.add_argument("--all", action="store_true")
     t.add_argument("--yes", action="store_true")
     t.add_argument("--no-keep", action="store_true", help="also trash measured references that were never kept")
+    t.add_argument("--unfinished", action="store_true",
+                   help="also trash references with no labels and no kept copy")
     args = ap.parse_args(argv)
     P = vpaths.load()
 
@@ -175,6 +210,18 @@ def main(argv: list[str] | None = None) -> int:
         if not inside_cache(P, x):
             print(f"refuse: {x} is not inside the cache", file=sys.stderr)
             return 2
+    in_use = {x: pids for x in targets if (pids := busy(x))}
+    not_done = [x for x in targets if x not in in_use and unfinished(P, x) and not args.unfinished]
+    verb = "skip" if args.all else "refuse"
+    for x, pids in in_use.items():
+        print(f"{verb}: {P.rel(x)} is in use by pid {', '.join(pids)}; stop that process first", file=sys.stderr)
+    for x in not_done:
+        print(f"{verb}: {P.rel(x)} has no labels.json and no kept copy, so it may still be running; "
+              "add --unfinished if it is abandoned", file=sys.stderr)
+    if args.all:
+        targets = [x for x in targets if x not in in_use and x not in not_done]
+    elif in_use or not_done:
+        return 2
     if not args.no_keep:
         unkept = [x for x in targets if (x / "measure_video.json").exists() and not kept(P, x.name)]
         for x in unkept:

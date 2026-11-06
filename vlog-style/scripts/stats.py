@@ -88,6 +88,18 @@ def shot_lengths(cut_times: list[float], start: float, end: float) -> list[float
     return [b - a for a, b in zip(pts, pts[1:]) if b > a]
 
 
+def cfr_index(pts: list[float], fps: float) -> list[int]:
+    """k-th decoded frame -> its index on a constant-rate grid starting at the first frame.
+
+    ffmpeg's rawvideo pipe is constant-rate (it repeats a frame where timestamps skip),
+    while OpenCV-based readers just count frames; this maps the count onto ffmpeg's clock.
+    """
+    if not pts:
+        return []
+    ts = sorted(pts)
+    return [round((t - ts[0]) * fps) for t in ts]
+
+
 # ---------------------------------------------------------------- beats
 
 def _inside(t: float, spans) -> bool:

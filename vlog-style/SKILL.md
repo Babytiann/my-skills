@@ -39,7 +39,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 - 风格包的名字是 `名字` 或 `分组/名字`，只允许一层嵌套。分组是一个博主（比如 `links`）或 `misc`：`--style links` 是博主级合并包，`--style links/polar-night` 是其中的子包。分组目录下要放 `refs/` 和博主级包自己的素材目录，所以子包不能叫 `refs`、`stills`、`luts`、`drx`、`fusion`。ref id、项目名和分组名都不能带 `/`。
 - `refs/` 只在 root 下，不进仓库：仓库是公开的。
 - 所有 JSON 和 Markdown 里只写相对路径：项目文件相对 root，风格包素材相对风格目录。
-- 只在调用工具的那一刻用 `scripts/paths.py resolve` 拼绝对路径，不写回任何文件。`paths.py check` 能查出违规的文件。
+- 只在调用工具的那一刻用 `scripts/paths.py resolve` 拼绝对路径，不写回任何文件。`paths.py check` 能查出违规的文件。例外：OCR 从片子里读到的文字如果只是以 `/` 开头（比如屏幕上的 `/bpm`），只列成提示，不计入绝对路径数；值里含真实文件系统路径的仍算违规。
 
 ## 2. 环境
 
@@ -86,7 +86,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 9. **试剪。** 用户给几段素材走一遍 apply（工程名 `vlog-style-QA-*`），对照关键帧和统计；问题改回风格包，记进 learnings.md。
 10. **清理。** 用户确认风格包之后，先留测量，再清缓存：
     - `cleanup.py keep <id> --style <博主|misc> --yes`，把剥掉转写、字幕原文和简介的测量留到 `<root>/styles/<博主|misc>/refs/<id>/`，以后补参考、写博主级包时直接用。`--style` 只写顶层文件夹，不写子包。
-    - `cleanup.py trash <id> --yes`，把 `cache/refs/<id>` 移进废纸篓。有测量却没 keep 过的参考会被拒绝；确实不留的加 `--no-keep`。
+    - `cleanup.py trash <id> --yes`，按 id 把 `cache/refs/<id>` 移进废纸篓。默认挡住三种：有进程正在用的，先停掉那个进程；没有 labels.json 也没有保留副本的，可能还在炼，有意放弃的下载加 `--unfinished`；有测量却没 keep 过的，确实不留的加 `--no-keep`。`trash --all` 跳过前两种并在 stderr 列出来，其余照清。每条的状态看 `cleanup.py list` 的 `state`。
     - 两步都先不加 `--yes` 跑一遍，给用户看要留下什么、要移走什么。
 
 ### 博主模式：给一个博主建专辑
@@ -109,7 +109,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 - 用户要求对照原片；
 - refine 时要补测。
 
-回看时先用本机已有的：先查 `<root>/styles/<博主|misc>/refs/` 里的测量和 `stills/`，不够再按出处链接重下这一条；能只看相关的时间段，就只看那一段。用完照旧 keep、trash。回看得出的结论写回 STYLE.md 对应小节，标上日期和「回看补充」，同一个问题下次就不用再看。
+回看时先用本机已有的：先查 `<root>/styles/<博主|misc>/refs/` 里的测量和 `stills/`，不够再按出处链接重下这一条；能只看相关的时间段，就只看那一段。用完照旧 keep、trash；只看了一段、没有 keep 过的回看片段，trash 时加 `--unfinished`。回看得出的结论写回 STYLE.md 对应小节，标上日期和「回看补充」，同一个问题下次就不用再看。
 
 详细步骤见 [apply.md](references/apply.md)。
 
@@ -160,4 +160,5 @@ uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg
 - 测量、汇总、剪辑计划、压低、读回和调色对照已经写完，合成测试全部通过。
 - Resolve 探针 2026-11-02 在本机（Studio 21.1.1.10 + MCP 4.15.3）跑完，12 项都有结论，写进了 resolve-routes.md 的「本机」一列和常见坑。换了路线的：标题写字（`fusion_comp bulk_set_inputs`）、调色（中性 DRX + merge + `graph set_lut`）、片段音量（`AudioVolume`）、推拉（最小 `.comp` 模板）、字幕 .srt（空时间线上旧式 append）。变速曲线的离线 `.drt` 否掉，改手动。还没探针：划像、遮幅、Glow。否掉的做法见 learnings.md 2026-11-02。Resolve 或 MCP 升级后重跑探针。
 - 第一个参考是 BV1sHqPBLExZ（Linksphotograph《当太阳不再升起》第 1 集，约 30 分钟，内嵌字幕），已炼成 `styles/polar-night/`（2026-11-05 搬到 `styles/links/polar-night/`），用户已审过 STYLE.md。只有一个参考，按章节比较一致性；参考缓存已清，原始测量在有 keep 之前就随缓存进了废纸篓。
-- 2026-11-05 改成按博主建专辑。`styles/links/` 是 Links（mid 3816626）的专辑，候选视频和理由在 `links/sources.md`；第一批三条是用户定的，取旅行片里播放量最高的：最孤独的房子、和李现攀登人生第一座雪山、和李现徒步在西藏库拉岗日，还没下载。`misc/` 还是空的。
+- 2026-11-05 改成按博主建专辑。`styles/links/` 是 Links（mid 3816626）的专辑，候选视频和理由在 `links/sources.md`。`misc/` 还是空的。
+- 2026-11-06 第一批三条炼完：`links/lonely-house`、`links/kula-kangri`、`links/first-snow-mountain`（用户定的挑法：旅行片里播放量最高的三条），测量都 keep 到了 `<root>/styles/links/refs/`。博主级包 `links` 由这三份测量合并，basis = multi_reference，是多参考合并第一次用真实数据，手改项记在 `links/STYLE.md` 的炼化记录。polar-night 没有参与合并。三条的缓存 2026-11-06 移进了废纸篓，清不清空由用户定。试剪还没做：没有素材。

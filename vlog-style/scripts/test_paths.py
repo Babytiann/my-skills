@@ -4,11 +4,13 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
@@ -106,6 +108,40 @@ class PathsTest(unittest.TestCase):
         self.assertEqual(len(hits), 2, hits)
         self.assertTrue(any("bad.json" in h and "$.clips[0].source" in h for h in hits))
         self.assertTrue(any("bad.md:1" in h for h in hits))
+
+    def test_check_lists_ocr_readings_as_notes(self):
+        d = Path(self.tmp.name) / "ocr"
+        d.mkdir()
+        reading = "/bpm"  # on-screen text in a film, read by OCR
+        (d / "measure_video.json").write_text(json.dumps({
+            "text": {"tracks": [{"text": reading}], "transcript": [{"text": reading}]},
+            "strips": {"titles": [{"text": reading}]},
+        }))
+        (d / "labels.json").write_text(json.dumps({"titles": [{"text": reading}]}))
+        (d / "ocr.json").write_text(json.dumps({"samples": [{"text": reading}]}))
+        self.assertEqual(paths.check([d]), [])
+        hits, notes = paths.scan([d])
+        self.assertEqual(hits, [])
+        self.assertEqual(len(notes), 5, notes)
+        with redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(paths.main(["check", str(d)]), 0)
+        self.assertIn("0 absolute path(s) found, 5 OCR note(s)", err.getvalue())
+
+    def test_check_keeps_real_paths_in_ocr_fields_and_other_fields(self):
+        d = Path(self.tmp.name) / "mixed"
+        d.mkdir()
+        (d / "measure_video.json").write_text(json.dumps({
+            "text": {"tracks": [{"text": "/Users/me/a.mp4"}, {"text": "~/a.mp4"}, {"text": "C:/a.mp4"}]},
+            "video": {"path": "/bpm"},
+            "strips": {"events": [{"text": "/bpm"}]},
+        }))
+        hits, notes = paths.scan([d])
+        self.assertEqual(notes, [])
+        self.assertEqual(len(hits), 5, hits)
+        self.assertEqual(paths.check([d]), hits)
+        self.assertEqual(paths.find_absolute(d / "measure_video.json"), hits)
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(paths.main(["check", str(d)]), 1)
 
 
 if __name__ == "__main__":

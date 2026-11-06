@@ -27,8 +27,13 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 - **第一次运行会下载模型。**
   - torch 等依赖约 2 GB，已经下好。
   - beat_this 的权重 81 MB。服务器很慢，下载会被截断，所以不由脚本自动下载，要手动下到 `~/.cache/torch/hub/checkpoints/beat_this-final0.ckpt`。没下好时脚本自动改用 librosa，`beats.engine` 会记为 `librosa`，这时没有重拍。
-  - whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。没有人声的片子加 `--no-asr`。
+  - whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。默认会跑；没有人声的片子，或者烧录字幕已经覆盖旁白时，加 `--no-asr`（先看字幕段有没有长空档）。
 - **在合成测试片上实测：** 16 秒的片子跑完全部测量约 10 秒。长片的耗时在第一次真实炼化时记到这里。博主模式的第一批（links 是 29–55 分钟）每步跑完都记一下耗时，再决定更长的片子要不要入池。
+  - 实测（M 系列 Mac，1080p 下载，`--no-asr`，单位分钟；判读没有计时）：
+    - 最孤独的房子（29:22）：prep 2.9、OCR 10.3、measure_video 7.3、measure_audio 0.7、`--redo text` 0.4，合计 21.6。另外修 bug 后重测 `--redo cuts` 7.0。
+    - 库拉岗日（37:33）：prep 3.5、OCR 12.3、measure_video 8.5、measure_audio 0.8、`--redo text` 0.3，合计 25.4。
+    - 第一座雪山（55:12）：prep 5.0、OCR 17.4、measure_video 13.7、measure_audio 1.5、`--redo text` 0.5，合计 38.1。另外有两次 prep 因 opencli 超时报失败（2.0、2.4），见 learnings.md。
+    - 测量合计约是片长的 0.7 倍，OCR 占将近一半。
 - **先 keep 再 trash。** 留下的测量够重新 draft（结果和用 cache 跑的一样），但没有原片、代理和抽帧，不能重跑 measure 的各阶段。`measure_video.json` 的 `measured` 记的是每次跑的日期；旧文件没有这一项，keep 时用文件修改日期补上。
 
 ## measure_video.py
@@ -37,7 +42,7 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 
 | 阶段 | 做法 | 关键输出 |
 |---|---|---|
-| cuts | TransNetV2（CPU）跑 48×27 小图，概率超过 0.5 的连续帧算一个转场。连续不超过 3 帧算硬切，用帧差把剪辑点精确到具体一帧；更长的算渐变，剪辑点放在中点。再用 PySceneDetect AdaptiveDetector 交叉核对：只有 PySceneDetect 发现的剪辑点，需要 TransNet 至少有 0.1 的弱信号，或帧差突跳，才收；不收的记进 `psd_rejected` | `cuts[]`：frame、t、kind（hard / gradual）、span、frames、src（transnet / psd / both）。`shots[]` |
+| cuts | TransNetV2（CPU）跑 48×27 小图，概率超过 0.5 的连续帧算一个转场。连续不超过 3 帧算硬切，用帧差把剪辑点精确到具体一帧；更长的算渐变，剪辑点放在中点。再用 PySceneDetect AdaptiveDetector 交叉核对（它的帧号先映射到恒定帧率时钟，错开的帧数记进 `psd_clock_shift`）：只有 PySceneDetect 发现的剪辑点，需要 TransNet 至少有 0.1 的弱信号，或帧差突跳，才收；不收的记进 `psd_rejected` | `cuts[]`：frame、t、kind（hard / gradual）、span、frames、src（transnet / psd / both）。`shots[]` |
 | text | 把 OCR 结果串成轨迹，再分成字幕、标题、其他三类（stats.link_text / classify_text） | `tracks[]`、`subtitle_band`、`transcript`（字幕文本） |
 | scan | 按 320 宽逐帧扫一遍，记录：亮度、清晰度（拉普拉斯方差）、过曝和死黑比例、LK 光流仿射（缩放、平移）。由此得到遮幅、每个镜头的运动，以及转场和特效的候选。闪白和黑场下的剪辑点会移到闪白或黑场的中点（`snap`），因为那里看不出画面在哪一帧切换；每次都从检测器给的原始剪辑点（`cuts[].raw`）算起，重跑 scan 不会叠加 | `letterbox`、`shots[]`（motion.type / zoom / zoom_eff / pan / shake、exposure_ok、best、ramp_candidate、freeze）、`events[]`、`keyframes[]` |
 | look | 从每个镜头的关键帧测 Lab 数值，测之前遮掉遮幅、字幕带和 OCR 文字框 | `summary`（每项的中位数和 MAD）、`hue_hist`、`per_shot[]` |
@@ -108,6 +113,44 @@ Claude 听不到声音，声音相关的结论只能来自测量和转写。看�
    - 光晕、漏光、暗角、遮幅。
 7. **调色。** 一句话概括基调。数值以 look 的测量为准，Claude 只写概括，不改数值。
 8. **选镜头规律。** 景别配比（`shots[]` 里标 shot_type）、开场用什么镜头、哪类镜头从来不用。
+
+### 判读约定
+
+links 第一批三条定下的，以后的片子照这个标，统计才比得上。碰到新情况先按最接近的一条，再把决定记下来。
+
+**写进 labels.json：** 同一个镜头号只留一条，`move` 和 `shot_type` 写在同一条里，后写的会整条覆盖前面的。不摘录台词，notes 只写结构和判断依据。
+
+**章节：** role 只用 hook / intro / chapter / interlude / ending。按地点和时段分章，开始时间对齐测到的剪辑点。赞助口播标 interlude，单独一段。
+
+**景别：** 只用 wide / medium / aerial / selfie / detail / close。
+
+| 情形 | 标法 |
+|---|---|
+| 拍整间房、没有人或人很小 | wide |
+| 以人为主；车内固定机位拍两人；别人对镜头讲、机位不在主持人手里 | medium |
+| 上面这种，脸占大半个画面 | close |
+| 主持人手持对着自己（含同框自拍）；脸或肩在画框边、手持拍另一个人 | selfie |
+| 架子、墙上的照片、手里的东西 | detail |
+| 赞助段、AI 生成插入、CG、地图、屏幕录像、照片插入、黑底卡、黑镜头、0.5 s 以下的碎镜头 | 不标 |
+
+可能不是博主自己拍的画面（素材库、NASA 这类）照常判断，在 STYLE.md 里注明来源或「来源不明」，不算博主的拍法。
+
+**慢动作：** 看图判断不出来就不写 `slow_mo` 这个键，在 STYLE.md 标「存疑」。要写就给每个标了景别的镜头都写明 true 或 false，只标 true 会把占比算成 100%。
+
+**转场：** 眩光造成的误切标 `none`。同一次黑场被测成淡出、淡入两条的，后半段标 `none`，免得多算一次（first-snow-mountain 当时标成了 `dip_to_black`、`sure: false`，所以 10 条标签只有 8 处）。拍摄时做的转场（手挡镜头）标 `other`，写进 note，汇总后从 style.json 的 `transitions` 去掉，否则 plan_cut 可能抽中。
+
+**标题：** 每条都要填 role，不填会默认成 location。叠加的文字如果不是地点标题，role 记 `other`，note 记用途：
+
+| note | 内容 |
+|---|---|
+| `name_tag` / `callout` | 人名条 / 强调字 |
+| `sponsor_overlay` | 赞助段的产品字 |
+| `time_stamp` / `day_stamp` | 时间戳 / 第几天 |
+| `altitude_stamp` | 海拔和氧气角标 |
+| `photo_counter` / `photo_signature` | 照片张数 / 照片旁的手写签名 |
+| `series_title` / `end_card` | 手写系列标题 / 片尾手写标识 |
+
+同一张卡或同一幅标题被 OCR 拆成几条时，只留一条作 location 或 chapter_card，其余记 `other`。手写的标题放进 `effects`，这样 `text.title` 只反映地点标题的字体和位置。
 
 ## labels.json
 

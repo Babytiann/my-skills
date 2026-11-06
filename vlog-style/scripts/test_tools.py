@@ -20,6 +20,7 @@ import unittest
 import wave
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
@@ -29,8 +30,19 @@ import compare  # noqa: E402
 import duck  # noqa: E402
 import paths  # noqa: E402
 import plan_cut  # noqa: E402
+import prep  # noqa: E402
 
 FIX = Path(__file__).resolve().parent / "fixtures"
+
+# Stands in for opencli: JSON for metadata calls; `download` records the timeout it was given.
+FAKE_OPENCLI = """#!/bin/sh
+[ "$2" = download ] || { echo '{}'; exit 0; }
+echo "$OPENCLI_BROWSER_COMMAND_TIMEOUT" > "$FAKE_SEEN"
+[ "$FAKE_DOWNLOAD" = fail ] || { : > "$5/a.mp4"; exit 0; }
+echo progress >&2
+echo '{"error":{"code":"TIMEOUT"}}'
+exit 75
+"""
 
 
 class TempRoot(unittest.TestCase):
@@ -51,6 +63,36 @@ class TempRoot(unittest.TestCase):
         return code, out.getvalue(), err.getvalue()
 
 
+class DownloadTest(TempRoot):
+    def fetch(self, **env):
+        bin_dir = Path(self.tmp.name) / "bin"
+        bin_dir.mkdir(exist_ok=True)
+        fake = bin_dir / "opencli"
+        fake.write_text(FAKE_OPENCLI)
+        fake.chmod(0o755)
+        self.seen = Path(self.tmp.name) / "seen"
+        env = {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "FAKE_SEEN": str(self.seen), **env}
+        with mock.patch.dict(os.environ, env):
+            if prep.OPENCLI_TIMEOUT_ENV not in env:
+                os.environ.pop(prep.OPENCLI_TIMEOUT_ENV, None)
+            return prep.fetch_bilibili(self.P, "BV1test", self.P.ref("BV1test"), "1080p")
+
+    def test_download_outlasts_opencli_command_timeout(self):
+        src, _ = self.fetch()
+        self.assertEqual(src.name, "a.mp4")
+        self.assertEqual(self.seen.read_text().strip(), str(prep.DOWNLOAD_TIMEOUT_S))
+
+    def test_a_timeout_set_by_the_user_wins(self):
+        self.fetch(**{prep.OPENCLI_TIMEOUT_ENV: "7200"})
+        self.assertEqual(self.seen.read_text().strip(), "7200")
+
+    def test_failed_download_reports_exit_code_and_both_streams(self):
+        with self.assertRaises(SystemExit) as ctx:
+            self.fetch(FAKE_DOWNLOAD="fail")
+        for want in ("exit 75", "TIMEOUT", "progress"):
+            self.assertIn(want, str(ctx.exception))
+
+
 class CleanupTest(TempRoot):
     def test_list_and_dry_run(self):
         ref = self.P.ref("BV1test")
@@ -59,10 +101,58 @@ class CleanupTest(TempRoot):
         code, out, _ = self.run_main(cleanup.main, ["list"])
         self.assertEqual(code, 0)
         self.assertEqual(json.loads(out)[0]["path"], "cache/refs/BV1test")
-        code, out, err = self.run_main(cleanup.main, ["trash", "BV1test"])
+        self.assertEqual(json.loads(out)[0]["state"], "unfinished")
+        code, _, err = self.run_main(cleanup.main, ["trash", "BV1test"])  # only a proxy: may still be running
+        self.assertEqual(code, 2)
+        self.assertIn("--unfinished", err)
+        code, out, err = self.run_main(cleanup.main, ["trash", "BV1test", "--unfinished"])
         self.assertEqual(code, 0)
         self.assertIn("would trash cache/refs/BV1test", out)
         self.assertTrue(ref.exists())  # dry run moves nothing
+
+    def test_all_skips_unfinished_references(self):
+        self.measured_ref()
+        self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        running = self.P.ref("BV1running")
+        running.mkdir(parents=True)
+        (running / "measure_video.json").write_text("{}", encoding="utf-8")  # measured, not labelled yet
+        (running.parent / ".DS_Store").write_bytes(b"x")
+        code, out, err = self.run_main(cleanup.main, ["list"])
+        self.assertEqual({r["path"]: r["state"] for r in json.loads(out)},
+                         {"cache/refs/BV1keep": "kept", "cache/refs/BV1running": "unfinished"})
+        code, out, err = self.run_main(cleanup.main, ["trash", "--all"])
+        self.assertEqual(code, 0)
+        self.assertIn("would trash cache/refs/BV1keep", out)
+        self.assertNotIn("BV1running", out)
+        self.assertIn("skip: cache/refs/BV1running", err)
+        self.assertNotIn(".DS_Store", out)
+        code, out, err = self.run_main(cleanup.main, ["trash", "--all", "--unfinished", "--no-keep"])
+        self.assertEqual(code, 0)
+        self.assertIn("would trash cache/refs/BV1keep", out)
+        self.assertIn("would trash cache/refs/BV1running", out)
+
+    def test_in_use_is_never_trashed(self):
+        ref = self.measured_ref()
+        self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        with mock.patch.object(cleanup, "busy", return_value=["123"]):
+            code, _, err = self.run_main(cleanup.main, ["trash", "BV1keep", "--unfinished", "--no-keep", "--yes"])
+            self.assertEqual(code, 2)
+            self.assertIn("pid 123", err)
+            code, out, err = self.run_main(cleanup.main, ["trash", "--all", "--unfinished", "--no-keep", "--yes"])
+            self.assertEqual(code, 0)
+            self.assertIn("skip: cache/refs/BV1keep", err)
+            self.assertIn("nothing to trash", out)
+            code, out, _ = self.run_main(cleanup.main, ["list"])
+            self.assertEqual(json.loads(out)[0]["state"], "busy")
+        self.assertTrue(ref.exists())
+
+    def test_rewatch_of_a_kept_reference_is_not_unfinished(self):
+        ref = self.measured_ref()
+        self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        (ref / "labels.json").unlink()  # downloaded again to look at one section, never labelled
+        code, out, _ = self.run_main(cleanup.main, ["trash", "BV1keep"])
+        self.assertEqual(code, 0)
+        self.assertIn("would trash cache/refs/BV1keep", out)
 
     def test_refuses_outside_cache(self):
         outside = Path(self.tmp.name) / "footage"
