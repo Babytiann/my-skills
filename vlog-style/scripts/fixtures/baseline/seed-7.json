@@ -1,0 +1,796 @@
+{
+ "schema_version": 1,
+ "style": "fixture",
+ "project": "fixture",
+ "seed": 7,
+ "timeline": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_frames": 2697,
+  "letterbox": null
+ },
+ "sections": [
+  {
+   "name": "hook",
+   "role": "hook",
+   "rec_in": 0,
+   "rec_out": 300
+  },
+  {
+   "name": "intro",
+   "role": "intro",
+   "rec_in": 300,
+   "rec_out": 539
+  },
+  {
+   "name": "特罗姆瑟",
+   "role": "chapter",
+   "rec_in": 539,
+   "rec_out": 1498
+  },
+  {
+   "name": "罗弗敦",
+   "role": "chapter",
+   "rec_in": 1498,
+   "rec_out": 2458
+  },
+  {
+   "name": "ending",
+   "role": "ending",
+   "rec_in": 2458,
+   "rec_out": 2697
+  }
+ ],
+ "video": [
+  {
+   "id": "v001",
+   "section": "hook",
+   "clip": "C0006",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0006.MP4",
+   "source_fps": 29.97,
+   "src_in": 181,
+   "src_out": 222,
+   "rec_in": 0,
+   "rec_out": 41,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "aurora"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v002",
+   "section": "hook",
+   "clip": "C0010",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0010.MP4",
+   "source_fps": 59.94,
+   "src_in": 386,
+   "src_out": 434,
+   "rec_in": 41,
+   "rec_out": 89,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "aurora"
+   ],
+   "shot_type": "medium",
+   "transition_out": {
+    "kind": "dissolve",
+    "frames": 12,
+    "resolve": {
+     "type": "Cross Dissolve",
+     "category": "simple"
+    }
+   },
+   "motion": null
+  },
+  {
+   "id": "v003",
+   "section": "hook",
+   "clip": "C0021",
+   "shot": 2,
+   "source": "projects/fixture/footage/C0021.MP4",
+   "source_fps": 29.97,
+   "src_in": 650,
+   "src_out": 680,
+   "rec_in": 89,
+   "rec_out": 119,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten",
+    "aurora"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": {
+    "type": "push_in",
+    "from": 1.0,
+    "to": 1.08,
+    "route": "fusion"
+   }
+  },
+  {
+   "id": "v004",
+   "section": "hook",
+   "clip": "C0002",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0002.MP4",
+   "source_fps": 59.94,
+   "src_in": 702,
+   "src_out": 747,
+   "rec_in": 119,
+   "rec_out": 164,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "aurora"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v005",
+   "section": "hook",
+   "clip": "C0018",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0018.MP4",
+   "source_fps": 29.97,
+   "src_in": 310,
+   "src_out": 370,
+   "rec_in": 164,
+   "rec_out": 224,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "aurora"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v006",
+   "section": "hook",
+   "clip": "C0010",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0010.MP4",
+   "source_fps": 59.94,
+   "src_in": 296,
+   "src_out": 386,
+   "rec_in": 224,
+   "rec_out": 269,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "aurora"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v007",
+   "section": "hook",
+   "clip": "C0006",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0006.MP4",
+   "source_fps": 29.97,
+   "src_in": 144,
+   "src_out": 175,
+   "rec_in": 269,
+   "rec_out": 300,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "aurora"
+   ],
+   "shot_type": "wide",
+   "transition_out": {
+    "kind": "dip_to_black",
+    "frames": 12,
+    "resolve": {
+     "type": "Dip To Color Dissolve",
+     "category": "simple"
+    }
+   },
+   "motion": null
+  },
+  {
+   "id": "v008",
+   "section": "intro",
+   "clip": "C0020",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0020.MP4",
+   "source_fps": 59.94,
+   "src_in": 757,
+   "src_out": 995,
+   "rec_in": 300,
+   "rec_out": 419,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v009",
+   "section": "intro",
+   "clip": "C0008",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0008.MP4",
+   "source_fps": 59.94,
+   "src_in": 259,
+   "src_out": 304,
+   "rec_in": 419,
+   "rec_out": 464,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v010",
+   "section": "intro",
+   "clip": "C0004",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0004.MP4",
+   "source_fps": 59.94,
+   "src_in": 446,
+   "src_out": 490,
+   "rec_in": 464,
+   "rec_out": 508,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": {
+    "kind": "dissolve",
+    "frames": 12,
+    "resolve": {
+     "type": "Cross Dissolve",
+     "category": "simple"
+    }
+   },
+   "motion": null
+  },
+  {
+   "id": "v011",
+   "section": "intro",
+   "clip": "C0012",
+   "shot": 2,
+   "source": "projects/fixture/footage/C0012.MP4",
+   "source_fps": 29.97,
+   "src_in": 688,
+   "src_out": 719,
+   "rec_in": 508,
+   "rec_out": 539,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v012",
+   "section": "特罗姆瑟",
+   "clip": "C0008",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0008.MP4",
+   "source_fps": 59.94,
+   "src_in": 21,
+   "src_out": 259,
+   "rec_in": 539,
+   "rec_out": 658,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v013",
+   "section": "特罗姆瑟",
+   "clip": "C0020",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0020.MP4",
+   "source_fps": 59.94,
+   "src_in": 283,
+   "src_out": 418,
+   "rec_in": 658,
+   "rec_out": 793,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v014",
+   "section": "特罗姆瑟",
+   "clip": "C0000",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0000.MP4",
+   "source_fps": 29.97,
+   "src_in": 80,
+   "src_out": 219,
+   "rec_in": 793,
+   "rec_out": 932,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso",
+    "aurora"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v015",
+   "section": "特罗姆瑟",
+   "clip": "C0012",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0012.MP4",
+   "source_fps": 29.97,
+   "src_in": 337,
+   "src_out": 484,
+   "rec_in": 932,
+   "rec_out": 1079,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v016",
+   "section": "特罗姆瑟",
+   "clip": "C0012",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0012.MP4",
+   "source_fps": 29.97,
+   "src_in": 33,
+   "src_out": 212,
+   "rec_in": 1079,
+   "rec_out": 1258,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "wide",
+   "transition_out": {
+    "kind": "dissolve",
+    "frames": 12,
+    "resolve": {
+     "type": "Cross Dissolve",
+     "category": "simple"
+    }
+   },
+   "motion": null
+  },
+  {
+   "id": "v017",
+   "section": "特罗姆瑟",
+   "clip": "C0008",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0008.MP4",
+   "source_fps": 59.94,
+   "src_in": 316,
+   "src_out": 526,
+   "rec_in": 1258,
+   "rec_out": 1363,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v018",
+   "section": "特罗姆瑟",
+   "clip": "C0020",
+   "shot": 0,
+   "source": "projects/fixture/footage/C0020.MP4",
+   "source_fps": 59.94,
+   "src_in": 13,
+   "src_out": 283,
+   "rec_in": 1363,
+   "rec_out": 1498,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "tromso"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v019",
+   "section": "罗弗敦",
+   "clip": "C0001",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0001.MP4",
+   "source_fps": 59.94,
+   "src_in": 632,
+   "src_out": 736,
+   "rec_in": 1498,
+   "rec_out": 1602,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v020",
+   "section": "罗弗敦",
+   "clip": "C0009",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0009.MP4",
+   "source_fps": 29.97,
+   "src_in": 396,
+   "src_out": 486,
+   "rec_in": 1602,
+   "rec_out": 1692,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v021",
+   "section": "罗弗敦",
+   "clip": "C0017",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0017.MP4",
+   "source_fps": 59.94,
+   "src_in": 763,
+   "src_out": 941,
+   "rec_in": 1692,
+   "rec_out": 1781,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v022",
+   "section": "罗弗敦",
+   "clip": "C0009",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0009.MP4",
+   "source_fps": 29.97,
+   "src_in": 265,
+   "src_out": 396,
+   "rec_in": 1781,
+   "rec_out": 1912,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v023",
+   "section": "罗弗敦",
+   "clip": "C0013",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0013.MP4",
+   "source_fps": 59.94,
+   "src_in": 756,
+   "src_out": 1006,
+   "rec_in": 1912,
+   "rec_out": 2037,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v024",
+   "section": "罗弗敦",
+   "clip": "C0021",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0021.MP4",
+   "source_fps": 29.97,
+   "src_in": 283,
+   "src_out": 477,
+   "rec_in": 2037,
+   "rec_out": 2231,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten",
+    "aurora"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v025",
+   "section": "罗弗敦",
+   "clip": "C0009",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0009.MP4",
+   "source_fps": 29.97,
+   "src_in": 486,
+   "src_out": 601,
+   "rec_in": 2231,
+   "rec_out": 2346,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v026",
+   "section": "罗弗敦",
+   "clip": "C0001",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0001.MP4",
+   "source_fps": 59.94,
+   "src_in": 470,
+   "src_out": 632,
+   "rec_in": 2346,
+   "rec_out": 2427,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "close",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v027",
+   "section": "罗弗敦",
+   "clip": "C0017",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0017.MP4",
+   "source_fps": 59.94,
+   "src_in": 701,
+   "src_out": 763,
+   "rec_in": 2427,
+   "rec_out": 2458,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "lofoten"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v028",
+   "section": "ending",
+   "clip": "C0015",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0015.MP4",
+   "source_fps": 29.97,
+   "src_in": 375,
+   "src_out": 553,
+   "rec_in": 2458,
+   "rec_out": 2636,
+   "speed": 1.0,
+   "track": 1,
+   "audio": "keep",
+   "tags": [
+    "dusk"
+   ],
+   "shot_type": "medium",
+   "transition_out": null,
+   "motion": null
+  },
+  {
+   "id": "v029",
+   "section": "ending",
+   "clip": "C0023",
+   "shot": 1,
+   "source": "projects/fixture/footage/C0023.MP4",
+   "source_fps": 59.94,
+   "src_in": 504,
+   "src_out": 565,
+   "rec_in": 2636,
+   "rec_out": 2697,
+   "speed": 0.5,
+   "track": 1,
+   "audio": "mute",
+   "tags": [
+    "dusk"
+   ],
+   "shot_type": "wide",
+   "transition_out": null,
+   "motion": null
+  }
+ ],
+ "titles": [
+  {
+   "id": "t001",
+   "kind": "title",
+   "text": "特罗姆瑟 · 挪威",
+   "template": "Templates/Edit/Titles/Fade On",
+   "rec_in": 569,
+   "rec_out": 659,
+   "track": 3,
+   "style": {
+    "font_class": "黑体",
+    "fallback_fonts": [
+     "PingFang SC"
+    ],
+    "height_frac": 0.06,
+    "position": [
+     0.5,
+     0.5
+    ],
+    "color": null,
+    "stroke": null,
+    "plate": null,
+    "in": "fade",
+    "out": "fade"
+   }
+  },
+  {
+   "id": "t002",
+   "kind": "title",
+   "text": "罗弗敦群岛",
+   "template": "Templates/Edit/Titles/Fade On",
+   "rec_in": 1528,
+   "rec_out": 1618,
+   "track": 3,
+   "style": {
+    "font_class": "黑体",
+    "fallback_fonts": [
+     "PingFang SC"
+    ],
+    "height_frac": 0.06,
+    "position": [
+     0.5,
+     0.5
+    ],
+    "color": null,
+    "stroke": null,
+    "plate": null,
+    "in": "fade",
+    "out": "fade"
+   }
+  }
+ ],
+ "audio": [
+  {
+   "id": "m001",
+   "kind": "music",
+   "source": "projects/fixture/music/track.wav",
+   "src_in_s": 0.0,
+   "rec_in": 0,
+   "rec_out": 2697,
+   "track": 2,
+   "fade_out_frames": 60
+  }
+ ],
+ "speech": [
+  [
+   300,
+   302
+  ],
+  [
+   1363,
+   1387
+  ],
+  [
+   2458,
+   2471
+  ]
+ ],
+ "grade": {
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "markers": [
+  {
+   "rec": 0,
+   "color": "Yellow",
+   "name": "手动收尾",
+   "note": "设置播放帧率；镜头光斑"
+  },
+  {
+   "rec": 89,
+   "color": "Cyan",
+   "name": "push_in",
+   "note": "1.0→1.08，Fusion Transform"
+  }
+ ],
+ "warnings": [],
+ "checks": {
+  "ok": true,
+  "problems": [],
+  "transitions": 4,
+  "clips": 29
+ }
+}

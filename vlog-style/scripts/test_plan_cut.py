@@ -21,6 +21,7 @@ import paths  # noqa: E402
 import plan_cut  # noqa: E402
 
 FIX = HERE / "fixtures"
+BASE = FIX / "baseline"
 
 
 def load(name):
@@ -156,6 +157,26 @@ class PlanCutTest(unittest.TestCase):
         plan = plan_cut.build(style, index, brief, None)
         self.assertTrue(plan["video"])
         self.assertNotIn("close", {v["shot_type"] for v in plan["video"]})
+
+
+class BaselineTest(unittest.TestCase):
+    """With no story and no new style or brief field, output stays byte-identical to the saved runs."""
+
+    def assert_same(self, style, seed, name):
+        plan = plan_cut.build(style, load("footage.json"), load("brief.json"), load("beats.json"), seed)
+        self.assertEqual(json.dumps(plan, ensure_ascii=False, indent=1),
+                         (BASE / f"{name}.json").read_text(encoding="utf-8"), name)
+        self.assertEqual(plan_cut.explain(plan) + "\n",
+                         (BASE / f"{name}.explain.md").read_text(encoding="utf-8"), name)
+
+    def test_no_story_matches_baseline(self):
+        for seed in (1, 7, 8, 42):
+            self.assert_same(load("style.json"), seed, f"seed-{seed}")
+
+    def test_links_pack_as_frozen_matches_baseline(self):
+        style = json.loads((BASE / "links-style.json").read_text(encoding="utf-8"))
+        self.assert_same(style, 7, "links-seed-7")
+
 
 if __name__ == "__main__":
     unittest.main()
