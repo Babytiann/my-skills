@@ -93,6 +93,86 @@ class DownloadTest(TempRoot):
             self.assertIn(want, str(ctx.exception))
 
 
+class ClipIdTest(unittest.TestCase):
+    def test_unique_stems_keep_their_name_wherever_they_sit(self):
+        self.assertEqual(prep.assign_ids(["C0001.MP4", "day1/C0002.MP4"], {}),
+                         {"C0001.MP4": "C0001", "day1/C0002.MP4": "C0002"})
+
+    def test_same_name_on_two_cards_takes_the_folder(self):
+        self.assertEqual(prep.assign_ids(["cardA/C0001.MP4", "cardB/C0001.MP4"], {}),
+                         {"cardA/C0001.MP4": "cardA_C0001", "cardB/C0001.MP4": "cardB_C0001"})
+
+    def test_a_file_directly_in_footage_keeps_the_bare_stem(self):
+        self.assertEqual(prep.assign_ids(["C0001.MP4", "cardB/C0001.MP4"], {}),
+                         {"C0001.MP4": "C0001", "cardB/C0001.MP4": "cardB_C0001"})
+
+    def test_live_photo_pair_in_one_folder_takes_the_extension(self):
+        self.assertEqual(prep.assign_ids(["IMG_0001.HEIC", "IMG_0001.MOV"], {}),
+                         {"IMG_0001.HEIC": "IMG_0001_heic", "IMG_0001.MOV": "IMG_0001_mov"})
+
+    def test_case_only_difference_is_a_collision(self):
+        ids = prep.assign_ids(["a/clip.mp4", "b/CLIP.mp4"], {})
+        self.assertEqual(ids, {"a/clip.mp4": "a_clip", "b/CLIP.mp4": "b_CLIP"})
+
+    def test_nested_cards_with_one_folder_name_stay_distinct(self):
+        ids = prep.assign_ids(["x/card/C1.MP4", "y/card/C1.MP4"], {})
+        self.assertEqual(len({i.casefold() for i in ids.values()}), 2, ids)
+
+    def test_an_existing_proxy_keeps_its_id_when_a_second_card_arrives(self):
+        ids = prep.assign_ids(["cardA/C0001.MP4", "cardB/C0001.MP4"], {"C0001": "cardA/C0001.MP4"})
+        self.assertEqual(ids, {"cardA/C0001.MP4": "C0001", "cardB/C0001.MP4": "cardB_C0001"})
+
+    def test_a_proxy_whose_file_is_gone_keeps_its_id_reserved(self):
+        ids = prep.assign_ids(["new/C0001.MP4"], {"C0001": "old/C0001.MP4"})
+        self.assertEqual(ids, {"new/C0001.MP4": "new_C0001"})
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class FootageScanTest(TempRoot):
+    def clip(self, rel, seconds=0.2):
+        path = self.footage / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
+                        f"testsrc2=size=160x90:rate=30:duration={seconds}", "-c:v", "libx264",
+                        "-pix_fmt", "yuv420p", str(path)], check=True)
+
+    def scan(self):
+        code, out, err = self.run_main(prep.main, ["footage", "--project", "t"])
+        self.assertEqual(code, 0, err)
+        return {c["id"]: c["source"] for c in json.loads(out)["clips"]}
+
+    def setUp(self):
+        super().setUp()
+        paths.init(self.P, project="t")
+        self.footage = self.P.project("t") / "footage"
+
+    def test_same_name_clips_on_two_cards_are_both_kept(self):
+        self.clip("cardA/C0001.MP4", 0.2)
+        self.clip("cardB/C0001.MP4", 0.4)
+        clips = self.scan()
+        self.assertEqual(clips, {"cardA_C0001": "projects/t/footage/cardA/C0001.MP4",
+                                 "cardB_C0001": "projects/t/footage/cardB/C0001.MP4"})
+        lengths = {}
+        for clip_id in clips:
+            one = json.loads((self.P.project("t") / "proxies" / clip_id / "prep.json").read_text(encoding="utf-8"))
+            lengths[clip_id] = one["probe"]["duration_s"]
+        self.assertLess(lengths["cardA_C0001"], lengths["cardB_C0001"])  # each proxy is its own clip
+
+    def test_hidden_files_and_folders_are_skipped(self):
+        self.clip("cardA/C0001.MP4")
+        (self.footage / "cardA" / "._C0001.MP4").write_bytes(b"\x00\x05\x16\x07 AppleDouble, not a video")
+        (self.footage / ".Spotlight-V100").mkdir()
+        (self.footage / ".Spotlight-V100" / "store.mp4").write_bytes(b"not a video")
+        self.assertEqual(list(self.scan()), ["C0001"])
+
+    def test_adding_a_card_later_keeps_the_ids_already_in_use(self):
+        self.clip("cardA/C0001.MP4")
+        self.assertEqual(list(self.scan()), ["C0001"])
+        self.clip("cardB/C0001.MP4", 0.4)
+        self.assertEqual(self.scan(), {"C0001": "projects/t/footage/cardA/C0001.MP4",
+                                       "cardB_C0001": "projects/t/footage/cardB/C0001.MP4"})
+
+
 class CleanupTest(TempRoot):
     def test_list_and_dry_run(self):
         ref = self.P.ref("BV1test")

@@ -1,0 +1,616 @@
+{
+ "schema_version": 1,
+ "name": "links",
+ "summary": "同行纪实旅行 vlog：旁白和对话带着走，底部烧录字幕贯穿全片；约 3.5–4 秒一刀，96.5–98.6% 是硬切；中景为主，远景和航拍交代环境，镜头的运动来自拍摄时的机位，后期不加数字推拉；调色自然，跟着光走，不套统一的 LUT",
+ "sources": [
+  {
+   "id": "BV1SSQLBREVV",
+   "url": "https://www.bilibili.com/video/BV1SSQLBREVV",
+   "title": "和李现，攀登人生第一座雪山",
+   "measured": "2026-11-06",
+   "author": "Linksphotograph"
+  },
+  {
+   "id": "BV1jy2CBNEDL",
+   "url": "https://www.bilibili.com/video/BV1jy2CBNEDL",
+   "title": "和李现，徒步在西藏库拉岗日",
+   "measured": "2026-11-05",
+   "author": "Linksphotograph"
+  },
+  {
+   "id": "BV1uparzhEjs",
+   "url": "https://www.bilibili.com/video/BV1uparzhEjs",
+   "title": "我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！",
+   "measured": "2026-11-05",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "multi_reference",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 2252.8,
+   "mad": 491.2,
+   "p10": 1859.8,
+   "p90": 3099.4,
+   "n": 3
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0261,
+    "shot_len_s": {
+     "median": 3.571,
+     "mad": 1.135,
+     "p10": 2.025,
+     "p90": 6.25,
+     "n": 48
+    }
+   },
+   {
+    "role": "intro",
+    "share": 0.0475,
+    "shot_len_s": {
+     "median": 3.888,
+     "mad": 1.969,
+     "p10": 1.328,
+     "p90": 10.627,
+     "n": 68
+    },
+    "transition_in": "dip_to_black"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8997,
+    "shot_len_s": {
+     "median": 3.904,
+     "mad": 1.635,
+     "p10": 1.602,
+     "p90": 9.696,
+     "n": 1305
+    }
+   },
+   {
+    "role": "interlude",
+    "share": 0.0082,
+    "shot_len_s": {
+     "median": 2.72,
+     "mad": 1.568,
+     "p10": 1.135,
+     "p90": 7.207,
+     "n": 16
+    }
+   },
+   {
+    "role": "ending",
+    "share": 0.0185,
+    "shot_len_s": {
+     "median": 2.486,
+     "mad": 0.668,
+     "p10": 2.002,
+     "p90": 8.736,
+     "n": 32
+    }
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.048,
+  "shot_types": {
+   "medium": 0.442,
+   "wide": 0.309,
+   "selfie": 0.101,
+   "detail": 0.093,
+   "aerial": 0.053,
+   "close": 0.003
+  },
+  "opening": "冷开场：对镜头的话点题，交代人物和要去的地方，接航拍或远景；两条李现的片子明确取自后面的段落。进铺垫时 2 条淡出到黑，1 条硬切",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 3.837,
+   "mad": 1.635,
+   "p10": 1.568,
+   "p90": 9.676,
+   "n": 1469
+  },
+  "cuts_per_min": 12.01,
+  "min_shot_s": 1.18
+ },
+ "beat": {
+  "hit_rate": 0.3077,
+  "baseline": 0.0683,
+  "offset_frames": 1,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9762
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0136,
+   "frames": 10,
+   "where": "any"
+  },
+  {
+   "type": "dissolve",
+   "share": 0.0095,
+   "frames": 16,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0814,
+   "amplitude_px": 5.1
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "time_stamp",
+   "shot": 28,
+   "note": "画面左侧中部叠大号细黑体时间（7:00 am、13:30 pm、16:10 pm、6:20 am、8:00 am：28、57、79、170、463），am/pm 小一号，约 2–3 s，只在一天开始或换时段时出现；第二天那次下面加一行 Day 2",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "location_pin",
+   "shot": 20,
+   "note": "中文地名前加一个定位图标，放在画面左侧（20 北京·首都机场、25 德国·慕尼黑），只用在出发和转机",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 570,
+   "note": "手写系列标题和拉丁字母署名叠在山顶日落的两人剪影上方，约 4.5 s，淡入淡出；放在第 49 分钟的高潮，不在冷开场",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 104,
+   "note": "照片缩小放在黑底或深蓝底上，右侧带手写小签名，每张约 1.5–4 s（104、151、152、165、202、212、221、235、254、263、284、296、297、363、365、409、410、569）；片尾 614–617 连放收束",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "panel_title",
+   "shot": 29,
+   "note": "竖拍画面放在中间，两侧深蓝底，左侧竖排标题「旅行计划」，共约 36 s（29–32、34–35；33 是全屏的路线拼图）",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "map_insert",
+   "shot": 27,
+   "note": "三维地图飞行交代路线（26、27、36、203、204、286、429、450、492）；26、27、36、286、429 用 14–20 帧叠化接下一个镜头，其余没有标叠化",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 56,
+   "note": "彩条测试卡约 0.9 s，硬切进出，当作喜剧停顿",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "split_compare",
+   "shot": 160,
+   "note": "同机位白天和夜景用斜向分屏对照，只在城市灯火段落出现一次",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 618,
+   "note": "片尾太空画面（618–620 右上角标着 From NASA；227 的地球晨昏线画面没有标注，来源不明）和特罗姆瑟城区航拍（简介写明买自版权网站）都不是博主自己拍的，不算博主的拍法",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "long_take",
+   "shot": 452,
+   "note": "海边木屋夜谈用沙发固定机位长镜头（449 24 s、451 69 s、452 111 s），全片最长",
+   "ref": "BV1SSQLBREVV"
+  },
+  {
+   "type": "film_photo_insert",
+   "shot": 50,
+   "note": "胶片照片居中放在黑底上，左侧带张数计数（1/12 到 4/12：50、188、311、312），每张约 1.5–3.5 s",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "film_photo_insert",
+   "shot": 72,
+   "note": "同样的黑底照片，右侧带一个手写小签名（70、72、85、93、99、227、358、410）",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "photo_montage",
+   "shot": 99,
+   "note": "人像照片连放（99–109），接在拍照的段落后面；片尾还有一组（481–494，每张约 2 s）",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "altitude_stamp",
+   "shot": 55,
+   "note": "画面左侧叠海拔和氧气浓度，约 5–6 s（55、149、215、228、233），只在换海拔时出现",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 18,
+   "note": "手写系列标题叠在人物远景上方，约 4 s，放在冷开场结尾，随后淡出到黑",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "end_card",
+   "shot": 495,
+   "note": "黑底手写标识加拉丁字母署名，约 4 s，后面还有一段彩蛋（496–498）",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 37,
+   "note": "路线规划画板的屏幕录像，带缩放",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "map_insert",
+   "shot": 142,
+   "note": "三维路线图交代徒步路线；121 是手机地图",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "callout",
+   "shot": 36,
+   "note": "两人头顶叠性格类型标签，约 12 s",
+   "ref": "BV1jy2CBNEDL"
+  },
+  {
+   "type": "map_insert",
+   "shot": 11,
+   "note": "卫星地图，交代地理位置，1.2 s",
+   "ref": "BV1uparzhEjs"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 47,
+   "note": "网上视频的屏幕录像，连同播放器界面一起放进来（47、48）",
+   "ref": "BV1uparzhEjs"
+  },
+  {
+   "type": "map_annotation",
+   "shot": 54,
+   "note": "航拍画面上叠箭头和地点说明，标出两个上岛点",
+   "ref": "BV1uparzhEjs"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 169,
+   "note": "照片加黑底居中，4.2 s",
+   "ref": "BV1uparzhEjs"
+  }
+ ],
+ "grade": {
+  "summary": "自然色，跟着光走：三条的亮度、对比、饱和度接近，黑位都压得低，高光都略偏蓝；中间调冷暖差很多（b 从 −1.3 到 −10.7），取决于画面里雪和蓝调的多少，所以这里不给冷暖目标，调色核对用子包",
+  "look": {
+   "L01": {
+    "median": 2.035,
+    "mad": 1.626
+   },
+   "L50": {
+    "median": 45.447,
+    "mad": 11.086
+   },
+   "L99": {
+    "median": 78.305,
+    "mad": 7.7
+   },
+   "Lstd": {
+    "median": 20.805,
+    "mad": 3.755
+   },
+   "shadow": {
+    "median": 0.211,
+    "mad": 0.127
+   },
+   "chroma": {
+    "median": 12.585,
+    "mad": 4.571
+   },
+   "sh_a": {
+    "median": 0.508,
+    "mad": 1.234
+   },
+   "vignette": {
+    "median": 1.026,
+    "mad": 0.273
+   }
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0627,
+   "position": [
+    0.501,
+    0.391
+   ],
+   "color": [
+    0.918,
+    0.922,
+    0.965
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 1.75,
+   "offset_s": 7.47,
+   "template": "Text+",
+   "per": "location"
+  },
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0633,
+   "position": [
+    0.501,
+    0.481
+   ],
+   "color": [
+    0.855,
+    0.855,
+    0.855
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 0.98,
+   "offset_s": 0.2,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0444,
+   "position": [
+    0.5,
+    0.955
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 115.4,
+   "mad": 4.2,
+   "p10": 112.0,
+   "p90": 120.3,
+   "n": 3
+  },
+  "mood": "旁白和对话主导（人声 57–65%），音乐铺底；纯风景和航拍段落只有音乐；Claude 听不到，只按测量推断",
+  "lufs": -14.4,
+  "duck_db": 0.5,
+  "sfx": [],
+  "music_changes": "约每章 14.9 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "offline_drx",
+   "status": "verified",
+   "how": "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "references",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1SSQLBREVV": 3.971,
+     "BV1jy2CBNEDL": 3.537,
+     "BV1uparzhEjs": 4.037
+    },
+    "spread": 0.1259
+   },
+   "transitions": {
+    "BV1SSQLBREVV": {
+     "hard_cut": 601,
+     "dip_to_black": 10,
+     "other": 1,
+     "dissolve": 11
+    },
+    "BV1jy2CBNEDL": {
+     "hard_cut": 491,
+     "dip_to_black": 7,
+     "dissolve": 1
+    },
+    "BV1uparzhEjs": {
+     "hard_cut": 339,
+     "dip_to_black": 3,
+     "dissolve": 2
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1SSQLBREVV": 0.1875,
+     "BV1jy2CBNEDL": 0.162,
+     "BV1uparzhEjs": 0.1623
+    },
+    "spread": 0.1571
+   },
+   "look.L50": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1SSQLBREVV": 46.0205,
+     "BV1jy2CBNEDL": 45.447,
+     "BV1uparzhEjs": 40.86
+    },
+    "spread": 0.1135
+   },
+   "look.Lstd": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1SSQLBREVV": 20.8045,
+     "BV1jy2CBNEDL": 23.1435,
+     "BV1uparzhEjs": 18.821
+    },
+    "spread": 0.2078
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "BV1SSQLBREVV": -10.656,
+     "BV1jy2CBNEDL": -7.375,
+     "BV1uparzhEjs": -1.3045
+    },
+    "spread": 1.268
+   },
+   "look.chroma": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1SSQLBREVV": 9.576,
+     "BV1jy2CBNEDL": 12.5855,
+     "BV1uparzhEjs": 13.0465
+    },
+    "spread": 0.2758
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1SSQLBREVV",
+    "n_cuts": 131,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.68,
+    "bpm": 88.24,
+    "hit_rate": 0.3511,
+    "baseline": 0.0683,
+    "lift": 5.14,
+    "downbeat_hit_rate": 0.313,
+    "verdict": "on_beat"
+   },
+   {
+    "ref": "BV1jy2CBNEDL",
+    "n_cuts": 104,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.66,
+    "bpm": 90.91,
+    "hit_rate": 0.3077,
+    "baseline": 0.0792,
+    "lift": 3.883,
+    "downbeat_hit_rate": 0.2788,
+    "verdict": "on_beat"
+   },
+   {
+    "ref": "BV1uparzhEjs",
+    "n_cuts": 66,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.66,
+    "bpm": 90.91,
+    "hit_rate": 0.197,
+    "baseline": 0.0607,
+    "lift": 3.246,
+    "downbeat_hit_rate": 0.1818,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 254,
+    "judged": 44,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 92,
+    "judged": 28,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 213,
+  "onsets_per_min": 162.8,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ }
+}

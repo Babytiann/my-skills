@@ -28,7 +28,8 @@ import shutil
 import subprocess
 import sys
 from fractions import Fraction
-from pathlib import Path
+from itertools import chain, count
+from pathlib import Path, PurePosixPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
@@ -184,6 +185,86 @@ def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tup
     return files[0], extra
 
 
+def footage_files(footage: Path) -> list[Path]:
+    """Footage under footage/, minus anything hidden: exFAT cards put ._C0001.MP4 beside every clip."""
+    return sorted(p for p in footage.rglob("*")
+                  if p.suffix.lower() in VIDEO_EXT and p.is_file()
+                  and not any(part.startswith(".") for part in p.relative_to(footage).parts))
+
+
+def clean_id(name: str) -> str:
+    return re.sub(r"[^\w.-]", "_", name).lstrip("._-") or "clip"
+
+
+def assign_ids(files: list[str], cached: dict[str, str]) -> dict[str, str]:
+    """Clip id of each file (POSIX path relative to footage/).
+
+    tags.json, story.json and the brief name clips by id, so an id never moves once
+    a proxy exists: `cached` maps each existing id to the file it was made from. A
+    stem nobody else uses is the id. Stems that collide take the nearest folder
+    (cardB_C0001); a file directly in footage/ keeps the bare stem; two files in one
+    folder, like a Live Photo's IMG_0001.HEIC and IMG_0001.MOV, take their extension.
+    Compared case-insensitively because APFS is.
+    """
+    ids: dict[str, str] = {}
+    for clip_id, f in sorted(cached.items()):
+        if f in files:
+            ids.setdefault(f, clip_id)
+    taken = {clip_id.casefold() for clip_id in cached}
+    stems: dict[str, list[PurePosixPath]] = {}
+    for f in files:
+        stems.setdefault(clean_id(PurePosixPath(f).stem).casefold(), []).append(PurePosixPath(f))
+    for f in sorted(files):
+        if f in ids:
+            continue
+        p = PurePosixPath(f)
+        rivals = stems[clean_id(p.stem).casefold()]
+        twins = [r for r in rivals if r != p and r.parent == p.parent]
+        base = f"{clean_id(p.stem)}_{p.suffix[1:].lower()}" if twins else clean_id(p.stem)
+        folders = [clean_id(d) for d in p.parent.parts]
+        names = [base] if len(rivals) == 1 or not folders else []
+        names += ["_".join(folders[-k:] + [base]) for k in range(1, len(folders) + 1)]
+        tries = chain(names, (f"{names[-1]}_{i}" for i in count(2)))
+        ids[f] = next(n for n in tries if n.casefold() not in taken)
+        taken.add(ids[f].casefold())
+    return ids
+
+
+def prep_footage(P: vpaths.Paths, project: str) -> dict:
+    proj = P.project(project)
+    footage, proxies = proj / "footage", proj / "proxies"
+    files = footage_files(footage)
+    if not files:
+        raise SystemExit(f"no video files under {P.rel(footage)}")
+    rel_of = {c: c.relative_to(footage).as_posix() for c in files}
+    prefix = PurePosixPath(P.rel(footage))
+    cached = {}
+    for d in sorted(proxies.iterdir()) if proxies.exists() else []:
+        if (d / "prep.json").exists():
+            src = PurePosixPath(json.loads((d / "prep.json").read_text(encoding="utf-8"))["source"]["path"])
+            cached[d.name] = src.relative_to(prefix).as_posix() if src.is_relative_to(prefix) else str(src)
+    ids = assign_ids(list(rel_of.values()), cached)
+    for clip_id, f in sorted(cached.items()):
+        if f not in ids:
+            print(f"warn proxies/{clip_id}: its source {f} is gone from footage/", file=sys.stderr)
+    rep = {"clips": []}
+    for c in files:
+        rel_id = vpaths.check_name(ids[rel_of[c]])
+        out = proxies / rel_id
+        if (out / "prep.json").exists():
+            one = json.loads((out / "prep.json").read_text(encoding="utf-8"))
+        else:
+            one = prep_one(P, c, out)
+        rep["clips"].append({"id": rel_id, "source": one["source"]["path"], "proxy": P.rel(out),
+                             "fps": one["probe"]["fps"], "hdr": one["probe"]["hdr"],
+                             "vfr": one["probe"]["vfr"]})
+        print(f"{rel_id}: {one['probe']['width']}x{one['probe']['height']} @ {one['probe']['fps']} "
+              f"{one['probe']['color_transfer']}", file=sys.stderr)
+    (proj / "index").mkdir(exist_ok=True)
+    (proj / "index" / "prep.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1), encoding="utf-8")
+    return rep
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -222,25 +303,7 @@ def main(argv: list[str] | None = None) -> int:
             src, extra = fetch_bilibili(P, m.group(1), ref_dir, args.quality)
             rep = prep_one(P, src, ref_dir, extra)
     else:  # footage
-        proj = P.project(args.project)
-        clips = sorted(p for p in (proj / "footage").rglob("*") if p.suffix.lower() in VIDEO_EXT)
-        if not clips:
-            raise SystemExit(f"no video files under {P.rel(proj / 'footage')}")
-        rep = {"clips": []}
-        for c in clips:
-            rel_id = vpaths.check_name(re.sub(r"[^\w.-]", "_", c.stem))
-            out = proj / "proxies" / rel_id
-            if (out / "prep.json").exists():
-                one = json.loads((out / "prep.json").read_text(encoding="utf-8"))
-            else:
-                one = prep_one(P, c, out)
-            rep["clips"].append({"id": rel_id, "source": one["source"]["path"], "proxy": P.rel(out),
-                                 "fps": one["probe"]["fps"], "hdr": one["probe"]["hdr"],
-                                 "vfr": one["probe"]["vfr"]})
-            print(f"{rel_id}: {one['probe']['width']}x{one['probe']['height']} @ {one['probe']['fps']} "
-                  f"{one['probe']['color_transfer']}", file=sys.stderr)
-        (proj / "index").mkdir(exist_ok=True)
-        (proj / "index" / "prep.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1), encoding="utf-8")
+        rep = prep_footage(P, args.project)
     print(json.dumps(rep, ensure_ascii=False, indent=1))
     return 0
 
