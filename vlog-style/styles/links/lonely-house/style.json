@@ -1,0 +1,572 @@
+{
+ "schema_version": 1,
+ "name": "links/lonely-house",
+ "summary": "孤岛人物纪实 vlog：旁白和底部字幕带着走，约 4 秒一刀、98.6% 硬切；人物做事的中景和远景为主，镜头的运动来自无人机、船和步行，不靠后期推拉；调色跟着光走；地点标题只出现一次，靠人名条和黑底短卡补充信息",
+ "sources": [
+  {
+   "id": "BV1uparzhEjs",
+   "url": "https://www.bilibili.com/video/BV1uparzhEjs",
+   "title": "我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！",
+   "measured": "2026-11-05",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1761.6,
+   "mad": 0.0,
+   "p10": 1761.6,
+   "p90": 1761.6,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0274,
+    "shot_len_s": {
+     "median": 3.771,
+     "mad": 0.717,
+     "p10": 2.827,
+     "p90": 8.712,
+     "n": 10
+    },
+    "notes": "冷开场：主持人在房子前对镜头点题，接无人机从房子拉到全岛，再接蓝调航拍和人物走上草坡"
+   },
+   {
+    "role": "intro",
+    "share": 0.0296,
+    "shot_len_s": {
+     "median": 2.536,
+     "mad": 1.134,
+     "p10": 1.221,
+     "p90": 5.145,
+     "n": 17
+    },
+    "notes": "抵达主岛、见当地向导，人名条交代身份，地点标题在这一段出现"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8922,
+    "shot_len_s": {
+     "median": 4.104,
+     "mad": 1.401,
+     "p10": 1.828,
+     "p90": 10.911,
+     "n": 299
+    },
+    "notes": "一章一件事，按时间走，开头不用时间戳也不用章节卡，靠旁白和动作过渡"
+   },
+   {
+    "role": "interlude",
+    "share": 0.0341,
+    "shot_len_s": {
+     "median": 2.72,
+     "mad": 1.568,
+     "p10": 1.135,
+     "p90": 7.207,
+     "n": 16
+    },
+    "notes": "赞助口播，两段；第一段由一张黑底问句卡接进去"
+   },
+   {
+    "role": "ending",
+    "share": 0.0167,
+    "shot_len_s": {
+     "median": 8.809,
+     "mad": 1.035,
+     "p10": 7.981,
+     "p90": 12.039,
+     "n": 3
+    },
+    "notes": "3 个长航拍收尾，全片没有片尾卡"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.498,
+  "shot_types": {
+   "medium": 0.389,
+   "wide": 0.323,
+   "selfie": 0.103,
+   "detail": 0.094,
+   "aerial": 0.082,
+   "close": 0.009
+  },
+  "opening": "冷开场：对镜头一句话点题，接无人机从房子拉到全岛，再接蓝调航拍和人物走上草坡",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 4.037,
+   "mad": 1.502,
+   "p10": 1.748,
+   "p90": 10.417,
+   "n": 345
+  },
+  "cuts_per_min": 11.72,
+  "min_shot_s": 1.34
+ },
+ "beat": {
+  "hit_rate": 0.197,
+  "baseline": 0.0607,
+  "offset_frames": 1,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9855
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0087,
+   "frames": 12,
+   "where": "any"
+  },
+  {
+   "type": "dissolve",
+   "share": 0.0058,
+   "frames": 5,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0909,
+   "amplitude_px": 8.9
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "map_insert",
+   "shot": 11,
+   "note": "卫星地图，交代地理位置，1.2 s"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 47,
+   "note": "网上视频的屏幕录像，连同播放器界面一起放进来（47、48）"
+  },
+  {
+   "type": "map_annotation",
+   "shot": 54,
+   "note": "航拍画面上叠箭头和地点说明，标出两个上岛点"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 169,
+   "note": "照片加黑底居中，4.2 s"
+  }
+ ],
+ "grade": {
+  "summary": "自然色，跟着光走：中间调接近中性、略偏绿，对比中等；蓝调和夜里冷而暗，白天明亮，草地偏黄绿，木屋室内和晚餐保留暖色",
+  "look": {
+   "L01": {
+    "median": 2.734,
+    "mad": 1.909
+   },
+   "L50": {
+    "median": 40.86,
+    "mad": 10.324
+   },
+   "L99": {
+    "median": 73.828,
+    "mad": 7.104
+   },
+   "Lstd": {
+    "median": 18.821,
+    "mad": 3.485
+   },
+   "shadow": {
+    "median": 0.178,
+    "mad": 0.121
+   },
+   "chroma": {
+    "median": 13.046,
+    "mad": 4.579
+   },
+   "sh_a": {
+    "median": 0.508,
+    "mad": 2.109
+   },
+   "sh_b": {
+    "median": 0.914,
+    "mad": 5.429
+   },
+   "mid_a": {
+    "median": -4.547,
+    "mad": 3.516
+   },
+   "mid_b": {
+    "median": -1.304,
+    "mad": 12.665
+   },
+   "hi_a": {
+    "median": -3.664,
+    "mad": 1.719
+   },
+   "hi_b": {
+    "median": -6.203,
+    "mad": 3.875
+   },
+   "vignette": {
+    "median": 1.027,
+    "mad": 0.273
+   },
+   "hue_hist": [
+    0.0285,
+    0.0545,
+    0.0287,
+    0.0932,
+    0.0746,
+    0.0095,
+    0.0085,
+    0.0607,
+    0.5758,
+    0.0581,
+    0.0043,
+    0.0036
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "宋体",
+   "fallback_fonts": [
+    "Songti SC",
+    "STSong"
+   ],
+   "height_frac": 0.0627,
+   "position": [
+    0.501,
+    0.381
+   ],
+   "color": [
+    0.918,
+    0.945,
+    0.965
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "cut",
+   "duration_s": 1.25,
+   "offset_s": 7.47,
+   "template": "Text+",
+   "per": "location"
+  },
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0852,
+   "position": [
+    0.498,
+    0.492
+   ],
+   "color": [
+    0.894,
+    0.894,
+    0.894
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 0.87,
+   "offset_s": 91.16,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0444,
+   "position": [
+    0.5,
+    0.946
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 115.4,
+   "mad": 0.0,
+   "p10": 115.4,
+   "p90": 115.4,
+   "n": 1
+  },
+  "mood": "旁白主导（人声 59%），音乐铺底；Claude 听不到，只按测量推断",
+  "lufs": -13.3,
+  "duck_db": 0.5,
+  "sfx": [],
+  "music_changes": "约每章 17.3 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "offline_drx",
+   "status": "verified",
+   "how": "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "坐船上岛@100": 3.57,
+     "徒步到房子@352": 4.338,
+     "屋内和水电@529": 3.8035,
+     "抓海鹦的传统@686": 4.338,
+     "找海鹦、抓海鹦@817": 5.222,
+     "傍晚回屋@1159": 4.271,
+     "晚餐@1258": 3.804,
+     "礁石和风浪@1324": 4.054,
+     "夜里独处@1520": 4.438,
+     "第二天离岛@1610": 4.004
+    },
+    "spread": 0.3969
+   },
+   "transitions": {
+    "冷开场@0": {
+     "hard_cut": 9
+    },
+    "抵达主岛、见 Ragnar@48": {
+     "hard_cut": 17
+    },
+    "坐船上岛@100": {
+     "hard_cut": 55
+    },
+    "徒步到房子@352": {
+     "hard_cut": 31
+    },
+    "屋内和水电@529": {
+     "hard_cut": 28
+    },
+    "赞助口播一@650": {
+     "hard_cut": 9
+    },
+    "抓海鹦的传统@686": {
+     "hard_cut": 22,
+     "dip_to_black": 1
+    },
+    "找海鹦、抓海鹦@817": {
+     "hard_cut": 49,
+     "dissolve": 2,
+     "dip_to_black": 1
+    },
+    "傍晚回屋@1159": {
+     "hard_cut": 16
+    },
+    "赞助口播二@1234": {
+     "hard_cut": 7
+    },
+    "晚餐@1258": {
+     "hard_cut": 9
+    },
+    "礁石和风浪@1324": {
+     "hard_cut": 42
+    },
+    "夜里独处@1520": {
+     "hard_cut": 21
+    },
+    "第二天离岛@1610": {
+     "dip_to_black": 1,
+     "hard_cut": 21
+    },
+    "航拍收尾@1732": {
+     "hard_cut": 3
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "坐船上岛@100": 0.1273,
+     "徒步到房子@352": 0.3548,
+     "屋内和水电@529": 0.2143,
+     "抓海鹦的传统@686": 0.0435,
+     "找海鹦、抓海鹦@817": 0.1154,
+     "傍晚回屋@1159": 0.1875,
+     "晚餐@1258": 0.1111,
+     "礁石和风浪@1324": 0.119,
+     "夜里独处@1520": 0.2381,
+     "第二天离岛@1610": 0.0909
+    },
+    "spread": 2.5281
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "坐船上岛@100": 39.471,
+     "徒步到房子@352": 44.736,
+     "屋内和水电@529": 33.9085,
+     "抓海鹦的传统@686": 49.396,
+     "找海鹦、抓海鹦@817": 60.025,
+     "傍晚回屋@1159": 43.6065,
+     "晚餐@1258": 29.596,
+     "礁石和风浪@1324": 33.072,
+     "夜里独处@1520": 19.006,
+     "第二天离岛@1610": 37.465
+    },
+    "spread": 1.0663
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "坐船上岛@100": 21.392,
+     "徒步到房子@352": 19.279,
+     "屋内和水电@529": 14.7335,
+     "抓海鹦的传统@686": 18.717,
+     "找海鹦、抓海鹦@817": 21.252,
+     "傍晚回屋@1159": 19.104,
+     "晚餐@1258": 18.024,
+     "礁石和风浪@1324": 19.5445,
+     "夜里独处@1520": 15.911,
+     "第二天离岛@1610": 17.504
+    },
+    "spread": 0.3521
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "坐船上岛@100": -0.5,
+     "徒步到房子@352": 28.047,
+     "屋内和水电@529": 10.7305,
+     "抓海鹦的传统@686": 11.078,
+     "找海鹦、抓海鹦@817": -6.242,
+     "傍晚回屋@1159": 15.2895,
+     "晚餐@1258": 10.484,
+     "礁石和风浪@1324": -17.8985,
+     "夜里独处@1520": -20.406,
+     "第二天离岛@1610": -6.3125
+    },
+    "spread": 9.7061
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "坐船上岛@100": 11.448,
+     "徒步到房子@352": 13.69,
+     "屋内和水电@529": 17.9045,
+     "抓海鹦的传统@686": 10.318,
+     "找海鹦、抓海鹦@817": 14.5205,
+     "傍晚回屋@1159": 16.3605,
+     "晚餐@1258": 21.926,
+     "礁石和风浪@1324": 14.661,
+     "夜里独处@1520": 15.276,
+     "第二天离岛@1610": 7.7605
+    },
+    "spread": 0.9709
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1uparzhEjs",
+    "n_cuts": 66,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.66,
+    "bpm": 90.91,
+    "hit_rate": 0.197,
+    "baseline": 0.0607,
+    "lift": 3.246,
+    "downbeat_hit_rate": 0.1818,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 56,
+    "judged": 12,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 30,
+    "judged": 12,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 53,
+  "onsets_per_min": 162.8,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ }
+}

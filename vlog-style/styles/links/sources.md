@@ -6,13 +6,16 @@
 |---|---|
 | UP 主 | Linksphotograph（mid 3816626） |
 | 空间 | https://space.bilibili.com/3816626 |
-| 入池视频 | 还没有。炼完至少 2 条再写这一层的 STYLE.md 和 style.json（basis = multi_reference） |
+| 入池视频 | 3 条（下面子包表里除 polar-night 外的三条），测量于 2026-11-05 到 11-06；这一层的 STYLE.md 和 style.json 由它们合并（basis = multi_reference）。polar-night 的原始测量已经没有了，没有参与合并 |
 
 ## 子包
 
 | 子包 | 来源 | 出处 |
 |---|---|---|
 | links/polar-night | 《当太阳不再升起》第 1 集 | polar-night/sources.md |
+| links/lonely-house | 《我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！》 | lonely-house/sources.md |
+| links/kula-kangri | 《和李现，徒步在西藏库拉岗日》 | kula-kangri/sources.md |
+| links/first-snow-mountain | 《和李现，攀登人生第一座雪山》 | first-snow-mountain/sources.md |
 
 ## 候选视频
 
@@ -21,9 +24,9 @@
 | 状态 | 标题 | 链接 | 发布 | 时长 | UP 主 | 理由 |
 |---|---|---|---|---|---|---|
 | 待炼 | 当太阳不再升起，我们的世界会变成什么样？ | https://www.bilibili.com/video/BV1sHqPBLExZ | 2026-01-07 | 29:47 | Linksphotograph（mid 3816626） | 已炼成子包 links/polar-night；原始测量已清，入池前先在废纸篓找旧测量，找不到再重测 |
-| 待炼 | 我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！ | https://www.bilibili.com/video/BV1uparzhEjs | 2025-09-04 | 29:22 | Linksphotograph（mid 3816626） | 第一批：播放量第一（1146 万）；孤岛独处 |
-| 待炼 | 和李现，攀登人生第一座雪山 | https://www.bilibili.com/video/BV1SSQLBREVV | 2026-04-16 | 55:12 | Linksphotograph（mid 3816626） | 第一批：播放量第二（681 万）；雪山攀登 |
-| 待炼 | 和李现，徒步在西藏库拉岗日 | https://www.bilibili.com/video/BV1jy2CBNEDL | 2025-12-10 | 37:33 | Linksphotograph（mid 3816626） | 第一批：播放量第三（680 万）；高原徒步 |
+| 入池 | 我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！ | https://www.bilibili.com/video/BV1uparzhEjs | 2025-09-04 | 29:22 | Linksphotograph（mid 3816626） | 第一批：播放量第一（1146 万）；孤岛独处；子包 links/lonely-house |
+| 入池 | 和李现，攀登人生第一座雪山 | https://www.bilibili.com/video/BV1SSQLBREVV | 2026-04-16 | 55:12 | Linksphotograph（mid 3816626） | 第一批：播放量第二（681 万）；雪山攀登；子包 links/first-snow-mountain |
+| 入池 | 和李现，徒步在西藏库拉岗日 | https://www.bilibili.com/video/BV1jy2CBNEDL | 2025-12-10 | 37:33 | Linksphotograph（mid 3816626） | 第一批：播放量第三（680 万）；高原徒步；子包 links/kula-kangri |
 | 待炼 | 中国顶级山水？桂林阳朔的终极打开方式 | https://www.bilibili.com/video/BV1qmUUBsERW | 2025-11-26 | 20:58 | Linksphotograph（mid 3816626） | 备选：第一批改按播放量挑之后退下来；南方白天山水 |
 | 待炼 | Links｜终于来到“世界中心”！徒步52公里，我找到了冈仁波齐转山的意义 | https://www.bilibili.com/video/BV1YyCCBWEa3 | 2025-11-15 | 22:37 | Linksphotograph（mid 3816626） | 备选：第一批改按播放量挑之后退下来；高原徒步 |
 | 待炼 | Links｜我来到了一个24小时都是黑夜的地方 | https://www.bilibili.com/video/BV1HrrjB9EUj | 2026-01-14 | 30:26 | Linksphotograph（mid 3816626） | 可选：系列第 2 集，可并进 links/polar-night |

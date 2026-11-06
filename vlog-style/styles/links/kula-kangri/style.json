@@ -1,0 +1,608 @@
+{
+ "schema_version": 1,
+ "name": "links/kula-kangri",
+ "summary": "雪山徒步同行 vlog：两人的对话和字幕带着走，约 3.5 秒一刀、98.4% 硬切；中景和远景为主，车内固定机位和徒步时的广角机位占很多；纯音乐段落里约三成剪辑点卡拍；调色自然偏冷，随光变化大；黑底短卡开章，胶片照片插入和海拔角标是这条的标志手法",
+ "sources": [
+  {
+   "id": "BV1jy2CBNEDL",
+   "url": "https://www.bilibili.com/video/BV1jy2CBNEDL",
+   "title": "和李现，徒步在西藏库拉岗日",
+   "measured": "2026-11-05",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 2252.8,
+   "mad": 0.0,
+   "p10": 2252.8,
+   "p90": 2252.8,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.035,
+    "shot_len_s": {
+     "median": 4.338,
+     "mad": 1.101,
+     "p10": 1.815,
+     "p90": 5.599,
+     "n": 19
+    }
+   },
+   {
+    "role": "intro",
+    "share": 0.0793,
+    "shot_len_s": {
+     "median": 7.207,
+     "mad": 3.203,
+     "p10": 1.975,
+     "p90": 13.767,
+     "n": 23
+    },
+    "transition_in": "dip_to_black"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8608,
+    "shot_len_s": {
+     "median": 3.537,
+     "mad": 1.368,
+     "p10": 1.595,
+     "p90": 8.475,
+     "n": 439
+    }
+   },
+   {
+    "role": "ending",
+    "share": 0.0249,
+    "shot_len_s": {
+     "median": 2.069,
+     "mad": 0.034,
+     "p10": 1.982,
+     "p90": 4.898,
+     "n": 19
+    },
+    "transition_in": "dip_to_black"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 0.909,
+  "shot_types": {
+   "medium": 0.43,
+   "wide": 0.352,
+   "selfie": 0.104,
+   "detail": 0.085,
+   "aerial": 0.026,
+   "close": 0.002
+  },
+  "opening": "冷开场：先放后面段落的雪山远景和对镜头片段，交代两人同行、要去哪里，手写系列标题压轴后淡出到黑，接黑底卡进入第一次见面",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 3.537,
+   "mad": 1.419,
+   "p10": 1.602,
+   "p90": 8.775,
+   "n": 500
+  },
+  "cuts_per_min": 13.29,
+  "min_shot_s": 1.16
+ },
+ "beat": {
+  "hit_rate": 0.3077,
+  "baseline": 0.0792,
+  "offset_frames": 1,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.984
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.014,
+   "frames": 8,
+   "where": "any"
+  },
+  {
+   "type": "dissolve",
+   "share": 0.002,
+   "frames": 15,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0786,
+   "amplitude_px": 3.8
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "film_photo_insert",
+   "shot": 50,
+   "note": "胶片照片居中放在黑底上，左侧带张数计数（1/12 到 4/12：50、188、311、312），每张约 1.5–3.5 s"
+  },
+  {
+   "type": "film_photo_insert",
+   "shot": 72,
+   "note": "同样的黑底照片，右侧带一个手写小签名（70、72、85、93、99、227、358、410）"
+  },
+  {
+   "type": "photo_montage",
+   "shot": 99,
+   "note": "人像照片连放（99–109），接在拍照的段落后面；片尾还有一组（481–494，每张约 2 s）"
+  },
+  {
+   "type": "altitude_stamp",
+   "shot": 55,
+   "note": "画面左侧叠海拔和氧气浓度，约 5–6 s（55、149、215、228、233），只在换海拔时出现"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 18,
+   "note": "手写系列标题叠在人物远景上方，约 4 s，放在冷开场结尾，随后淡出到黑"
+  },
+  {
+   "type": "end_card",
+   "shot": 495,
+   "note": "黑底手写标识加拉丁字母署名，约 4 s，后面还有一段彩蛋（496–498）"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 37,
+   "note": "路线规划画板的屏幕录像，带缩放"
+  },
+  {
+   "type": "map_insert",
+   "shot": 142,
+   "note": "三维路线图交代徒步路线；121 是手机地图"
+  },
+  {
+   "type": "callout",
+   "shot": 36,
+   "note": "两人头顶叠性格类型标签，约 12 s"
+  }
+ ],
+ "grade": {
+  "summary": "自然色偏冷：蓝天和雪是主色，高光偏蓝，对比比较强；雪地明亮，夜里帐篷很暗，车内和室内保留暖色，清晨蓝调和日照山顶饱和度最高",
+  "look": {
+   "L01": {
+    "median": 2.035,
+    "mad": 1.626
+   },
+   "L50": {
+    "median": 45.447,
+    "mad": 11.086
+   },
+   "L99": {
+    "median": 86.001,
+    "mad": 4.332
+   },
+   "Lstd": {
+    "median": 23.143,
+    "mad": 3.755
+   },
+   "shadow": {
+    "median": 0.211,
+    "mad": 0.127
+   },
+   "chroma": {
+    "median": 12.585,
+    "mad": 4.571
+   },
+   "sh_a": {
+    "median": 0.07,
+    "mad": 1.234
+   },
+   "sh_b": {
+    "median": 0.859,
+    "mad": 2.696
+   },
+   "mid_a": {
+    "median": 1.766,
+    "mad": 2.922
+   },
+   "mid_b": {
+    "median": -7.375,
+    "mad": 16.469
+   },
+   "hi_a": {
+    "median": -0.328,
+    "mad": 1.649
+   },
+   "hi_b": {
+    "median": -10.265,
+    "mad": 4.781
+   },
+   "vignette": {
+    "median": 0.898,
+    "mad": 0.259
+   },
+   "hue_hist": [
+    0.0065,
+    0.0617,
+    0.1078,
+    0.0134,
+    0.0007,
+    0.0005,
+    0.0005,
+    0.0063,
+    0.41,
+    0.3882,
+    0.0029,
+    0.0015
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0611,
+   "position": [
+    0.501,
+    0.391
+   ],
+   "color": [
+    0.953,
+    0.922,
+    0.91
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 3.75,
+   "offset_s": 8.9,
+   "template": "Text+",
+   "per": "location"
+  },
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0629,
+   "position": [
+    0.501,
+    0.481
+   ],
+   "color": [
+    0.855,
+    0.855,
+    0.855
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 1.02,
+   "offset_s": 0.2,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0462,
+   "position": [
+    0.5,
+    0.956
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 111.2,
+   "mad": 0.0,
+   "p10": 111.2,
+   "p90": 111.2,
+   "n": 1
+  },
+  "mood": "旁白和对话主导（人声 65%），音乐铺底；Claude 听不到，只按测量推断",
+  "lufs": -16.3,
+  "duck_db": 0.7,
+  "sfx": [],
+  "music_changes": "约每章 11.2 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "offline_drx",
+   "status": "verified",
+   "how": "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "胶片相机和山上的寺院@258": 3.67,
+     "人像照片和回程@507": 3.3535,
+     "第二天翻雪山公路@575": 3.403,
+     "5176 米雪地@698": 2.8365,
+     "车里聊天、下到低处@932": 2.669,
+     "垭口经幡和进山@978": 3.971,
+     "徒步日的清晨@1078": 3.42,
+     "徒步上山@1131": 3.2535,
+     "装备和继续走@1386": 3.837,
+     "湖边扎营@1698": 4.671,
+     "夜里帐篷@1862": 2.836,
+     "清晨蓝调@2042": 4.071,
+     "下山@2164": 4.771
+    },
+    "spread": 0.6146
+   },
+   "transitions": {
+    "冷开场@0": {
+     "hard_cut": 18
+    },
+    "初次见面、拉萨出发@79": {
+     "dip_to_black": 1,
+     "hard_cut": 22
+    },
+    "胶片相机和山上的寺院@258": {
+     "hard_cut": 57
+    },
+    "人像照片和回程@507": {
+     "hard_cut": 15,
+     "dip_to_black": 1
+    },
+    "第二天翻雪山公路@575": {
+     "dip_to_black": 1,
+     "hard_cut": 28
+    },
+    "5176 米雪地@698": {
+     "hard_cut": 62
+    },
+    "车里聊天、下到低处@932": {
+     "hard_cut": 13
+    },
+    "垭口经幡和进山@978": {
+     "hard_cut": 24
+    },
+    "徒步日的清晨@1078": {
+     "hard_cut": 11,
+     "dip_to_black": 1
+    },
+    "徒步上山@1131": {
+     "hard_cut": 62
+    },
+    "装备和继续走@1386": {
+     "hard_cut": 67
+    },
+    "湖边扎营@1698": {
+     "hard_cut": 29
+    },
+    "夜里帐篷@1862": {
+     "hard_cut": 37
+    },
+    "清晨蓝调@2042": {
+     "hard_cut": 24
+    },
+    "下山@2164": {
+     "dip_to_black": 1,
+     "hard_cut": 5,
+     "dissolve": 1
+    },
+    "照片、片尾和彩蛋@2197": {
+     "dip_to_black": 2,
+     "hard_cut": 17
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "胶片相机和山上的寺院@258": 0.0877,
+     "人像照片和回程@507": 0.0625,
+     "第二天翻雪山公路@575": 0.3448,
+     "5176 米雪地@698": 0.1129,
+     "车里聊天、下到低处@932": 0.0,
+     "垭口经幡和进山@978": 0.375,
+     "徒步日的清晨@1078": 0.25,
+     "徒步上山@1131": 0.1774,
+     "装备和继续走@1386": 0.3134,
+     "湖边扎营@1698": 0.069,
+     "夜里帐篷@1862": 0.0541,
+     "清晨蓝调@2042": 0.125,
+     "下山@2164": 0.1429
+    },
+    "spread": 3.0
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "胶片相机和山上的寺院@258": 40.927,
+     "人像照片和回程@507": 33.289,
+     "第二天翻雪山公路@575": 46.509,
+     "5176 米雪地@698": 54.794,
+     "车里聊天、下到低处@932": 32.086,
+     "垭口经幡和进山@978": 49.957,
+     "徒步日的清晨@1078": 37.799,
+     "徒步上山@1131": 48.264,
+     "装备和继续走@1386": 48.154,
+     "湖边扎营@1698": 46.814,
+     "夜里帐篷@1862": 14.307,
+     "清晨蓝调@2042": 38.858,
+     "下山@2164": 54.1535
+    },
+    "spread": 0.8705
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "胶片相机和山上的寺院@258": 29.701,
+     "人像照片和回程@507": 35.067,
+     "第二天翻雪山公路@575": 21.413,
+     "5176 米雪地@698": 24.58,
+     "车里聊天、下到低处@932": 25.44,
+     "垭口经幡和进山@978": 23.736,
+     "徒步日的清晨@1078": 21.496,
+     "徒步上山@1131": 21.948,
+     "装备和继续走@1386": 23.188,
+     "湖边扎营@1698": 22.807,
+     "夜里帐篷@1862": 17.052,
+     "清晨蓝调@2042": 18.7345,
+     "下山@2164": 16.678
+    },
+    "spread": 0.8063
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "胶片相机和山上的寺院@258": 3.25,
+     "人像照片和回程@507": 9.965,
+     "第二天翻雪山公路@575": -5.469,
+     "5176 米雪地@698": -32.0,
+     "车里聊天、下到低处@932": 1.484,
+     "垭口经幡和进山@978": -24.125,
+     "徒步日的清晨@1078": -27.094,
+     "徒步上山@1131": -7.805,
+     "装备和继续走@1386": -4.672,
+     "湖边扎营@1698": -6.617,
+     "夜里帐篷@1862": 6.2655,
+     "清晨蓝调@2042": -25.6955,
+     "下山@2164": -16.5545
+    },
+    "spread": 6.342
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "胶片相机和山上的寺院@258": 8.5645,
+     "人像照片和回程@507": 6.4175,
+     "第二天翻雪山公路@575": 14.36,
+     "5176 米雪地@698": 14.215,
+     "车里聊天、下到低处@932": 13.457,
+     "垭口经幡和进山@978": 17.409,
+     "徒步日的清晨@1078": 25.965,
+     "徒步上山@1131": 12.57,
+     "装备和继续走@1386": 12.881,
+     "湖边扎营@1698": 14.0295,
+     "夜里帐篷@1862": 6.352,
+     "清晨蓝调@2042": 20.852,
+     "下山@2164": 22.003
+    },
+    "spread": 1.398
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1jy2CBNEDL",
+    "n_cuts": 104,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.66,
+    "bpm": 90.91,
+    "hit_rate": 0.3077,
+    "baseline": 0.0792,
+    "lift": 3.883,
+    "downbeat_hit_rate": 0.2788,
+    "verdict": "on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 81,
+    "judged": 18,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 23,
+    "judged": 6,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 70,
+  "onsets_per_min": 182.7,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ }
+}
