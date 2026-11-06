@@ -1,0 +1,599 @@
+{
+ "schema_version": 1,
+ "name": "links/first-snow-mountain",
+ "summary": "北欧雪山自驾徒步同行 vlog：两人的对话和底部字幕带着走，约 4 秒一刀、96.5% 是硬切；中景为主，远景和航拍交代雪山和海湾；纯音乐段落里约三成五的剪辑点卡拍；调色自然偏冷，跟着光走；拉丁字母装饰体地名标题、时间戳和照片插入是这一条的标志手法",
+ "sources": [
+  {
+   "id": "BV1SSQLBREVV",
+   "url": "https://www.bilibili.com/video/BV1SSQLBREVV",
+   "title": "和李现，攀登人生第一座雪山",
+   "measured": "2026-11-06",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 3311.0,
+   "mad": 0.0,
+   "p10": 3311.0,
+   "p90": 3311.0,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0194,
+    "shot_len_s": {
+     "median": 2.936,
+     "mad": 0.667,
+     "p10": 2.055,
+     "p90": 5.579,
+     "n": 19
+    }
+   },
+   {
+    "role": "intro",
+    "share": 0.0354,
+    "shot_len_s": {
+     "median": 3.37,
+     "mad": 1.518,
+     "p10": 1.568,
+     "p90": 7.594,
+     "n": 28
+    },
+    "transition_in": "dip_to_black"
+   },
+   {
+    "role": "chapter",
+    "share": 0.93,
+    "shot_len_s": {
+     "median": 4.004,
+     "mad": 1.835,
+     "p10": 1.468,
+     "p90": 10.357,
+     "n": 567
+    }
+   },
+   {
+    "role": "ending",
+    "share": 0.0152,
+    "shot_len_s": {
+     "median": 4.071,
+     "mad": 0.917,
+     "p10": 2.786,
+     "p90": 8.435,
+     "n": 10
+    }
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 0.931,
+  "shot_types": {
+   "medium": 0.479,
+   "wide": 0.269,
+   "selfie": 0.097,
+   "detail": 0.097,
+   "aerial": 0.057
+  },
+  "opening": "冷开场：先放后面段落的雪山、山峰航拍和对镜头片段，交代两人同行、要去的地方，NORWAY 地名标题压在海湾航拍上，再接三个山峰和海岸航拍，淡出到黑后切到北京首都机场出发",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 3.971,
+   "mad": 1.802,
+   "p10": 1.468,
+   "p90": 10.037,
+   "n": 624
+  },
+  "cuts_per_min": 11.29,
+  "min_shot_s": 1.07
+ },
+ "beat": {
+  "hit_rate": 0.3511,
+  "baseline": 0.0683,
+  "offset_frames": 1,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9646
+  },
+  {
+   "type": "dissolve",
+   "share": 0.0177,
+   "frames": 18,
+   "where": "any"
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0161,
+   "frames": 11,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0784,
+   "amplitude_px": 5.0
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "time_stamp",
+   "shot": 28,
+   "note": "画面左侧中部叠大号细黑体时间（7:00 am、13:30 pm、16:10 pm、6:20 am、8:00 am：28、57、79、170、463），am/pm 小一号，约 2–3 s，只在一天开始或换时段时出现；第二天那次下面加一行 Day 2"
+  },
+  {
+   "type": "location_pin",
+   "shot": 20,
+   "note": "中文地名前加一个定位图标，放在画面左侧（20 北京·首都机场、25 德国·慕尼黑），只用在出发和转机"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 570,
+   "note": "手写系列标题和拉丁字母署名叠在山顶日落的两人剪影上方，约 4.5 s，淡入淡出；放在第 49 分钟的高潮，不在冷开场"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 104,
+   "note": "照片缩小放在黑底或深蓝底上，右侧带手写小签名，每张约 1.5–4 s（104、151、152、165、202、212、221、235、254、263、284、296、297、363、365、409、410、569）；片尾 614–617 连放收束"
+  },
+  {
+   "type": "panel_title",
+   "shot": 29,
+   "note": "竖拍画面放在中间，两侧深蓝底，左侧竖排标题「旅行计划」，共约 36 s（29–32、34–35；33 是全屏的路线拼图）"
+  },
+  {
+   "type": "map_insert",
+   "shot": 27,
+   "note": "三维地图飞行交代路线（26、27、36、203、204、286、429、450、492）；26、27、36、286、429 用 14–20 帧叠化接下一个镜头，其余没有标叠化"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 56,
+   "note": "彩条测试卡约 0.9 s，硬切进出，当作喜剧停顿"
+  },
+  {
+   "type": "split_compare",
+   "shot": 160,
+   "note": "同机位白天和夜景用斜向分屏对照，只在城市灯火段落出现一次"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 618,
+   "note": "片尾太空画面（618–620 右上角标着 From NASA；227 的地球晨昏线画面没有标注，来源不明）和特罗姆瑟城区航拍（简介写明买自版权网站）都不是博主自己拍的，不算博主的拍法"
+  },
+  {
+   "type": "long_take",
+   "shot": 452,
+   "note": "海边木屋夜谈用沙发固定机位长镜头（449 24 s、451 69 s、452 111 s），全片最长"
+  }
+ ],
+ "grade": {
+  "summary": "自然色偏冷，跟着光走：雪和蓝调是主色，中间调比库拉岗日更偏蓝，高光反而没那么蓝，对比中等；白天雪地和公路明亮，极光和木屋夜谈很暗，室内、早餐和午饭接近中性，山顶日落和北角饱和度最高",
+  "look": {
+   "L01": {
+    "median": 1.941,
+    "mad": 1.153
+   },
+   "L50": {
+    "median": 46.02,
+    "mad": 13.372
+   },
+   "L99": {
+    "median": 78.305,
+    "mad": 5.484
+   },
+   "Lstd": {
+    "median": 20.805,
+    "mad": 4.265
+   },
+   "shadow": {
+    "median": 0.224,
+    "mad": 0.144
+   },
+   "chroma": {
+    "median": 9.576,
+    "mad": 4.063
+   },
+   "sh_a": {
+    "median": 0.586,
+    "mad": 0.789
+   },
+   "sh_b": {
+    "median": -3.422,
+    "mad": 3.422
+   },
+   "mid_a": {
+    "median": -0.891,
+    "mad": 1.703
+   },
+   "mid_b": {
+    "median": -10.656,
+    "mad": 8.406
+   },
+   "hi_a": {
+    "median": -1.508,
+    "mad": 1.43
+   },
+   "hi_b": {
+    "median": -4.93,
+    "mad": 3.586
+   },
+   "vignette": {
+    "median": 1.026,
+    "mad": 0.353
+   },
+   "hue_hist": [
+    0.0079,
+    0.0151,
+    0.0196,
+    0.0018,
+    0.0,
+    0.0,
+    0.0,
+    0.0054,
+    0.7789,
+    0.1676,
+    0.0021,
+    0.0015
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "装饰体",
+   "fallback_fonts": [
+    "PingFang SC"
+   ],
+   "height_frac": 0.069,
+   "position": [
+    0.499,
+    0.501
+   ],
+   "color": [
+    0.863,
+    0.914,
+    0.973
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 1.75,
+   "offset_s": 1.37,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0444,
+   "position": [
+    0.5,
+    0.955
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 121.5,
+   "mad": 0.0,
+   "p10": 121.5,
+   "p90": 121.5,
+   "n": 1
+  },
+  "mood": "旁白和对话主导（人声 57%），音乐铺底；长段风景、开车和航拍段落只有音乐；Claude 听不到，只按测量推断",
+  "lufs": -14.4,
+  "duck_db": 0.5,
+  "sfx": [],
+  "music_changes": "约每章 16.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "offline_drx",
+   "status": "verified",
+   "how": "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "抵达和采购@181": 2.92,
+     "傍晚上山看灯火@289": 3.8875,
+     "第二天早餐和路线@702": 2.436,
+     "开车看雪原和海湾@819": 3.9875,
+     "极光@1004": 4.955,
+     "渡轮去 Senja@1152": 3.42,
+     "上 Segla@1281": 4.1705,
+     "出海钓鱼和午饭@1667": 2.97,
+     "海边木屋夜谈@1886": 4.905,
+     "早晨和雪路@2259": 5.5555,
+     "雪坡徒步@2361": 4.872,
+     "山顶日落@2846": 4.938,
+     "一路向北@2981": 7.274,
+     "北角@3105": 5.706
+    },
+    "spread": 1.0701
+   },
+   "transitions": {
+    "冷开场@0": {
+     "hard_cut": 18
+    },
+    "北京出发到特罗姆瑟@64": {
+     "dip_to_black": 1,
+     "hard_cut": 23,
+     "other": 1,
+     "dissolve": 3
+    },
+    "抵达和采购@181": {
+     "hard_cut": 32
+    },
+    "傍晚上山看灯火@289": {
+     "hard_cut": 87,
+     "dissolve": 3
+    },
+    "第二天早餐和路线@702": {
+     "dip_to_black": 2,
+     "hard_cut": 32
+    },
+    "开车看雪原和海湾@819": {
+     "hard_cut": 46
+    },
+    "极光@1004": {
+     "hard_cut": 22
+    },
+    "渡轮去 Senja@1152": {
+     "dip_to_black": 1,
+     "hard_cut": 27,
+     "dissolve": 2
+    },
+    "上 Segla@1281": {
+     "hard_cut": 69,
+     "dissolve": 1
+    },
+    "出海钓鱼和午饭@1667": {
+     "hard_cut": 60,
+     "dissolve": 1
+    },
+    "海边木屋夜谈@1886": {
+     "hard_cut": 29,
+     "dip_to_black": 1
+    },
+    "早晨和雪路@2259": {
+     "dip_to_black": 1,
+     "hard_cut": 17
+    },
+    "雪坡徒步@2361": {
+     "hard_cut": 76
+    },
+    "山顶日落@2846": {
+     "hard_cut": 14,
+     "dissolve": 1
+    },
+    "一路向北@2981": {
+     "dip_to_black": 2,
+     "hard_cut": 17
+    },
+    "北角@3105": {
+     "hard_cut": 24
+    },
+    "照片收束@3261": {
+     "hard_cut": 8,
+     "dip_to_black": 2
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "抵达和采购@181": 0.2812,
+     "傍晚上山看灯火@289": 0.1667,
+     "第二天早餐和路线@702": 0.0588,
+     "开车看雪原和海湾@819": 0.1522,
+     "极光@1004": 0.0455,
+     "渡轮去 Senja@1152": 0.2667,
+     "上 Segla@1281": 0.2429,
+     "出海钓鱼和午饭@1667": 0.1475,
+     "海边木屋夜谈@1886": 0.2667,
+     "早晨和雪路@2259": 0.1667,
+     "雪坡徒步@2361": 0.1711,
+     "山顶日落@2846": 0.2,
+     "一路向北@2981": 0.4211,
+     "北角@3105": 0.1667
+    },
+    "spread": 2.2243
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "抵达和采购@181": 44.4825,
+     "傍晚上山看灯火@289": 41.565,
+     "第二天早餐和路线@702": 38.5435,
+     "开车看雪原和海湾@819": 52.527,
+     "极光@1004": 10.846,
+     "渡轮去 Senja@1152": 49.313,
+     "上 Segla@1281": 50.171,
+     "出海钓鱼和午饭@1667": 36.914,
+     "海边木屋夜谈@1886": 16.248,
+     "早晨和雪路@2259": 36.771,
+     "雪坡徒步@2361": 58.5295,
+     "山顶日落@2846": 51.703,
+     "一路向北@2981": 66.345,
+     "北角@3105": 44.0305
+    },
+    "spread": 1.254
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "抵达和采购@181": 21.712,
+     "傍晚上山看灯火@289": 19.8295,
+     "第二天早餐和路线@702": 19.46,
+     "开车看雪原和海湾@819": 18.047,
+     "极光@1004": 10.9,
+     "渡轮去 Senja@1152": 22.913,
+     "上 Segla@1281": 23.057,
+     "出海钓鱼和午饭@1667": 24.2325,
+     "海边木屋夜谈@1886": 14.614,
+     "早晨和雪路@2259": 22.4155,
+     "雪坡徒步@2361": 22.524,
+     "山顶日落@2846": 18.663,
+     "一路向北@2981": 16.071,
+     "北角@3105": 26.291
+    },
+    "spread": 0.741
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "抵达和采购@181": -1.039,
+     "傍晚上山看灯火@289": -14.3675,
+     "第二天早餐和路线@702": 2.4065,
+     "开车看雪原和海湾@819": -10.453,
+     "极光@1004": 13.156,
+     "渡轮去 Senja@1152": -4.578,
+     "上 Segla@1281": -18.281,
+     "出海钓鱼和午饭@1667": -0.664,
+     "海边木屋夜谈@1886": -10.641,
+     "早晨和雪路@2259": -2.9765,
+     "雪坡徒步@2361": -19.586,
+     "山顶日落@2846": -19.859,
+     "一路向北@2981": -9.3675,
+     "北角@3105": -16.633
+    },
+    "spread": 3.3314
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "抵达和采购@181": 7.952,
+     "傍晚上山看灯火@289": 11.83,
+     "第二天早餐和路线@702": 6.367,
+     "开车看雪原和海湾@819": 8.682,
+     "极光@1004": 7.144,
+     "渡轮去 Senja@1152": 6.334,
+     "上 Segla@1281": 12.475,
+     "出海钓鱼和午饭@1667": 4.5265,
+     "海边木屋夜谈@1886": 11.961,
+     "早晨和雪路@2259": 5.9255,
+     "雪坡徒步@2361": 11.205,
+     "山顶日落@2846": 18.183,
+     "一路向北@2981": 9.2075,
+     "北角@3105": 13.8465
+    },
+    "spread": 1.5268
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1SSQLBREVV",
+    "n_cuts": 131,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.68,
+    "bpm": 88.24,
+    "hit_rate": 0.3511,
+    "baseline": 0.0683,
+    "lift": 5.14,
+    "downbeat_hit_rate": 0.313,
+    "verdict": "on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 117,
+    "judged": 14,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 39,
+    "judged": 10,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 90,
+  "onsets_per_min": 143.6,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ }
+}
