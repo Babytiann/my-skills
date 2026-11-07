@@ -65,10 +65,10 @@ ROUTES = {  # element -> (label, route, status, how); statuses from the Resolve 
     "title": ("地点标题/章节卡", "live_api", "verified",
               "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"),
     "subtitle": ("字幕", "live_api", "verified", "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"),
-    "grade": ("调色", "live_api", "probe",
-              "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块）；"
-              "slope 已验证（#13），offset/power/sat 待探针 #16。风格包有 LUT/颗粒时先套中性 DRX + drx merge [颗粒]、"
-              "graph set_lut 到节点 1，再写 CDL"),
+    "grade": ("调色", "live_api", "verified",
+              "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），"
+              "公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、"
+              "graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"),
     "duck": ("音乐压低", "offline_ffmpeg", "verified", "duck.py 渲染压低版音乐床放 A2"),
     "fades": ("淡入淡出", "live_api", "verified", "set_fades，片尾淡出也用它"),
     "playback_fps": ("播放帧率", "manual", "manual", "工程设置里手动设，API 改不了"),
