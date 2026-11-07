@@ -12,6 +12,18 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-07 字幕字号按笔画高度估，烧出来偏大
+- 场景：探针 #15，`vlog-style-QA-probe2`，Studio 21.1.1.10 + MCP 4.15.3
+- 做法：links 和三个子包的 STYLE.md 按 polar-night 那次探针的比例估算，写的是 `size 0.053` + `position [0.5, 0.023]`
+- 问题：风格包的字高是 `vision_ocr` 的框高，polar-night 那次量的是笔画。PingFang SC 按 0.053 渲染，OCR 框高 6.1%，比目标 4.4% 大四成。另外 `set_subtitle_preset` 不给预设名直接拒绝，也写不了描边
+- 修法：两次渲染拟合出「框高 ≈ 1.1 × size」「中心 y ≈ 0.9875 − position y」，`size 0.040` + `position [0.5, 0.032]` 实测框高 4.44%、中心 y 0.9555。各 STYLE.md 的换算行和 resolve-routes.md 常见坑第 28 条改过，预设用 `Simple White`
+
+## 2026-11-07 原生静图按帧放不出想要的长度
+- 场景：探针 #14，同上
+- 做法：jpg、png、heic 直接导入，append 时 `end_frame` 给 120、240、72
+- 问题：读回三条都是 150 帧，即偏好设置里默认的静图时长 5 秒，`start_frame`/`end_frame` 不起作用。改偏好设置要先问用户，而且照片长短不一，一个默认值也不够
+- 修法：照片先用 ffmpeg 做成时间线帧率、等比缩放、标 bt709 的短片再按帧放，75 帧和 240 帧都对，缩放生效，色差可以忽略。写进 resolve-routes.md 路线表「照片」和常见坑第 27 条。同一轮实测还发现常见坑第 24 条过时了：`folder get_clips` 会列出时间线条目的 id
+
 ## 2026-11-06 `trash --all` 会带走还没测完的参考
 - 场景：第三条还在跑 OCR，另一个会话在规划清理 links 的下载缓存
 - 做法：`cleanup.py trash` 只靠 measure_video.json 判断要不要先 keep
