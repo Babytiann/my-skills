@@ -21,6 +21,7 @@ Paid or 充电 videos stop with PAID_CONTENT; this script never passes --force.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import re
@@ -37,6 +38,7 @@ import paths as vpaths  # noqa: E402
 
 PROXY_HEIGHT = 540
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".m4v", ".mts", ".mxf", ".avi", ".webm", ".flv"}
+GENERIC_BRANDS = {"isom", "iso2", "iso4", "iso5", "iso6", "mp41", "mp42", "qt", "m4v", "avc1", "dash"}
 BV_RE = re.compile(r"(BV[0-9A-Za-z]{10})")
 DOWNLOAD_TIMEOUT_S = 3600
 # opencli stops waiting for a browser command after 60 s unless told otherwise, yet lets the
@@ -70,6 +72,8 @@ def probe(path: Path) -> dict:
     dur = float(v.get("duration") or data["format"].get("duration") or 0)
     pix = v.get("pix_fmt") or ""
     chroma = "422" if "422" in pix else "444" if "444" in pix else "420" if pix else None
+    fmt_tags = (data.get("format") or {}).get("tags") or {}
+    shot_at, shot_at_source = shot_time(fmt_tags, v.get("tags") or {})
     out = {
         "codec": v.get("codec_name"), "profile": v.get("profile"), "pix_fmt": pix,
         "bit_depth": 10 if re.search(r"p10|p210|10le|10be", pix) else 8 if pix else None,
@@ -85,8 +89,50 @@ def probe(path: Path) -> dict:
         "rotation": int(float((v.get("tags") or {}).get("rotate", 0) or 0)),
         "audio": None if a is None else {"codec": a.get("codec_name"), "channels": a.get("channels"),
                                          "sample_rate": int(a.get("sample_rate") or 0)},
+        "shot_at": shot_at, "shot_at_source": shot_at_source, "device": device_of(fmt_tags),
     }
     return out
+
+
+def parse_time(value) -> str | None:
+    """A creation timestamp as UTC ISO text. A camera with no clock writes 1904 or 1970, which is no time at all."""
+    try:
+        t = dt.datetime.fromisoformat(str(value).strip())
+    except ValueError:
+        return None
+    if t.year < 2000:
+        return None
+    t = t.replace(tzinfo=t.tzinfo or dt.timezone.utc)
+    return t.astimezone(dt.timezone.utc).isoformat()
+
+
+def shot_time(fmt: dict, stream: dict) -> tuple[str | None, str | None]:
+    """When the clip was shot, and which tag said so. Never the file's mtime: copying a card changes it.
+
+    quicktime.creationdate comes first because an iPhone rewrites creation_time when a
+    clip is trimmed or exported, and this one keeps the capture time and its zone.
+    """
+    for source, value in (("quicktime.creationdate", fmt.get("com.apple.quicktime.creationdate")),
+                          ("format.creation_time", fmt.get("creation_time")),
+                          ("stream.creation_time", stream.get("creation_time"))):
+        iso = parse_time(value) if value else None
+        if iso:
+            return iso, source
+    return None, None
+
+
+def device_of(fmt: dict) -> str | None:
+    """Which camera, from what the file says. Clock offsets are per device, so it only has to be consistent."""
+    make = fmt.get("com.apple.quicktime.make") or fmt.get("make") or ""
+    model = fmt.get("com.apple.quicktime.model") or fmt.get("model") or ""
+    named = f"{make} {model}".strip()
+    if named:
+        return named
+    encoder = fmt.get("encoder") or ""
+    if encoder and not re.match(r"(?i)lav[fc]|ffmpeg", encoder):
+        return encoder
+    brand = (fmt.get("major_brand") or "").strip()
+    return brand if brand and brand.lower() not in GENERIC_BRANDS else None
 
 
 def _videotoolbox() -> bool:
@@ -164,7 +210,9 @@ def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tup
     if meta is not None:
         (ref_dir / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     def videos():
-        return sorted((p for p in src_dir.rglob("*") if p.suffix.lower() in VIDEO_EXT and not p.name.startswith(".")),
+        # .temp.mp4 is yt-dlp mid-way through embedding the cover: larger than the real file, and may be cut short
+        return sorted((p for p in src_dir.rglob("*") if p.suffix.lower() in VIDEO_EXT and not p.name.startswith(".")
+                       and not p.name.endswith(f".temp{p.suffix}")),
                       key=lambda p: p.stat().st_size, reverse=True)
 
     if not videos():  # re-running prep keeps an earlier download
@@ -230,6 +278,32 @@ def assign_ids(files: list[str], cached: dict[str, str]) -> dict[str, str]:
     return ids
 
 
+def refresh_prep(one: dict, src: Path, out: Path, rel: str) -> None:
+    """Bring a prep.json from an older run up to date without redoing its proxy."""
+    changed = False
+    if "shot_at" not in one["probe"]:
+        fresh = probe(src)
+        one["probe"].update({k: fresh[k] for k in ("shot_at", "shot_at_source", "device")})
+        changed = True
+    if "device" not in one:  # no make or model in the file: the card's folder still tells cameras apart
+        one["device"] = one["probe"]["device"] or (rel.split("/")[0] if "/" in rel else "unknown")
+        changed = True
+    if changed:
+        (out / "prep.json").write_text(json.dumps(one, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def device_ranges(clips: list[dict]) -> list[dict]:
+    """Each device's time range side by side, so a camera whose clock is off shows at a glance."""
+    out = []
+    for name in sorted({c["device"] for c in clips}):
+        own = [c for c in clips if c["device"] == name]
+        times = sorted(c["shot_at"] for c in own if c["shot_at"])
+        out.append({"device": name, "clips": len(own), "first": times[0] if times else None,
+                    "last": times[-1] if times else None, "undated": len(own) - len(times),
+                    "sources": sorted({c["shot_at_source"] for c in own if c["shot_at_source"]})})
+    return out
+
+
 def prep_footage(P: vpaths.Paths, project: str) -> dict:
     proj = P.project(project)
     footage, proxies = proj / "footage", proj / "proxies"
@@ -255,11 +329,17 @@ def prep_footage(P: vpaths.Paths, project: str) -> dict:
             one = json.loads((out / "prep.json").read_text(encoding="utf-8"))
         else:
             one = prep_one(P, c, out)
+        refresh_prep(one, c, out, rel_of[c])
         rep["clips"].append({"id": rel_id, "source": one["source"]["path"], "proxy": P.rel(out),
                              "fps": one["probe"]["fps"], "hdr": one["probe"]["hdr"],
-                             "vfr": one["probe"]["vfr"]})
+                             "vfr": one["probe"]["vfr"], "device": one["device"],
+                             "shot_at": one["probe"]["shot_at"], "shot_at_source": one["probe"]["shot_at_source"]})
         print(f"{rel_id}: {one['probe']['width']}x{one['probe']['height']} @ {one['probe']['fps']} "
               f"{one['probe']['color_transfer']}", file=sys.stderr)
+    rep["devices"] = device_ranges(rep["clips"])
+    for d in rep["devices"]:
+        print(f"device {d['device']}: {d['clips']} clip(s), {d['first']} .. {d['last']}, "
+              f"{d['undated']} undated, from {', '.join(d['sources']) or 'nothing'}", file=sys.stderr)
     (proj / "index").mkdir(exist_ok=True)
     (proj / "index" / "prep.json").write_text(json.dumps(rep, ensure_ascii=False, indent=1), encoding="utf-8")
     return rep

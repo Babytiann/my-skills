@@ -143,6 +143,24 @@ class PathsTest(unittest.TestCase):
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             self.assertEqual(paths.main(["check", str(d)]), 1)
 
+class SpokenTextTest(unittest.TestCase):
+    def test_a_line_starting_with_a_slash_is_a_note_not_a_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name, data in (("index.json", {"clips": [{"sentences": [[0, 9, "/斜杠开头的一句话"]],
+                                                          "shots": [{"sentences": [[0, 9, "/斜杠开头的一句话"]]}]}]}),
+                               ("plan.json", {"dialogue": [{"sentences": [[0, 9, "/斜杠开头的一句话"]]}]})):
+                f = Path(tmp) / name
+                f.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+                hits, notes = paths.scan([f])
+                self.assertEqual(hits, [], name)
+                self.assertTrue(notes, name)
+
+    def test_a_real_path_in_a_line_is_still_a_hit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "index.json"
+            f.write_text(json.dumps({"clips": [{"sentences": [[0, 9, "/Users/someone/x.mp4"]]}]}), encoding="utf-8")
+            self.assertTrue(paths.scan([f])[0])
+
 
 if __name__ == "__main__":
     unittest.main()

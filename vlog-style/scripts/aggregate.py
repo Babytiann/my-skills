@@ -604,13 +604,52 @@ def cmd_draft(args) -> int:
 
 # ---------------------------------------------------------------- footage
 
+NEW_DAY_GAP_S = 5 * 3600  # a break this long between clips starts a new shooting day
 MOTION_KIND = {"pan_left": "pan", "pan_right": "pan", "tilt_up": "tilt", "tilt_down": "tilt"}
+
+
+def epoch(iso: str) -> float:
+    t = dt.datetime.fromisoformat(iso)
+    return t.replace(tzinfo=t.tzinfo or dt.timezone.utc).timestamp()
+
+
+def clip_time(prep: dict, tagged: dict, offsets: dict) -> dict:
+    """shot_at after the clock fixes. A time typed into tags.json is the truth and takes no offset."""
+    device = prep.get("device") or prep["probe"].get("device") or "unknown"
+    if tagged.get("shot_at"):
+        iso = dt.datetime.fromtimestamp(epoch(tagged["shot_at"]), dt.timezone.utc).isoformat()
+        return {"shot_at": iso, "shot_at_source": "tags", "device": device}
+    iso = prep["probe"].get("shot_at")
+    if iso and offsets.get(device):
+        iso = dt.datetime.fromtimestamp(epoch(iso) + float(offsets[device]), dt.timezone.utc).isoformat()
+    return {"shot_at": iso, "shot_at_source": prep["probe"].get("shot_at_source") if iso else "filename",
+            "device": device}
+
+
+def order_clips(clips: list[dict]) -> None:
+    """Global `order` and shooting `day`, written as fields: the clips array keeps its own order.
+
+    Days come from long gaps, not calendar dates: a time tag may be local or UTC and
+    a trip crosses zones, while nobody films through the night. Clips with no time
+    follow the dated ones in file-name order and belong to no day.
+    """
+    day, last_end = 1, None
+    for n, c in enumerate(sorted(clips, key=lambda c: (c["shot_at"] is None, epoch(c["shot_at"]) if c["shot_at"] else 0,
+                                                       c["source"]))):
+        c["order"], c["day"] = n, None
+        if c["shot_at"]:
+            t = epoch(c["shot_at"])
+            if last_end is not None and t - last_end >= NEW_DAY_GAP_S:
+                day += 1
+            c["day"] = day
+            last_end = max(last_end or t, t + c["frames"] / c["fps"])
 
 
 def cmd_footage(project: str) -> int:
     P = vpaths.load()
     proj = P.project(project)
     tags = load_json(proj / "index" / "tags.json", {}) or {}
+    offsets = (load_json(proj / "plan" / "brief.json", {}) or {}).get("clock_offsets_s") or {}
     clips, sharp_all = [], []
     for d in sorted((proj / "proxies").iterdir()) if (proj / "proxies").exists() else []:
         prep, mv = load_json(d / "prep.json"), load_json(d / "measure_video.json")
@@ -622,6 +661,8 @@ def cmd_footage(project: str) -> int:
         if prep["probe"].get("vfr"):
             print(f"warn {d.name}: variable frame rate source; proxy frames may not match source frames", file=sys.stderr)
         speech = [[round(a * fps), round(b * fps)] for a, b in ma.get("speech") or []]
+        sentences = [[round(r["t_in"] * fps), round(r["t_out"] * fps), r["text"]]
+                     for r in (ma.get("transcript") or {}).get("segments") or [] if r.get("text")]
         ct = (tags.get("clips") or {}).get(d.name, {})
         shots = []
         for s in mv["scan"]["shots"]:
@@ -633,11 +674,17 @@ def cmd_footage(project: str) -> int:
                           "sharp_raw": s["sharp_raw"], "exposure_ok": s["exposure_ok"],
                           "shake": s["motion"]["shake"] or 0.0, "best": s["best"],
                           "speech": [[max(a, s["start"]), min(b, s["end"])] for a, b in speech if b > s["start"] and a < s["end"]],
-                          **({"reject": True} if st.get("reject") or ct.get("reject") else {})})
+                          "sentences": [[max(a, s["start"]), min(b, s["end"]), text]
+                                        for a, b, text in sentences if b > s["start"] and a < s["end"]],
+                          **({"reject": True} if st.get("reject") or ct.get("reject") else {}),
+                          **({"movable": True} if st.get("movable", ct.get("movable")) else {}),
+                          **({"light": st.get("light") or ct.get("light")} if st.get("light") or ct.get("light") else {})})
             sharp_all.append(s["sharp_raw"] or 0.0)
         clips.append({"id": d.name, "source": prep["source"]["path"], "fps": fps, "frames": mv["cuts"]["n_frames"],
                       "width": prep["probe"]["width"], "height": prep["probe"]["height"],
-                      "hdr": prep["probe"]["hdr"], "shots": shots})
+                      "hdr": prep["probe"]["hdr"], **clip_time(prep, ct, offsets), "sentences": sentences,
+                      "shots": shots})
+    order_clips(clips)
     order = sorted(sharp_all)
     for c in clips:
         for s in c["shots"]:

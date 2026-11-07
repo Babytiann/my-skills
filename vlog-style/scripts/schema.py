@@ -67,6 +67,8 @@ STYLE = {
             "height": {"type": "integer", "minimum": 16}, "duration_s": DIST,
             "letterbox": {"type": ["number", "null"]}}},
         "structure": {"type": "object", "required": ["sections"], "properties": {
+            "order": {"type": "string", "enum": ["chronological", "free"]},
+            "order_tolerance_s": {"type": "number", "minimum": 0},
             "sections": {"type": "array", "minItems": 1, "items": {
                 "type": "object", "required": ["role", "share", "shot_len_s"],
                 "properties": {
@@ -106,7 +108,13 @@ STYLE = {
             "title": TEXT_STYLE, "chapter_card": TEXT_STYLE, "subtitle": TEXT_STYLE}},
         "audio": {"type": "object", "properties": {
             "bpm": DIST, "mood": {"type": "string"}, "lufs": NUM, "duck_db": NUM,
-            "music_changes": {"type": "string"}, "sfx": {"type": "array"}}},
+            "music_changes": {"type": "string"}, "sfx": {"type": "array"},
+            "broll_ambient_db": {"type": ["number", "null"]}}},
+        "aroll": {"type": "object", "properties": {
+            "speech_share": SHARE, "pad_s": {"type": "number", "minimum": 0}, "pad_out_s": {"type": "number", "minimum": 0},
+            "cutaway_after_s": {"type": "number", "minimum": 0}, "cutaway_share": SHARE,
+            "cutaway_lead_s": {"type": "number", "minimum": 0}, "cutaway_tail_s": {"type": "number", "minimum": 0},
+            "j_s": {"type": "number", "minimum": 0}, "l_s": {"type": "number", "minimum": 0}}},
         "resolve": {"type": "array", "items": {
             "type": "object", "required": ["element", "route", "status"],
             "properties": {"element": {"type": "string"}, "route": {"type": "string", "enum": ROUTES},
@@ -125,6 +133,17 @@ PLAN_CLIP = {
         "rec_in": {"type": "integer", "minimum": 0}, "rec_out": {"type": "integer", "minimum": 1},
         "speed": {"type": "number", "minimum": 0.05, "maximum": 4}, "track": {"type": "integer", "minimum": 1},
         "transition_out": {"type": ["object", "null"]}, "motion": {"type": ["object", "null"]},
+        "role": {"type": "string", "enum": ["aroll", "broll", "cutaway"]},
+    },
+}
+PLAN_DIALOGUE = {
+    "type": "object",
+    "required": ["id", "clip", "source", "source_fps", "src_in", "src_out", "rec_in", "rec_out", "track", "sentences"],
+    "properties": {
+        "src_in": {"type": "integer", "minimum": 0}, "src_out": {"type": "integer", "minimum": 1},
+        "rec_in": {"type": "integer", "minimum": 0}, "rec_out": {"type": "integer", "minimum": 1},
+        "source_fps": {"type": "number", "minimum": 1}, "track": {"type": "integer", "minimum": 1},
+        "sentences": {"type": "array", "minItems": 1},
     },
 }
 PLAN = {
@@ -135,6 +154,7 @@ PLAN = {
         "timeline": {"type": "object", "required": ["fps", "width", "height", "duration_frames"]},
         "video": {"type": "array", "items": PLAN_CLIP},
         "titles": {"type": "array"}, "audio": {"type": "array"}, "markers": {"type": "array"},
+        "dialogue": {"type": "array", "items": PLAN_DIALOGUE},
     },
 }
 
