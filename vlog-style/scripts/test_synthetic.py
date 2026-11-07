@@ -528,6 +528,12 @@ class GradeTest(unittest.TestCase):
             self.assertEqual(ch["look_ref"], "synthetic")
             self.assertEqual(ch["resolve"], self.g.resolve_args(ch["cdl"]))
             self.assertNotIn(str(tmp), (tmp / "grade.json").read_text(encoding="utf-8"))
+            # a style pack's LUT on node 1 moves the CDL to node 2; the CDL itself is unchanged
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(self.g.main(args[:-1] + [str(tmp / "grade2.json"), "--node", "2"]), 0)
+            ch2 = json.loads((tmp / "grade2.json").read_text(encoding="utf-8"))["chapters"][0]
+            self.assertEqual(ch2["resolve"], self.g.resolve_args(ch["cdl"], 2))
+            self.assertEqual(ch2["resolve"]["NodeIndex"], "2")
         finally:
             if os.environ.get("KEEP"):
                 print(f"\nkept {tmp}", file=sys.stderr)

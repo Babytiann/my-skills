@@ -12,11 +12,17 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-07 CDL 和 LUT 写在同一个节点，CDL 跑到了 LUT 前面
+- 场景：探针 #16，`vlog-style-QA-probe2`，Studio 21.1.1.10 + MCP 4.15.3，逐通道的测试 LUT
+- 做法：apply.md 的例外原来写的是先 `graph set_lut` 到节点 1，再 `safe_set_cdl`，NodeIndex 照默认写 1；探针 #9 的 DRX 配方也是 LUT 套到节点 1
+- 问题：静帧对上的是「先 CDL 后 LUT」（平均差 0.30/255），和「先 LUT 后 CDL」差 3.5/255。可 `--stills` 是在套好 LUT 的静帧上解 CDL，假设的是 LUT 在前。另外重套 DRX 之后，已写的 CDL 没了，静帧和未调色的逐像素相同
+- 修法：中性 DRX 再 merge 一个空节点，LUT 放节点 1，CDL 放节点 2，静帧对上「先 LUT 后 CDL」（0.25/255）。`grade.py solve` 加 `--node`（默认 1），例外时传 2，`resolve` 块里的 NodeIndex 跟着变。只有 LUT 时也建两个节点；CDL 一定在 DRX 之后写。写进 apply.md §7 第 11 步、resolve-routes.md 路线表和常见坑第 29 条
+
 ## 2026-11-07 按章调色不走 DRX，CDL 用 safe_set_cdl 直接写
 - 场景：阶段 3 按章调色，离线 server `drx cdl_io`，MCP 4.15.3（读源码，没探针）
 - 做法：需求文档原来的写法是每章生成一个 DRX：`drx generate` 中性打底，`drx cdl_io` 把 CDL 换成 DRX 节点再 `drx merge`，每个条目 `safe_apply_drx`
 - 问题：`cdl_io` 把 slope 当 gain、offset 照搬、power 当 gamma、sat 从 0–2 换成 0–100，源码注释自己写着是近似换算。grade.py 按 ASC CDL 公式预测的 look 和渲染出来的会差一截，还得另做补偿。探针 #9 里的「CDL」节点用的也是 gradeParams 的 UI gain 和 saturation，不是 ASC CDL
-- 修法：grade.py 输出精确的 ASC CDL 和现成的 `safe_set_cdl` 参数（`resolve` 块），每个 V1/V2 条目写一次。这也是片场按场出 CDL、调色师套用再细修的常见做法。#13 验证过 slope；offset、power、sat 待探针 #16。DRX 只留给风格包自带的 LUT、DRX、颗粒（apply.md §7 第 11 步的例外）
+- 修法：grade.py 输出精确的 ASC CDL 和现成的 `safe_set_cdl` 参数（`resolve` 块），每个 V1/V2 条目写一次。这也是片场按场出 CDL、调色师套用再细修的常见做法。#13 验证过 slope，#16 验证过 offset、power、sat 和分通道组合。DRX 只留给风格包自带的 LUT、DRX、颗粒（apply.md §7 第 11 步的例外）
 
 ## 2026-11-07 照片的拍摄时间不能用 sips 和 Spotlight 读
 - 场景：阶段 2 照片，macOS 自带的 sips 和 mdls

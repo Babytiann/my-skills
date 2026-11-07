@@ -190,7 +190,7 @@ look card（每个镜头关键帧的 Lab 中位数 ± MAD，测之前遮掉字�
 | 黑场过渡 | add_transition Dip To Color Dissolve，从后往前加 | 已验证（本机探针 2026-11-02） |
 | 地点标题 / 黑底短卡 / 人名条 | 单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 的文字和字体；两种字体用第二个 Text+ 加 Merge；整条时间线放到 V3 | 已验证（本机探针 2026-11-02）。人名条的位置要按人物逐个摆 |
 | 字幕 | 导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录 | 已验证（本机探针 2026-11-02）。位置换算见下 |
-| 调色 | grade.py 每章一个 ASC CDL（brief 写 look_ref），每个 V1/V2 条目 timeline_item_color safe_set_cdl；风格包有 LUT/颗粒时先套中性 DRX + drx merge、graph set_lut 到节点 1 | slope 已验证（#13），offset/power/sat 待探针（#16） |
+| 调色 | grade.py 每章一个 ASC CDL（brief 写 look_ref），每个 V1/V2 条目 timeline_item_color safe_set_cdl；风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 `solve --node 2` 写到节点 2 | 已验证（#13、#16） |
 | 音乐压低 | duck.py 渲染压低版音乐床，放 A2 | 离线可用 |
 | 淡入淡出 | set_fades，片尾淡出也用它 | 已验证（贡献者）；本机探针验证了音频 set_fades |
 

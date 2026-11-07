@@ -12,7 +12,7 @@
 - **待探针**：本机还没跑过。
 - **手动**：没有可用的 API，只能手动做。
 
-「本机」一列是在 21.1.1.10 + MCP 4.15.3 上跑探针的结论，括号里是探针序号：#1–#12 是 2026-11-02 跑的，#13–#15 是 2026-11-07 跑的。本机否掉的路线已经换成备选，`style.json` 里的 `resolve[].status` 和 `aggregate.py` 的 ROUTES 同步改过。Resolve 或 MCP 升级后要重跑探针。
+「本机」一列是在 21.1.1.10 + MCP 4.15.3 上跑探针的结论，括号里是探针序号：#1–#12 是 2026-11-02 跑的，#13–#16 是 2026-11-07 跑的。本机否掉的路线已经换成备选，`style.json` 里的 `resolve[].status` 和 `aggregate.py` 的 ROUTES 同步改过。Resolve 或 MCP 升级后要重跑探针。
 
 ## 路线表
 
@@ -33,8 +33,8 @@
 | 遮幅（live_api） | `set_output_blanking` | 已验证 | 未探针（贡献者在 21.1 上验证过） |
 | 地点标题、章节卡（live_api） | 每条文字单独建一个时间线，在里面 `insert_fusion_title`，再用 `fusion_comp bulk_set_inputs` 写 Template 节点的 StyledText、Font、Style、Size；两种字体就再加一个 Text+ 和 Merge。把这个时间线当片段放到 V3。同一个标题时间线放多次时文字是共用的，所以每条不同的文字各建一个。标题之间不能重叠 | 已验证 | 通过（#7），换了写字路线：`set_title_text` 只是猜着用 SetProperty 写文字，也不管字体。append 时 end 给大一些就能超过 5 秒 |
 | 字幕（live_api） | 导入 .srt，先用只传 `clip_ids` 的旧式 append 放到空时间线上，再放视频。.srt 的时间是从时间线起点算的秒数，Resolve 按「秒 × 时间线帧率」取整成帧。`set_subtitle_preset` 要给预设名（`Simple White` 最接近 Links 的白字），会新建一个时间线修订，之后的步骤都在新的那条上做。导出时 `ExportSubtitle:true` + `SubtitleFormat:"BurnIn"` 烧录 | 已验证 | 通过（#8、#15）：烧录渲染出来了，不写旁挂文件；第 1 秒的字幕落在第 30 帧，第 300 秒的落在第 8991 帧，没有累积漂移。字号、位置和描边见常见坑第 28 条，带位置参数 append .srt 会让 Resolve 崩溃，见第 21 条 |
-| 按章调色（live_api） | 默认路线。`grade.py solve` 每章解一个 ASC CDL 写进 `plan/grade.json`；V1、V2 的每个条目按 `items` 找到所属章，调 `timeline_item_color safe_set_cdl`，参数直接用该章的 `resolve`（`{NodeIndex:"1", Slope:"r g b", Offset:"r g b", Power:"r g b", Saturation:"s"}`，值都是字符串）。返回的 verification 是 unverified，CDL 读不回，只能导出静帧核对。不用 `drx cdl_io` 把 CDL 换成 DRX：它把 slope 当 gain、power 当 gamma、sat 换成 0–100，源码自己注明是近似 | slope 已验证；offset、power、sat 待探针（#16） | slope 0.5 渲染正确（#13）。公式和 Resolve 的一致性其余部分没核对 |
-| 风格包的 LUT、颗粒（offline_drx，例外） | 风格包的 `grade.lut`、`grade.drx`、`grade.grain` 有值时才走。中性 `drx generate` 打底，`drx merge` 加 [CDL, 颗粒] 两个节点，`safe_apply_drx` 每段套一次，再用 `graph set_lut` 把 LUT 套到节点 1。LUT 先用 `lut install` 装进 MCP 子目录并 `refresh_luts`。套用 DRX 会替换整个节点图，所以只能套一次。SetCDL 写进去读不回来，只能导出静帧核对。颗粒可调的参数：GrainStrength、GrainMean、GrainSkew、Opacity | 已验证 | 通过（#9），换了路线：`drx lut_apply` 会丢掉一级调色，`drx merge` 的底图里放真实节点会被有损重写 |
+| 按章调色（live_api） | 默认路线。`grade.py solve` 每章解一个 ASC CDL 写进 `plan/grade.json`；V1、V2 的每个条目按 `items` 找到所属章，调 `timeline_item_color safe_set_cdl`，参数直接用该章的 `resolve`（`{NodeIndex:"1", Slope:"r g b", Offset:"r g b", Power:"r g b", Saturation:"s"}`，值都是字符串）。返回的 verification 是 unverified，CDL 读不回，只能导出静帧核对。不用 `drx cdl_io` 把 CDL 换成 DRX：它把 slope 当 gain、power 当 gamma、sat 换成 0–100，源码自己注明是近似 | 已验证 | 通过（#13、#16）：slope 1.2、offset ±0.03、power 0.85、sat 1.25 和四项分通道一起，静帧和 `grade.apply_cdl` 的预测每通道平均差 ≤ 0.36/255，各键 look 差都在下限以内。换成 Rec.601 亮度系数或先 power 后 slope/offset，差会到 1.0–3.6，这张测试卡分得出来 |
+| 风格包的 LUT、颗粒（offline_drx，例外） | 风格包的 `grade.lut`、`grade.drx`、`grade.grain` 有值时才走。中性 `drx generate` 打底，`drx merge` 加 [空的 CDL 节点, 颗粒]（没有颗粒就只加空节点），`safe_apply_drx` 每段套一次，再用 `graph set_lut` 把 LUT 套到节点 1，最后 `safe_set_cdl` 把 `grade.py solve --node 2` 的 CDL 写到节点 2。同一个节点里 Resolve 先算 CDL 再算 LUT，CDL 写在节点 1 就跑到了 LUT 前面，和 `--stills` 解出来的不一样。只有 LUT 时也这样建两个节点。LUT 先用 `lut install` 装进 MCP 子目录并 `refresh_luts`。套用 DRX 会替换整个节点图，所以只能套一次。SetCDL 写进去读不回来，只能导出静帧核对。颗粒可调的参数：GrainStrength、GrainMean、GrainSkew、Opacity | 已验证 | 通过（#9），换了路线：`drx lut_apply` 会丢掉一级调色，`drx merge` 的底图里放真实节点会被有损重写。节点顺序（#16）：LUT 在节点 1、CDL 在节点 2 时静帧对上「先 LUT 后 CDL」（平均差 0.25/255），两者同在节点 1 时对上「先 CDL 后 LUT」 |
 | 光晕、漏光（fusion） | 光晕用 Fusion Glow。漏光素材由用户提供，叠在 V2，`set_composite` 的 CompositeMode 传 5（滤色） | 滤色已验证；Glow 待探针 | 滤色通过（#11）：读回 5，静帧和滤色混合对上。Glow 未探针 |
 | 人声分离（live_api） | `timeline set_voice_isolation_state {track_index, state:{isEnabled, amount}}`，按轨生效。默认关，只给风噪重的对白轨开 | 已验证 | 通过（#13）：读回 on、100；渲染里非人声的合成提示音从约 −10 dBFS 降到 −57 至 −75 dBFS |
 | 音乐压低（offline_ffmpeg） | 用 `duck.py` 渲染一条只有音乐的压低版音乐床，放在 A2；原始音乐放在一条静音的 A3 上，方便手动重混 | 离线可用（测试实测 −12 dB ±0.5） | 不涉及 Resolve |
@@ -73,7 +73,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 
 ## 探针清单
 
-#1–#12 于 2026-11-02、#13–#15 于 2026-11-07 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
+#1–#12 于 2026-11-02、#13–#16 于 2026-11-07 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
 
 1. **连通性。** 在偏好设置 System > General 里，「External scripting using」要设为 Local。MCP 要能列出工程。Resolve 没开时 MCP 会自己启动它。
 2. **帧号。** 读回时间线起始帧，29.97 应为 108000，24 应为 86400。核对 `GetEnd` 是否不含该帧，也就是 end − start = duration。
@@ -90,7 +90,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 13. **只放音频。** `media_type 2` 把声音单独放到 A1，源区间比画面提前 2 秒，渲染核对声画偏移。同时试 59.94 素材放 29.97 时间线、非零起始时间码（`ffmpeg -timecode`）、单声道素材放立体声轨，以及 `set_voice_isolation_state` 在渲染里是否生效。
 14. **静图。** 导入 jpg、png、heic，按帧放短于和长于 5 秒的两段，`set_transform` 缩小放在黑底上；再和 ffmpeg 做成的照片短片比长度、缩放和颜色。
 15. **.srt 落位。** 第一条字幕写在第 1 秒，第 300 秒再放一条（29.97 下真实时间和非丢帧时间码在这里差约 9 帧），烧录渲染一小段核对。在带 V1、V2、A1 的小时间线上 `set_subtitle_preset` 前后各读回一次，看条目、音量、缩放、调色有没有丢；再调字号和位置，用 `vision_ocr` 量框高和中心。
-16. **按章 CDL 校准（待探针）。** 合成片（`test_synthetic.py` 的纹理帧做成短片）分四段，各套一个只改一项的 CDL：slope 1.2、offset +0.03（再试 −0.03）、power 0.85、sat 1.25，最后一段四项一起。每段导出未调色和已调色两张静帧，跑 `grade.py preview --grade <只含这些 CDL 的 grade.json> --chapter <段> <未调色> --graded <已调色>`，看每通道平均 |diff| 和各键 look 差；差在 2/255 以内算通过（照片短片的色差约 0.8）。不通过就按差的方向改 `grade.apply_cdl`（比如 sat 用的亮度系数、offset 在 power 之前还是之后），改完重跑合成测试。再试风格包带 LUT 或 DRX 时：`safe_apply_drx` 之后 `safe_set_cdl` 写到哪个节点、会不会被下一次 DRX 套用冲掉。
+16. **按章 CDL 校准。** 测试卡和时间线一样大（灰阶渐变、几档明度和饱和度的色相带、柔和的彩色纹理），做成 bt709 的 ProRes 短片，在一条时间线上放多段。一段不调色，其余各套一个 `safe_set_cdl`：slope 1.2、offset +0.03、offset −0.03、power 0.85、sat 1.25，再一段四项分通道一起（slope 1.15/1/0.9、offset 0.02/0/−0.01、power 0.9/1/1.1、sat 1.2，顺带核对通道顺序）。每段中间导出一张静帧，跑 `grade.py preview --grade <只含这些 CDL 的 grade.json> --chapter <段> <未调色> --graded <已调色>`，看每通道平均 |diff| 和各键 look 差，2/255 以内算通过；再拿 Rec.601、等权亮度系数和先 power 的公式算一遍，确认测试卡分得出对错。LUT 用逐通道的测试 LUT（每个输出通道只看自己的输入，三线性和四面体插值结果一样，能精确预测），分三段：只套 LUT；LUT 和 CDL 同在节点 1；中性两节点 DRX，LUT 在节点 1、CDL 在节点 2。最后给一段已写 CDL 的条目再套一次 DRX，看 CDL 还在不在
 
 结论写回上面的表，并在 `learnings.md` 记一条，写明日期和本机版本。
 
@@ -158,3 +158,4 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
    - 它导出 DRT 再导入，生成一个新时间线（名字取 `revision_name`），原时间线留着。之后放标题、调色、读回都要先 `timeline set_current` 到新的那条。#15 前后读回：V1、V2、A1、字幕的位置和源帧、AudioVolume、缩放都没变，渲染里 CDL 还在。markers、V3 标题等其他 Fusion 合成没验证，所以搭建时先套字幕预设再放标题，或者套完再读回一次。
    - 可编辑项只有 font、fontStyle、size、position、文字颜色和 textFillMode，没有描边。要描边就换带描边的预设（未探针），或者写进手动收尾清单。
    - 风格包里的字高是 `vision_ocr` 的框高，不是笔画高度，量的时候要用同一种方法。PingFang SC Regular 实测：`size 0.040` + `position [0.5, 0.032]` 框高 4.44%、中心 y 0.9555；`size 0.037` + `position [0.5, 0.023]` 框高 4.03%、中心 y 0.965；`size 0.053` 框高 6.1%。估算用「框高 ≈ 1.1 × size」「中心 y ≈ 0.9875 − position y」，套完渲一小段量一次。
+29. **CDL 和 LUT 的先后。** 同一个节点里 Resolve 先算 CDL 再算 LUT（#16）。所以风格包带 LUT 时，LUT 放节点 1，CDL 放节点 2（`grade.py solve --node 2`），这样才是 `--stills` 假设的「先 LUT 后 CDL」。`safe_apply_drx` 会替换整个节点图，已经写进去的 CDL 一起没了（#16 实测静帧和未调色逐像素相同），所以要先套 DRX、再写 CDL；重套 DRX 之后 CDL 要重写。

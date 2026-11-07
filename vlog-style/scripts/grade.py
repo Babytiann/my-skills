@@ -71,7 +71,8 @@ SPREAD_L50 = 20    # stills of one chapter further apart than this probably want
 EVALS = 500
 PULL = 0.01        # weight of the pull back toward neutral, per parameter at full range
 FORMULA = ("ASC CDL: out = clamp(in * slope + offset) ^ power on 0-1 RGB, then saturation around "
-           "Rec.709 luma; one CDL per chapter on every V1/V2 item, node 1, via timeline_item_color safe_set_cdl")
+           "Rec.709 luma; one CDL per chapter on every V1/V2 item via timeline_item_color safe_set_cdl, on the node "
+           "named in each chapter's resolve block (Resolve runs a node's CDL before that node's LUT)")
 
 
 def log(msg: str) -> None:
@@ -393,7 +394,8 @@ def card(look_ref: str | None, plan_style: str, override: dict | None) -> tuple[
     return plan_style, load_json(vpaths.style_file(plan_style))["grade"]["look"], warn
 
 
-def build(plan: dict, brief: dict, proxies: Path | None, stills: Path | None, override: dict | None) -> dict:
+def build(plan: dict, brief: dict, proxies: Path | None, stills: Path | None, override: dict | None,
+          node: int = 1) -> dict:
     owner = chapter_of(plan)
     briefed = {c.get("name"): c for c in brief.get("chapters") or []}
     names = list(dict.fromkeys(owner[v["id"]] for v in sorted(plan["video"], key=lambda v: v["rec_in"])))
@@ -406,7 +408,7 @@ def build(plan: dict, brief: dict, proxies: Path | None, stills: Path | None, ov
             warns.insert(0, warn)
         g = grade_chapter(name, frames, target, bc.get("night"), bc.get("cast", True) is not False)
         g["warnings"] = warns + g["warnings"]
-        chapters.append({"name": name, "look_ref": ref, "stills": used, **g, "resolve": resolve_args(g["cdl"])})
+        chapters.append({"name": name, "look_ref": ref, "stills": used, **g, "resolve": resolve_args(g["cdl"], node)})
     return {"schema_version": 1, "style": plan["style"], "project": plan.get("project"), "formula": FORMULA,
             "bounds": {k: list(v) for k, v in BOUNDS.items()}, "stills_from": "stills" if stills else "proxies",
             "chapters": chapters, "items": owner}
@@ -486,6 +488,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--proxies", type=Path, help="folder of <clip>/proxy.mp4")
     s.add_argument("--stills", type=Path, help="folder of <chapter>/ subfolders of ungraded Resolve stills")
     s.add_argument("--style-file", type=Path, help="grade every chapter toward this pack's look (tests)")
+    s.add_argument("--node", type=int, default=1,
+                   help="graph node for the CDL (default 1; 2 when a style pack's LUT sits on node 1)")
     s.add_argument("--out", type=Path)
     pv = sub.add_parser("preview")
     pv.add_argument("stills", type=Path, nargs="+")
@@ -514,9 +518,11 @@ def main(argv: list[str] | None = None) -> int:
         args.out = args.out or proj / "plan" / "grade.json"
     if not (args.plan and args.brief and args.out and (args.proxies or args.stills)):
         ap.error("solve needs --plan, --brief, --out and --proxies or --stills (or --project)")
+    if args.node < 1:
+        ap.error("--node counts from 1")
     override = load_json(args.style_file) if args.style_file else None
     try:
-        grade = build(load_json(args.plan), load_json(args.brief), args.proxies, args.stills, override)
+        grade = build(load_json(args.plan), load_json(args.brief), args.proxies, args.stills, override, args.node)
     except ValueError as exc:  # a look_ref naming no pack
         log(f"grade: {exc}")
         return 1
