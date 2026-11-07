@@ -566,6 +566,25 @@ class SubsTest(unittest.TestCase):
         cues = subs.cues_from([(0.0, 90.0, "欢迎来到特罗姆色")], 30.0, 18, {"特罗姆色": "特罗姆瑟"})
         self.assertEqual(cues[0]["text"], "欢迎来到特罗姆瑟")
 
+    def test_foreign_lines_take_translations_and_the_rest_are_listed(self):
+        plan = {"timeline": {"fps": 30.0}, "video": [], "dialogue": [
+            {"src_in": 0, "src_out": 300, "rec_in": 0, "rec_out": 300, "source_fps": 30.0,
+             "sentences": [[0, 60, "今天到了小镇。"], [90, 150, "How old is this shop?", "en"],
+                           [180, 240, "Fifty years.", "en"]]}]}
+        tr = {"How old is this shop?": "这家店开了多久？"}
+        self.assertEqual([t for _, _, t in subs.timed_lines(plan, None, tr)],
+                         ["今天到了小镇。", "这家店开了多久？", "Fifty years."])
+        self.assertEqual(subs.untranslated(plan, None, tr), [("en", "Fifty years.")])
+        with tempfile.TemporaryDirectory() as tmp:
+            pj, out, fx = Path(tmp) / "plan.json", Path(tmp) / "subs.srt", Path(tmp) / "fixes.json"
+            pj.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+            fx.write_text(json.dumps({"translate": tr}, ensure_ascii=False), encoding="utf-8")
+            err = io.StringIO()
+            with redirect_stderr(err):
+                self.assertEqual(subs.main(["--plan", str(pj), "--out", str(out), "--fixes", str(fx)]), 0)
+            self.assertIn("这家店开了多久", out.read_text(encoding="utf-8"))
+            self.assertIn("[en] Fifty years.", err.getvalue())
+
     def test_srt_text(self):
         text = subs.to_srt([{"a": 1.0, "b": 2.5, "text": "一"}, {"a": 3661.25, "b": 3662.0, "text": "二"}])
         self.assertEqual(text, "1\n00:00:01,000 --> 00:00:02,500\n一\n\n2\n01:01:01,250 --> 01:01:02,000\n二\n\n")
@@ -594,6 +613,12 @@ class StoryDumpTest(unittest.TestCase):
         self.assertRegex(text, r"\[00:02\.00–00:06\.\d\d\] 今天到了小镇")
         self.assertIn("02-11 09:00:00", text)
 
+    def test_marks_lines_that_are_not_chinese(self):
+        import test_plan_cut as tp
+        index = tp.trip()
+        index["clips"][0]["sentences"].append([400, 460, "How far is the lake?", "en"])
+        self.assertRegex(story.dump(index), r"\] \[en\] How far is the lake\?")
+
     def test_says_when_times_are_missing(self):
         import test_plan_cut as tp
         index = tp.trip()
@@ -621,6 +646,31 @@ class FootageTimeTest(TempRoot):
         self.assertEqual([c["source"] for c in clips], ["b", "z", "a", "c"])  # the array itself stays put
         self.assertEqual({c["source"]: c["order"] for c in clips}, {"a": 0, "c": 1, "b": 2, "z": 3})
         self.assertEqual({c["source"]: c["day"] for c in clips}, {"a": 1, "c": 1, "b": 2, "z": None})
+
+    def test_sentences_reach_the_index_in_source_frames(self):
+        paths.init(self.P, project="t")
+        d = self.P.project("t") / "proxies" / "A"
+        d.mkdir(parents=True)
+        shot = lambda i, a, b: {"i": i, "start": a, "end": b, "motion": {"type": "static", "shake": 0.1},  # noqa: E731
+                                "sharp_raw": 1.0, "exposure_ok": True, "best": a}
+        files = {
+            "prep.json": {"source": {"path": "projects/t/footage/A.MP4"},
+                          "probe": {"fps": 59.94, "width": 3840, "height": 2160, "hdr": False,
+                                    "shot_at": "2026-02-11T09:00:00+00:00", "shot_at_source": "format.creation_time"}},
+            "measure_video.json": {"scan": {"shots": [shot(0, 0, 300), shot(1, 300, 600)]}, "cuts": {"n_frames": 600}},
+            "measure_audio.json": {"speech": [[1.0, 4.0], [4.5, 9.0]], "transcript": {"segments": [
+                {"t_in": 1.0, "t_out": 4.0, "text": "今天到了小镇。"},
+                {"t_in": 4.5, "t_out": 8.0, "text": "How old is this shop?", "lang": "en"},
+                {"t_in": 8.1, "t_out": 9.0, "text": "很好。", "lang": "zh"}]}}}
+        for name, data in files.items():
+            (d / name).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        code, _, err = self.run_main(aggregate.main, ["footage", "--project", "t"])
+        self.assertEqual(code, 0, err)
+        clip = json.loads((self.P.project("t") / "index" / "footage.json").read_text(encoding="utf-8"))["clips"][0]
+        self.assertEqual(clip["sentences"], [[60, 240, "今天到了小镇。"], [270, 480, "How old is this shop?", "en"],
+                                             [486, 539, "很好。"]])
+        self.assertEqual(clip["shots"][0]["sentences"], [[60, 240, "今天到了小镇。"], [270, 300, "How old is this shop?", "en"]])
+        self.assertEqual(clip["shots"][1]["sentences"], [[300, 480, "How old is this shop?", "en"], [486, 539, "很好。"]])
 
     def test_camera_with_no_clock_counts_as_undated(self):
         self.assertIsNone(prep.parse_time("1904-01-01T00:00:00Z"))

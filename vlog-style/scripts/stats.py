@@ -322,3 +322,64 @@ def flat_shots(under: list[tuple[int, int]], over: list[tuple[int, int]]) -> lis
     """Lengths of the shots a viewer sees with `over` laid on top of `under`: every edge on either is a cut."""
     edges = sorted({x for span in [*under, *over] for x in span})
     return [b - a for a, b in zip(edges, edges[1:])]
+
+
+SENTENCE_END = tuple("。！？!?…；;")
+
+
+def quiet_cuts(db: list[float], hop_s: float, max_s: float = 28.0, min_s: float = 10.0,
+               smooth_s: float = 0.3, near_db: float = 3.0) -> list[float]:
+    """Cut times (s) that split a recording into pieces no longer than max_s.
+
+    Whisper reads 30 s windows and drops its initial prompt after the first
+    one, so a long clip is transcribed piece by piece. Each cut goes at the
+    quietest moment (level averaged over smooth_s) between min_s and max_s
+    after the previous cut; among moments within near_db of that minimum the
+    latest wins, which keeps pieces long.
+    """
+    n = len(db)
+    if n * hop_s <= max_s:
+        return []
+    w = max(1, round(smooth_s / hop_s))
+    pref = [0.0]
+    for v in db:
+        pref.append(pref[-1] + v)
+    sm = []
+    for i in range(n):
+        a = max(0, i - w // 2)
+        b = min(n, a + w)
+        sm.append((pref[b] - pref[a]) / (b - a))
+    lo_f, hi_f = max(1, round(min_s / hop_s)), round(max_s / hop_s)
+    cuts, start = [], 0
+    while n - start > hi_f:
+        lo, hi = start + lo_f, start + hi_f
+        floor = min(sm[lo:hi])
+        i = max(j for j in range(lo, hi) if sm[j] <= floor + near_db)
+        cuts.append(round(i * hop_s, 3))
+        start = i
+    return cuts
+
+
+def sentences(words: list[dict], gap_s: float = 0.8) -> list[dict]:
+    """Regroup whisper words ({word, start, end[, lang]}) into sentences.
+
+    A sentence ends at sentence-final punctuation, at a silence longer than
+    gap_s, or where the language changes. Whisper's own segments end wherever
+    a window or the decoder stopped, so one can hold several sentences or end
+    mid-sentence. Text keeps whisper's spacing (English words carry a leading
+    space, Chinese ones none).
+    """
+    ws = sorted((w for w in words if w["word"].strip()), key=lambda w: w["start"])
+    out, cur = [], []
+    for i, w in enumerate(ws):
+        cur.append(w)
+        nxt = ws[i + 1] if i + 1 < len(ws) else None
+        if (nxt is None or w["word"].strip().endswith(SENTENCE_END) or nxt["start"] - w["end"] > gap_s
+                or nxt.get("lang") != w.get("lang")):
+            row = {"t_in": round(cur[0]["start"], 3), "t_out": round(cur[-1]["end"], 3),
+                   "text": "".join(x["word"] for x in cur).strip()}
+            if w.get("lang"):
+                row["lang"] = w["lang"]
+            out.append(row)
+            cur = []
+    return out

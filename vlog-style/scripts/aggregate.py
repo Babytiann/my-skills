@@ -661,7 +661,9 @@ def cmd_footage(project: str) -> int:
         if prep["probe"].get("vfr"):
             print(f"warn {d.name}: variable frame rate source; proxy frames may not match source frames", file=sys.stderr)
         speech = [[round(a * fps), round(b * fps)] for a, b in ma.get("speech") or []]
-        sentences = [[round(r["t_in"] * fps), round(r["t_out"] * fps), r["text"]]
+        # a 4th element names the language of a line that is not Chinese (measure_audio --language auto)
+        sentences = [[round(r["t_in"] * fps), round(r["t_out"] * fps), r["text"],
+                      *([r["lang"]] if r.get("lang") not in (None, "zh") else [])]
                      for r in (ma.get("transcript") or {}).get("segments") or [] if r.get("text")]
         ct = (tags.get("clips") or {}).get(d.name, {})
         shots = []
@@ -674,8 +676,8 @@ def cmd_footage(project: str) -> int:
                           "sharp_raw": s["sharp_raw"], "exposure_ok": s["exposure_ok"],
                           "shake": s["motion"]["shake"] or 0.0, "best": s["best"],
                           "speech": [[max(a, s["start"]), min(b, s["end"])] for a, b in speech if b > s["start"] and a < s["end"]],
-                          "sentences": [[max(a, s["start"]), min(b, s["end"]), text]
-                                        for a, b, text in sentences if b > s["start"] and a < s["end"]],
+                          "sentences": [[max(a, s["start"]), min(b, s["end"]), *rest]
+                                        for a, b, *rest in sentences if b > s["start"] and a < s["end"]],
                           **({"reject": True} if st.get("reject") or ct.get("reject") else {}),
                           **({"movable": True} if st.get("movable", ct.get("movable")) else {}),
                           **({"light": st.get("light") or ct.get("light")} if st.get("light") or ct.get("light") else {})})

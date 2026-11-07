@@ -358,5 +358,86 @@ class LumaEventTest(unittest.TestCase):
         self.assertEqual(self.ev(Y, 60, 61, 12)["flash"]["frames"], 6)
 
 
+
+@unittest.skipUnless(os.environ.get("ASR"), "set ASR=1 to run whisper (needs the 1.6 GB model)")
+class AsrSentencesTest(unittest.TestCase):
+    """measure_audio --sentences on spoken audio: pieces under 30 s, punctuation, language per piece."""
+
+    ZH, EN = "今天我们终于到了海边的小镇。", "The lighthouse is at the end of this road."
+
+    def test_sentences_from_real_speech(self):
+        tmp = Path(tempfile.mkdtemp(prefix="vlog-asr-"))
+        env = {**os.environ, paths.ENV_ROOT: str(tmp / "root")}
+        try:
+            voices = subprocess.run(["say", "-v", "?"], capture_output=True, text=True).stdout
+            run(["say", "-v", "Tingting" if "Tingting" in voices else "Flo", "-o", str(tmp / "zh.aiff"), self.ZH], env)
+            run(["say", "-v", "Samantha", "-o", str(tmp / "en.aiff"), self.EN], env)
+            src = tmp / "src" / "talk.mp4"
+            src.parent.mkdir()
+            # zh at 2 s, en at 31 s: 36 s in all, so whisper sees at least two pieces
+            run(["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i", "color=c=black:s=320x180:r=30:d=36",
+                 "-i", str(tmp / "zh.aiff"), "-i", str(tmp / "en.aiff"), "-filter_complex",
+                 "[1:a]adelay=2000|2000,aresample=48000[a];[2:a]adelay=31000|31000,aresample=48000[b];"
+                 "[a][b]amix=inputs=2:normalize=0,apad,atrim=0:36[out]",
+                 "-map", "0:v", "-map", "[out]", "-c:v", "libx264", "-preset", "ultrafast", "-c:a", "aac",
+                 "-shortest", str(src)], env)
+            run([sys.executable, "-I", "-B", str(HERE / "prep.py"), "ref", str(src), "--id", "talk"], env)
+            ref = tmp / "root" / "cache" / "refs" / "talk"
+            run(UV + [str(HERE / "measure_audio.py"), str(ref), "--sentences", "--language", "auto"], env)
+            a = json.loads((ref / "measure_audio.json").read_text(encoding="utf-8"))
+            rows = a["transcript"]["segments"]
+            self.assertEqual(a["transcript"]["asr"], {"language": "auto", "sentences": True})
+            zh = [r for r in rows if r.get("lang") == "zh"]
+            en = [r for r in rows if r.get("lang") == "en"]
+            self.assertTrue(zh and en, rows)
+            self.assertIn("小镇", "".join(r["text"] for r in zh))
+            self.assertTrue(zh[-1]["text"].endswith(("。", "！", "？")), zh)
+            self.assertIn("lighthouse", " ".join(r["text"] for r in en).lower())
+            self.assertTrue(1.5 <= zh[0]["t_in"] <= 3.0, zh[0])
+            self.assertTrue(30.5 <= en[0]["t_in"] <= 32.0, en[0])
+        finally:
+            if os.environ.get("KEEP"):
+                print(f"\nkept {tmp}", file=sys.stderr)
+            elif shutil.which("trash"):
+                subprocess.run(["trash", str(tmp)])
+            else:
+                shutil.rmtree(tmp, ignore_errors=True)
+
+class ReviewSheetTest(unittest.TestCase):
+    """story.py review draws one sheet per section from proxy frames, and survives a missing proxy."""
+
+    def test_sheets_per_section(self):
+        import story
+        import test_plan_cut as tpc
+
+        tc = tpc.StoryTest("test_tracks_and_roles")
+        tc.setUp()
+        plan, index = tc.build(), tpc.trip()
+        tmp = Path(tempfile.mkdtemp(prefix="vlog-review-"))
+        try:
+            clips = sorted({v["clip"] for v in plan["video"]})
+            longest = max(c["src_s"] for c in story.cells(plan, index)) + 2
+            one = tmp / "one.mp4"
+            subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i",
+                            f"testsrc2=size=480x270:rate=10:duration={longest:.1f}", "-pix_fmt", "yuv420p",
+                            "-preset", "ultrafast", str(one)], check=True)
+            for cid in clips[1:]:
+                (tmp / "proxies" / cid).mkdir(parents=True)
+                shutil.copy(one, tmp / "proxies" / cid / "proxy.mp4")
+            out = story.review(plan, index, tmp, tmp / "qa" / "review")
+            names = [s["name"] for s in plan["sections"] if any(v["section"] == s["name"] for v in plan["video"])]
+            self.assertEqual([p.name.split("_", 1)[1] for p in out], [f"{n}.jpg" for n in names])
+            img = Image.open(out[0])
+            self.assertEqual(img.width, story.COLS * story.CELL_W)
+            px = np.asarray(img.convert("RGB"))[34 + 90, 160]
+            self.assertGreater(int(px.sum()), 0)
+        finally:
+            if os.environ.get("KEEP"):
+                print(f"\nkept {tmp}", file=sys.stderr)
+            elif shutil.which("trash"):
+                subprocess.run(["trash", str(tmp)])
+            else:
+                shutil.rmtree(tmp, ignore_errors=True)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

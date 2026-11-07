@@ -8,7 +8,12 @@ goes to the user to proofread before it enters Resolve; plan/subs_fixes.json
 keeps those corrections and is applied on every run, so changing the plan does
 not lose them:
 
-  {"replace": {"特罗姆色": "特罗姆瑟"}}
+  {"replace": {"特罗姆色": "特罗姆瑟"},
+   "translate": {"How did you bring all this here?": "你们是怎么把这些运过来的？"}}
+
+replace fixes words inside every line. translate swaps a whole line, keyed by
+the exact text as heard; lines whisper marked as not Chinese (a `lang` after
+the text in footage.json) and missing from it stay as spoken and are listed.
 
 An existing .srt is not overwritten without --force, because it may hold hand
 edits.
@@ -69,10 +74,10 @@ def rec_of(frame: float, src_in: int, rec_in: int, source_fps: float, fps: float
     return rec_in + (frame - src_in) * fps / source_fps
 
 
-def timed_lines(plan: dict, index: dict | None) -> list[tuple[float, float, str]]:
-    """(rec start, rec end, text) in timeline frames, clipped to the item that plays them."""
+def spoken(plan: dict, index: dict | None) -> list[tuple[float, float, str, str | None]]:
+    """(rec start, rec end, text, language or None for Chinese), clipped to the item that plays them."""
     fps = float(plan["timeline"]["fps"])
-    rows: list[tuple[float, float, str]] = []
+    rows: list[tuple[float, float, str, str | None]] = []
     if plan.get("dialogue"):
         items = [(d, d["sentences"]) for d in plan["dialogue"]]
     else:
@@ -80,13 +85,25 @@ def timed_lines(plan: dict, index: dict | None) -> list[tuple[float, float, str]
         items = [(v, clips.get(v["clip"], {}).get("sentences") or []) for v in plan["video"]
                  if v.get("audio") == "keep" and v.get("kind") != "photo"]
     for item, sentences in items:
-        for a, b, text in sentences:
+        for a, b, text, *lang in sentences:
             a, b = max(a, item["src_in"]), min(b, item["src_out"])
             if b <= a:
                 continue
             rows.append((rec_of(a, item["src_in"], item["rec_in"], item["source_fps"], fps),
-                         rec_of(b, item["src_in"], item["rec_in"], item["source_fps"], fps), text))
-    return sorted(rows)
+                         rec_of(b, item["src_in"], item["rec_in"], item["source_fps"], fps), text,
+                         lang[0] if lang else None))
+    return sorted(rows, key=lambda r: r[:3])
+
+
+def timed_lines(plan: dict, index: dict | None, translate: dict[str, str] | None = None
+                ) -> list[tuple[float, float, str]]:
+    """(rec start, rec end, text) in timeline frames; translate swaps whole lines."""
+    return [(a, b, (translate or {}).get(text, text)) for a, b, text, _ in spoken(plan, index)]
+
+
+def untranslated(plan: dict, index: dict | None, translate: dict[str, str]) -> list[tuple[str, str]]:
+    """(language, text) of each foreign line heard in the cut that has no translation yet."""
+    return sorted({(lang, text) for _, _, text, lang in spoken(plan, index) if lang and text not in translate})
 
 
 def cues_from(rows: list[tuple[float, float, str]], fps: float, max_chars: int, fixes: dict[str, str]) -> list[dict]:
@@ -150,10 +167,17 @@ def main(argv: list[str] | None = None) -> int:
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
     plan = load(args.plan)
     index = load(args.index) if args.index and args.index.exists() else None
-    fixes = (load(args.fixes).get("replace") or {}) if args.fixes and args.fixes.exists() else {}
+    doc = load(args.fixes) if args.fixes and args.fixes.exists() else {}
+    fixes, translate = doc.get("replace") or {}, doc.get("translate") or {}
     fps = float(plan["timeline"]["fps"])
-    cues = cues_from(timed_lines(plan, index), fps, args.max_chars, fixes)
+    cues = cues_from(timed_lines(plan, index, translate), fps, args.max_chars, fixes)
     args.out.write_text(to_srt(cues), encoding="utf-8")
+    missing = untranslated(plan, index, translate)
+    if missing:
+        print(f"{len(missing)} foreign line(s) have no translation and stay as spoken; add them to "
+              "subs_fixes.json \"translate\", then regenerate with --force:", file=sys.stderr)
+        for lang, text in missing:
+            print(f"  [{lang}] {text}", file=sys.stderr)
     print(f"{len(cues)} cues; have the user proofread names and places before it goes into Resolve", file=sys.stderr)
     return 0
 

@@ -16,6 +16,7 @@
 """Measure the sound of one proxied video, or beat-grid a music file.
 
   uv run --python 3.13 --script measure_audio.py DIR [--no-asr] [--prompt TEXT]
+                                                [--language zh|en|auto] [--sentences]
   uv run --python 3.13 --script measure_audio.py --music FILE --out beats.json
 
 DIR is a prep.py folder (asr16k.wav + music44k.wav). Writes DIR/measure_audio.json:
@@ -32,6 +33,9 @@ DIR is a prep.py folder (asr16k.wav + music44k.wav). Writes DIR/measure_audio.js
   duck        music level under speech vs around it, from the 30-90 Hz band
               (speech has little energy there). An estimate, marked as such.
 --music writes {beats, downbeats, bpm, duration_s} for plan_cut.py.
+--sentences (apply) transcribes in pieces under 30 s with word timestamps and
+regroups the words into sentences; --language auto detects each piece's
+language. Without them the output is unchanged.
 Claude cannot hear: every sound conclusion in a style pack comes from here.
 """
 
@@ -128,21 +132,64 @@ def platform_subs(d: Path) -> list[dict]:
     return out
 
 
-def whisper(path: Path, prompt: str) -> list[dict]:
+def asr_kept(s: dict) -> bool:
+    return not (s.get("no_speech_prob", 0) > 0.6 or s.get("avg_logprob", 0) < -1.0
+                or s.get("compression_ratio", 0) > 2.4)
+
+
+def whisper(path: Path, prompt: str, language: str | None = "zh") -> list[dict]:
     import mlx_whisper
 
     audio = decode(path, 16000)
     with contextlib.redirect_stdout(sys.stderr):
-        res = mlx_whisper.transcribe(audio, path_or_hf_repo=ASR_REPO, language="zh", initial_prompt=prompt,
+        res = mlx_whisper.transcribe(audio, path_or_hf_repo=ASR_REPO, language=language, initial_prompt=prompt,
                                      condition_on_previous_text=False, verbose=None)
     segs = []
     for s in res.get("segments", []):
-        if s.get("no_speech_prob", 0) > 0.6 or s.get("avg_logprob", 0) < -1.0 or s.get("compression_ratio", 0) > 2.4:
+        if not asr_kept(s):
             continue
         text = s.get("text", "").strip()
         if text:
             segs.append({"t_in": rnd(s["start"]), "t_out": rnd(s["end"]), "text": text})
     return segs
+
+
+def whisper_sentences(path: Path, prompt: str, language: str | None = "zh") -> list[dict]:
+    """Sentences for apply: pieces under 30 s, word timestamps, regrouped by stats.sentences.
+
+    With one long call the prompt (simplified Chinese, punctuation, names) only
+    reaches the first 30 s window; Test A on a 29 min reference got punctuation
+    in 24 of 1121 segments. Pieces are cut at quiet moments so each gets the
+    prompt. language None detects per piece, so English talk comes back as
+    English (marked with `lang`) instead of being forced into Chinese.
+    """
+    import mlx_whisper
+
+    sr = 16000
+    audio = decode(path, sr)
+    cuts = stats.quiet_cuts(envelope_db(audio, sr).tolist(), HOP_S)
+    edges = [0.0, *cuts, len(audio) / sr]
+    def run(piece, lang, text):
+        with contextlib.redirect_stdout(sys.stderr):
+            return mlx_whisper.transcribe(piece, path_or_hf_repo=ASR_REPO, language=lang, initial_prompt=text,
+                                          condition_on_previous_text=False, verbose=None, word_timestamps=True)
+
+    words = []
+    for a, b in zip(edges, edges[1:]):
+        piece = audio[int(a * sr):int(b * sr)]
+        if len(piece) < sr // 2:
+            continue
+        res = run(piece, language, prompt)
+        if language is None and res.get("language") not in (None, "zh"):
+            # The Chinese prompt turns foreign speech into a rough Chinese
+            # translation (Test A); read the piece again as it was spoken.
+            res = run(piece, res["language"], None)
+        tag = {"lang": res.get("language")} if language is None else {}
+        for s in res.get("segments", []):
+            if asr_kept(s):
+                words += [{"word": w["word"], "start": a + w["start"], "end": a + w["end"], **tag}
+                          for w in s.get("words", [])]
+    return stats.sentences(words)
 
 
 def beats_of(y: np.ndarray, sr: int, engine: str = "auto") -> tuple[list[float], list[float], str]:
@@ -275,6 +322,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, help="with --music: output json")
     ap.add_argument("--no-asr", action="store_true", help="skip mlx-whisper")
     ap.add_argument("--prompt", default=ASR_PROMPT, help="whisper initial prompt (names, places)")
+    ap.add_argument("--language", default="zh", help="whisper language, or auto to detect it per piece")
+    ap.add_argument("--sentences", action="store_true",
+                    help="transcribe in pieces with word timestamps and regroup into sentences (apply)")
     ap.add_argument("--beats-engine", choices=["auto", "beat_this", "librosa"], default="auto")
     args = ap.parse_args(argv)
     if args.music:
@@ -304,7 +354,8 @@ def main(argv: list[str] | None = None) -> int:
     segs = []
     if not args.no_asr:
         log(f"whisper ({ASR_REPO})")
-        segs = whisper(asr_wav, args.prompt)
+        language = None if args.language == "auto" else args.language
+        segs = (whisper_sentences if args.sentences else whisper)(asr_wav, args.prompt, language)
     spans = []
     for name, rows in (("captions", captions), ("platform", plat), ("whisper", segs)):
         if rows:
@@ -317,6 +368,8 @@ def main(argv: list[str] | None = None) -> int:
     best = captions or plat or segs
     res["transcript"] = {"source": sources[0] if sources else None, "segments": best,
                          "whisper": segs if best is not segs else None}
+    if args.sentences or args.language != "zh":
+        res["transcript"]["asr"] = {"language": args.language, "sentences": args.sentences}
 
     log("beats")
     beats, downbeats, eng = beats_of(y, 22050, args.beats_engine)
