@@ -300,8 +300,8 @@ python3 -I -B subs.py --project <项目>
     ```
 
     dialogue 按每条对白自己的源区间量积分响度（有门限，停顿几乎不算），增益夹在 ±12 dB；太短或太轻量不出来的留 0 dB，列在警告里。立体声左右差超过 6 dB 也警告：可能只有一边有麦，要在 Resolve 里把这条映射到响的那一声道（手动收尾）。`items[]` 每条的 `volume_db` 写到该轨上起始帧为 `start_frame + rec_in` 的音频条目（在 clip_where 的回复里按轨道和起始帧找）：A1 对白、A4 环境声（风格的 `broll_ambient_db`）、A2 音乐床，没有 story 时还有保留原声的片段；A3 是静音的原始音乐，不写。
-    写完渲染一条只有音频的整条时间线（常见坑第 7 条的 Audio Only 设置，`TargetDir` 是 `$P/qa`，`CustomName` 是 `mix`），再跑 master：所有音频条目加同一个 `master_db`，让整片落到 `--lufs`；这样会让真峰值超过 `--peak` 时以峰值为准，差多少报出来，Fairlight 主母线上的限幅器是手动收尾。`master_db` 是累加的，写回新的 `volume_db` 后再渲一次、再跑一次更准，变化不到 0.5 dB 就停。没有对白时可以直接跑 master。音频渲染和第 13 步一样，只在 `vlog-style-QA-*` 或用户同意时做；不做就只用 dialogue 的值，整片响度写进手动收尾清单。
-13. **字幕核对。** 字幕样式已在第 6 步套好。静帧里看不到字幕，要烧录渲染一小段（只在 `vlog-style-QA-*` 或用户同意时），用 `vision_ocr` 量框高和中心，和 style.text.subtitle 比；差得多就调 size、position 重新套。这个预设写不了描边（常见坑第 28 条）。导出成片时设 `ExportSubtitle:true`、`SubtitleFormat:"BurnIn"`。
+    写完渲染一条只有音频的整条时间线（常见坑第 7 条的 Audio Only 设置，`TargetDir` 是 `$P/qa`，`CustomName` 是 `mix`），再跑 master：所有音频条目加同一个 `master_db`，让整片落到 `--lufs`；这样会让真峰值超过 `--peak` 时以峰值为准，差 0.5 LU 以上才报出来，Fairlight 主母线上的限幅器是手动收尾。`master_db` 是累加的，写回新的 `volume_db` 后再渲一次、再跑一次更准，变化不到 0.5 dB 就停（探针 #17 一轮就收敛了）。没有对白时可以直接跑 master。音频渲染和第 13 步一样，只在 `vlog-style-QA-*` 或用户同意时做；不做就只用 dialogue 的值，整片响度写进手动收尾清单。
+13. **字幕核对。** 字幕样式已在第 6 步套好。静帧里看不到字幕，要烧录渲染一小段（只在 `vlog-style-QA-*` 或用户同意时），用 `vision_ocr` 量框高和中心，和 style.text.subtitle 比（只看没有逗号、顿号、括号和 g/j/p/q/y 的句子，这些笔画会把框撑高、压低）；差得多就调 size、position 重新套。这个预设写不了描边（常见坑第 28 条）。导出成片时设 `ExportSubtitle:true`、`SubtitleFormat:"BurnIn"`。
 14. **标记。** `markers[]` 打到时间线上；`Timeline.AddMarker` 用相对时间线起点的帧号，直接用 `rec`。第一个标记是手动收尾清单，其中包括手动设置播放帧率。
 15. **保存工程。**
 
@@ -348,9 +348,9 @@ python3 -I -B compare.py final "$F" --plan "$P/plan/cut_plan.json" --measured "$
 
 - 规格：尺寸、帧率和 `cut_plan.timeline` 一致，时长差不超过 1.5 帧，有音轨。
 - 黑场、静帧、静音：计划能解释的不算。黑场可以在 dip_to_black 转场附近和夜景章（grade.json 里 `night` 的章）里，静帧可以在照片条目上，静音可以在计划里没有声音的地方，开头 1 秒和结尾 2 秒都不算。没有 grade.json 时不知道哪些是夜景章，黑场会多报。
-- 响度：积分响度在 `--lufs` ±1 以内，真峰值不超过 `--peak`。编码会让峰值多出零点几 dB，超了就用低一点的 `--peak` 重跑 mix.py master。
+- 响度：积分响度在 `--lufs` ±1 以内，真峰值不超过 `--peak`。编码可能让峰值多出零点几 dB（探针 #17 的 AAC 前后都是 −1.0 dBTP，但没有余量），超了就用低一点的 `--peak` 重跑 mix.py master。
 - 切点：只比观众看得到的切点，也就是没被 V2 盖住的 V1 边、V2 自己的两边；同一素材接着播的两条算一个镜头。硬切允许 ±1 帧，有转场再加半个转场长度。偏得更远的判失败；找不到的超过一成判失败（相似镜头之间的切点检测器会漏）；多出来的（闪白、甩镜头、镜头内的跳动）只列出来。
-- 字幕：subs.srt 的每一句都要在画面上读到（文字相似度 ≥ 0.8），出现和消失的时间差在一个 OCR 步长（4 fps 时是 0.25 s）加 0.1 s 以内，中心 y 和框高跟风格的 `text.subtitle` 一致（±0.015、±15%）。
+- 字幕：subs.srt 的每一句都要在画面上读到（文字相似度 ≥ 0.8），出现和消失的时间差在一个 OCR 步长（4 fps 时是 0.25 s）加 0.1 s 以内，中心 y 和框高跟风格的 `text.subtitle` 一致（±0.015、±15%）。框高和中心只取没有逗号、顿号、括号和 g/j/p/q/y 的句子：这些笔画伸到字底下，框会高一成、偏低一点，而参考片的字幕不带标点（探针 #17）；一句都没有时才全取，问题里会注明。
 - 音画同步：whisper 听到的每句开头，和它开头对应的那句字幕比，中位数在 ±0.2 s 以内。比的是 whisper 的句子，不是烧录字幕，否则就成了字幕自己和自己比。
 
 没给 `--measured`，或者少跑了哪一步测量，对应的检查标成跳过，`complete` 为 false。跳过不算通过。镜头时长、硬切占比、人声占比和风格并排列在 `style` 里，只报告。subs.srt 和 grade.json 默认取 cut_plan 所在的目录。

@@ -225,6 +225,9 @@ def normalize(replies: list, start_frame: int) -> tuple[dict, list[str]]:
 # ---------------------------------------------------------------- final
 
 PUNCT = re.compile(r"[\s，。、！？,.!?：:；;“”\"'‘’…·《》()（）\-]")
+# Ink below the line: an OCR box around 「朋友们,接下来」 is ~10% taller and sits lower than one around
+# 「下午两点就开始暗了」 in the same preset (probe #17), and the reference films' subtitles carry no punctuation.
+LOW_INK = re.compile(r"[,;，；、()（）\[\]【】gjpqy]")
 
 
 def norm_text(s: str | None) -> str:
@@ -416,19 +419,23 @@ def check_subs(text: dict, cues: list[dict], want: dict | None) -> dict:
         if best is None or stats.text_sim(norm_text(best["text"]), ct) < 0.8:
             issues.append(f"{label}: not read on screen" + (f" (closest 「{best['text']}」)" if best else ""))
             continue
-        hits.append(best)
+        hits.append((best, c))
         if abs(best["t_in"] - c["a"]) > tol or abs(best["t_out"] - c["b"]) > tol:
             issues.append(f"{label}: on screen {best['t_in']:.2f}–{best['t_out']:.2f} s, "
                           f"planned {c['a']:.2f}–{c['b']:.2f} s")
     out: dict = {"cues": len(cues), "read": len(hits)}
     if hits and want:
-        y, h = stats.median([t["center"][1] for t in hits]), stats.median([t["height"] for t in hits])
-        out.update(center_y=round(y, 4), height=round(h, 4))
+        # size and place from lines without ink below the line, like the style's; all lines when none is plain
+        plain = [t for t, c in hits if not LOW_INK.search(c["text"])]
+        boxes = plain or [t for t, _ in hits]
+        y, h = stats.median([t["center"][1] for t in boxes]), stats.median([t["height"] for t in boxes])
+        out.update(center_y=round(y, 4), height=round(h, 4), measured_on=len(plain) or "all")
         wy, wh = float(want["position"][1]), float(want["height_frac"])
+        note = "" if plain else " (every line has a comma or a descender, which makes the box taller and lower)"
         if abs(y - wy) > 0.015:
-            issues.append(f"subtitle centre y {y:.3f}, the style has {wy}: change the preset's position")
+            issues.append(f"subtitle centre y {y:.3f}, the style has {wy}: change the preset's position{note}")
         if abs(h / wh - 1) > 0.15:
-            issues.append(f"subtitle box height {h:.4f}, the style has {wh}: change the preset's size")
+            issues.append(f"subtitle box height {h:.4f}, the style has {wh}: change the preset's size{note}")
     return {"ok": not issues, **out, "issues": issues}
 
 

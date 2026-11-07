@@ -521,6 +521,19 @@ class MixRenderTest(TempRoot):
         self.assertLess(res["master"]["expected"]["lufs"], -14.0)
         self.assertTrue(any(w.startswith("master: the true peak") for w in res["warnings"]), res["warnings"])
 
+    def test_a_peak_held_film_close_to_the_target_is_quiet(self):
+        # probe #17, second master round: -14.1 LUFS at -1.0 dBTP holds the film 0.1 LU short; that is on target
+        self.tone("v.wav", "0.05*sin(2*PI*300*t)|0.05*sin(2*PI*300*t)")
+        plan, _ = self.plan(["v.wav"])
+        start = mix.level_dialogue(plan, self.P, -16.0, 12.0, 6.0)
+        for lufs, warned in ((-14.1, False), (-14.4, False), (-14.6, True)):
+            got = {"lufs": lufs, "true_peak_dbtp": -1.0, "lra_lu": 1.8, "channel_rms_db": []}
+            with mock.patch.object(mix, "measure", return_value=got), \
+                    mock.patch.object(mix, "probe_duration", return_value=6.0):
+                res = mix.apply_master(json.loads(json.dumps(start)), plan, Path("mix_r2.wav"), self.P, -14.0, -1.0)
+            self.assertEqual(res["master"]["expected"], {"lufs": lufs, "true_peak_dbtp": -1.0})
+            self.assertEqual(any(w.startswith("master:") for w in res["warnings"]), warned, (lufs, res["warnings"]))
+
     def test_a_changed_plan_or_a_short_render_is_caught(self):
         self.tone("v.wav", "0.05*sin(2*PI*300*t)|0.05*sin(2*PI*300*t)")
         plan, _ = self.plan(["v.wav"])
@@ -793,6 +806,28 @@ class FinalPlanTest(unittest.TestCase):
         self.assertIn("not read on screen (closest 「别的字」)", issues[1])
         self.assertTrue(issues[2].startswith("subtitle centre y 0.850") and "size" in issues[3], issues)
         self.assertTrue(compare.check_subs({"tracks": []}, cues, None)["issues"][0].endswith("not read on screen"))
+
+    def test_subtitle_size_from_lines_without_low_ink(self):
+        # probe #17: Simple White, PingFang SC 0.04 on 1080p; a comma makes the OCR box taller and lower
+        want = {"position": [0.5, 0.955], "height_frac": 0.0444}
+        rows = [(0.2, 3.07, "大家好,我们今天到了特罗姆瑟", 0.9585, 0.0521),
+                (3.637, 5.672, "这里的天黑得特别早", 0.956, 0.0472),
+                (5.672, 7.708, "下午两点就开始暗了", 0.956, 0.0472),
+                (15.883, 19.152, "听说今晚的云不多,运气应该不错", 0.9581, 0.0560),
+                (19.82, 23.223, "朋友们,接下来一起看看这里的风景", 0.9585, 0.0521)]
+        cues = [{"a": a, "b": b, "text": s} for a, b, s, _, _ in rows]
+        text = {"step": 0.25, "tracks": [{"t_in": a + 0.1, "t_out": b + 0.1, "text": s, "center": [0.5, y], "height": h}
+                                         for a, b, s, y, h in rows]}
+        res = compare.check_subs(text, cues, want)
+        self.assertEqual((res["ok"], res["measured_on"], res["height"], res["center_y"]), (True, 2, 0.0472, 0.956), res)
+        # the same lines one size up still fail
+        big = {**text, "tracks": [{**t, "height": t["height"] * 1.25} for t in text["tracks"]]}
+        self.assertIn("change the preset's size", compare.check_subs(big, cues, want)["issues"][0])
+        # with commas only, all lines count and the issue says why the box may read tall
+        odd = [0, 3, 4]
+        res = compare.check_subs({**text, "tracks": [text["tracks"][i] for i in odd]}, [cues[i] for i in odd], want)
+        self.assertEqual((res["measured_on"], res["height"]), ("all", 0.0521))
+        self.assertIn("every line has a comma", res["issues"][0])
 
     def test_speech_against_the_subtitles(self):
         cues = [{"a": a, "b": a + 1.5, "text": t} for a, t in ((1, "今天我们去海边"), (4, "这是一张老照片"),
