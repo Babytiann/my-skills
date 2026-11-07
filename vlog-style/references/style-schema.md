@@ -83,6 +83,7 @@ vlog-style/styles/                    仓库
 | `basis` | `multi_reference`（多个参考之间比较）或 `single_reference_chapters`（一个参考的各章之间比较） | 参考个数 |
 | `deliverable` | `fps`、`width`、`height`、`duration_s`（分布）、`letterbox`（遮幅宽高比，没有为 null） | 参考片的帧率；尺寸默认 3840×2160，按用户素材定 |
 | `structure.sections[]` | `{role, share, shot_len_s, transition_in, notes}`。role 取 hook / intro / chapter / interlude / ending；share 之和为 1；同一个 role 只写一条，plan_cut 会把 chapter 按 brief 的章节展开 | labels 的章节 + 测量 |
+| `structure.order`、`structure.order_tolerance_s` | 章内选镜头按不按拍摄时间：`free`（不看时间）或 `chronological`。不写时，有 story 就按 `chronological`，没有 story 就是 `free`；只有用户明确要混剪才写 `free`。`order_tolerance_s` 是同一场景里允许往回调换的秒数，默认 300 | 手填，炼化不测。`chronological` 要求索引里有拍摄时间 |
 | `selection` | `shot_types`（景别配比，和为 1）、`opening`、`reject[]`、`max_shake`（抖动 RMS 占画面宽的 %） | labels + 测量（max_shake 取参考的 P90 × 1.2） |
 | `rhythm` | `shot_len_s`（分布）、`cuts_per_min`、`min_shot_s` | 测量 |
 | `beat` | `hit_rate`、`baseline`（随机平移剪辑点后的命中率）、`offset_frames`（剪辑点相对拍点提前为负）、`use_downbeats`、`confidence`（ok / uncertain） | 测量。uncertain 时 plan_cut 不卡点 |
@@ -91,7 +92,8 @@ vlog-style/styles/                    仓库
 | `effects[]` | `{type, ...}`，如颗粒、光晕、漏光、暗角 | labels |
 | `grade` | `summary`、`look`（见下）、`lut`、`drx`、`grain` | 测量 + labels |
 | `text` | `title`、`chapter_card`、`subtitle`，每项见下 | 测量 + labels |
-| `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]` | 测量；mood 和 sfx 由 Claude 根据测量写 |
+| `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]`、`broll_ambient_db`（B-roll 环境声放 A4 的电平，dB；不写就不放） | 测量；mood 和 sfx 由 Claude 根据测量写；broll_ambient_db 手填 |
+| `aroll` | 有 story 时 A-roll 怎么剪：`speech_share`（A-roll 占全片的比例，brief 不写 `duration_s` 时用它推成片时长）、`pad_s` / `pad_out_s`（句前、句后留白，按 whisper 的时间）、`cutaway_after_s`（多长的 A-roll 才盖画面）、`cutaway_share`（盖住的比例）、`cutaway_lead_s` / `cutaway_tail_s`（开头、结尾留给说话人的秒数）、`j_s` / `l_s`（J/L cut 声音提前、延后的秒数）。不写的项用 plan_cut 的默认值 | speech_share 取参考的人声占比；其余要按说话段测，测不了的标存疑 |
 | `resolve[]` | `{element, route, status, how}`：每个用到的元素走哪条路线。route 取 `schema.ROUTES`，status 取 verified / probe / manual | aggregate 的路线表；探针后更新 |
 | `evidence` | `consistency`（每项的一致性判断）、`unverified`、`rejected_labels`、`single_source`、`beat`、`ramp_candidates`、`onsets_per_min`、`moves`（推拉的测到 / 判过 / digital 个数） | aggregate 自动写 |
 

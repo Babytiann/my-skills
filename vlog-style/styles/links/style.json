@@ -97,7 +97,8 @@
      "n": 32
     }
    }
-  ]
+  ],
+  "order": "chronological"
  },
  "selection": {
   "max_shake": 1.048,
@@ -425,6 +426,17 @@
   "sfx": [],
   "music_changes": "约每章 14.9 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "aroll": {
+  "speech_share": 0.593,
+  "pad_s": 0.2,
+  "pad_out_s": 0.45,
+  "cutaway_after_s": 6.0,
+  "cutaway_share": 0.4,
+  "cutaway_lead_s": 1.5,
+  "cutaway_tail_s": 1.0,
+  "j_s": 0.0,
+  "l_s": 0.0
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -449,6 +461,12 @@
    "route": "live_api",
    "status": "verified",
    "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "对白（A1）",
+   "route": "live_api",
+   "status": "verified",
+   "how": "画面和声音分开 append：V1/V2 传 media_type 1，A1 传 media_type 2，源区间可以不同（J/L cut）"
   },
   {
    "element": "字幕",
