@@ -6,16 +6,26 @@
 # -*- coding: utf-8 -*-
 """Check a built timeline against its plan, and graded stills against the look card.
 
+  python3 -I -B compare.py normalize CLIP_WHERE.json... --start-frame N [--out READBACK.json]
   python3 -I -B compare.py readback READBACK.json --plan cut_plan.json [--style NAME | --style-file S]
   uv run --python 3.13 --script compare.py look STILL... (--style NAME | --style-file S) [--out FILE]
+
+normalize turns saved `timeline clip_where` replies (the whole MCP reply, its
+          result, or the bare clip list; several replies merge) into the
+          readback format below. N is the timeline's start frame from
+          `timeline get_current`; clip_where does not return it. Subtitle
+          items go under "subtitle" without source frames.
 
 readback  READBACK.json is the timeline read back through the MCP after the
           build, normalised to (frames, end exclusive, absolute timeline frames):
             {"start_frame": 86400, "video": {"1": [{"start", "end",
              "source_start", "name"}], "3": [...]}, "audio": {"1": [...]}}
           Every planned clip and title must be there, in order, at its planned
-          frames; a transition edge may move by half the transition. Planned
-          dialogue and ambience are checked on their audio tracks the same way.
+          frames; a transition edge may move by half the transition. Source
+          in and out points of clips at 100% speed must match within one
+          source frame (59.94 media reads back one short), plus that half
+          transition in source frames. Planned dialogue and ambience are
+          checked on their audio tracks the same way.
           Exit 1 on any mismatch. Shot lengths are compared with the style's
           rhythm as the viewer sees them, V2 laid over V1 (reported, not failed:
           the brief may ask for a different pace, and footage may not allow it).
@@ -74,6 +84,17 @@ def audio_wanted(plan: dict) -> dict[int, list[dict]]:
     return {t: sorted(items, key=lambda x: x["rec_in"]) for t, items in out.items()}
 
 
+def source_issues(label: str, w: dict, g: dict, tol_in: int, tol_out: int) -> list[str]:
+    """Source in/out read back against the plan; a side the readback does not carry is not checked."""
+    out = []
+    if g.get("source_start") is not None and abs(g["source_start"] - w["src_in"]) > tol_in:
+        out.append(f"{label}: source in {w['src_in']}, read back {g['source_start']}")
+    if g.get("source_end") is not None and w.get("src_out") is not None \
+            and abs(g["source_end"] - w["src_out"]) > tol_out:
+        out.append(f"{label}: source out {w['src_out']}, read back {g['source_end']}")
+    return out
+
+
 def check_readback(rb: dict, plan: dict, style: dict | None = None) -> dict:
     s0 = int(rb.get("start_frame") or 0)
     fps = float(plan["timeline"]["fps"])
@@ -102,9 +123,10 @@ def check_readback(rb: dict, plan: dict, style: dict | None = None) -> dict:
                 issues.append(f"V{track} #{k + 1} {w['id']}: planned {w['rec_in']}–{w['rec_out']}, read back {a}–{b}")
             elif a == w["rec_in"] and b == w["rec_out"]:
                 exact += 1
-            if not is_title and g.get("source_start") is not None and float(w.get("speed", 1)) == 1.0 \
-                    and abs(g["source_start"] - w["src_in"]) > 1:
-                issues.append(f"V{track} #{k + 1} {w['id']}: source in {w['src_in']}, read back {g['source_start']}")
+            if not is_title and float(w.get("speed", 1)) == 1.0:
+                ratio = float(w.get("source_fps") or fps) / fps
+                issues += source_issues(f"V{track} #{k + 1} {w['id']}", w, g,
+                                        1 + math.ceil(tin * ratio), 1 + math.ceil(tout * ratio))
     audio = rb.get("audio") or {}
     for track, want in audio_wanted(plan).items():
         got = sorted(audio.get(str(track)) or [], key=lambda x: x["start"])
@@ -116,8 +138,7 @@ def check_readback(rb: dict, plan: dict, style: dict | None = None) -> dict:
                 issues.append(f"A{track} #{k + 1} {w['id']}: planned {w['rec_in']}–{w['rec_out']}, read back {a}–{b}")
             else:
                 exact += 1
-            if g.get("source_start") is not None and abs(g["source_start"] - w["src_in"]) > 1:
-                issues.append(f"A{track} #{k + 1} {w['id']}: source in {w['src_in']}, read back {g['source_start']}")
+            issues += source_issues(f"A{track} #{k + 1} {w['id']}", w, g, 1, 1)
     v1 = sorted(tracks.get(str(plan_tracks[0] if plan_tracks else 1)) or [], key=lambda x: x["start"])
     end = max((g["end"] for items in tracks.values() for g in items), default=s0) - s0
     if end != plan["timeline"]["duration_frames"]:
@@ -137,6 +158,54 @@ def check_readback(rb: dict, plan: dict, style: dict | None = None) -> dict:
             rhythm["within_style"] = abs(rhythm["got"]["median"] - m) <= max(0.25 * m, d)
         out["rhythm"] = rhythm
     return out
+
+
+# ---------------------------------------------------------------- normalize
+
+KINDS = ("video", "audio", "subtitle")
+
+
+def clips_of(reply) -> tuple[list[dict], int | None]:
+    """The clip list of a saved clip_where reply (the whole MCP reply, its result, or the bare list), and total_clips."""
+    if isinstance(reply, list):
+        return reply, None
+    body = reply.get("result", reply) if isinstance(reply, dict) else None
+    if not isinstance(body, dict) or not isinstance(body.get("clips"), list):
+        raise ValueError("not a timeline clip_where reply (no clips list)")
+    return body["clips"], body.get("total_clips")
+
+
+def normalize(replies: list, start_frame: int) -> tuple[dict, list[str]]:
+    """clip_where replies -> the readback format, plus warnings about a reply that cannot be the whole timeline."""
+    seen: dict[str, dict] = {}
+    totals: list[int] = []
+    warnings: list[str] = []
+    for reply in replies:
+        clips, total = clips_of(reply)
+        if total is not None:
+            totals.append(total)
+        for c in clips:
+            seen[c.get("timeline_item_id") or f"{c['track_type']}{c['track_index']}@{c['start']}"] = c
+    out: dict = {"start_frame": start_frame, **{k: {} for k in KINDS}}
+    for c in seen.values():
+        kind = c.get("track_type")
+        if kind not in KINDS:
+            warnings.append(f"skipped {c.get('name')!r}: track type {kind!r}")
+            continue
+        item = {"start": c["start"], "end": c["end"], "name": c.get("name")}
+        if kind != "subtitle":
+            item.update({k: c[k] for k in ("source_start", "source_end", "source_fps") if c.get(k) is not None})
+        out[kind].setdefault(str(c["track_index"]), []).append(item)
+    for kind in KINDS:
+        for items in out[kind].values():
+            items.sort(key=lambda x: x["start"])
+        out[kind] = dict(sorted(out[kind].items(), key=lambda kv: int(kv[0])))
+    if totals and len(seen) < max(totals):
+        warnings.append(f"read {len(seen)} item(s), the timeline has {max(totals)}: a filtered clip_where misses some")
+    early = sum(c["start"] < start_frame for c in seen.values())
+    if early:
+        warnings.append(f"{early} item(s) start before --start-frame {start_frame}: is that the timeline's start frame?")
+    return out, warnings
 
 
 # ---------------------------------------------------------------- look
@@ -194,6 +263,10 @@ def compare_look(rows: list[dict], target: dict) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    nm = sub.add_parser("normalize")
+    nm.add_argument("replies", type=Path, nargs="+", help="saved timeline clip_where replies")
+    nm.add_argument("--start-frame", type=int, required=True, help="the timeline's start frame (timeline get_current)")
+    nm.add_argument("--out", type=Path)
     rb = sub.add_parser("readback")
     rb.add_argument("readback", type=Path)
     rb.add_argument("--plan", type=Path, required=True)
@@ -204,6 +277,19 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--style")
         p.add_argument("--style-file")
     args = ap.parse_args(argv)
+    if args.cmd == "normalize":
+        try:
+            res, warns = normalize([json.loads(p.read_text(encoding="utf-8")) for p in args.replies], args.start_frame)
+        except ValueError as exc:
+            raise SystemExit(f"compare: {exc}") from None
+        for w in warns:
+            print(f"  ! {w}", file=sys.stderr)
+        text = json.dumps(res, ensure_ascii=False, indent=1)
+        if args.out:
+            args.out.write_text(text, encoding="utf-8")
+        else:
+            print(text)
+        return 0
     style = load_style(args)
 
     if args.cmd == "readback":

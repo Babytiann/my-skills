@@ -1,6 +1,6 @@
 ---
 name: vlog-style
-description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化成风格包：用本地测量（ffmpeg、TransNetV2、光流、Apple Vision OCR、beat_this）加 Claude 看抽帧拼图和事件条，得出结构、节奏、卡点、转场、运动、调色、文字、声音的完整选素材加剪辑流程；风格包可以按 B 站博主建专辑（一个博主一个文件夹，多条视频合并），只喜欢某一条视频的放进 misc，每个包都写明出处；再按风格包、用户的素材和要求生成逐帧精确的剪辑计划，通过 DaVinci Resolve MCP 搭出可继续精修的时间线，用户要求时才导出成片。用于炼化、学习或复刻某类 vlog 的剪辑风格，给某个博主建风格专辑，按某个风格剪素材，或根据反馈修改风格包。"
+description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化成风格包：用本地测量（ffmpeg、TransNetV2、光流、Apple Vision OCR、beat_this）加 agent 看抽帧拼图和事件条，得出结构、节奏、卡点、转场、运动、调色、文字、声音的完整选素材加剪辑流程；风格包可以按 B 站博主建专辑（一个博主一个文件夹，多条视频合并），只喜欢某一条视频的放进 misc，每个包都写明出处；再按风格包、用户的素材和要求生成逐帧精确的剪辑计划，通过 DaVinci Resolve MCP 搭出可继续精修的时间线，用户要求时才导出成片。用于炼化、学习或复刻某类 vlog 的剪辑风格，给某个博主建风格专辑，按某个风格剪素材，或根据反馈修改风格包。"
 ---
 
 # 旅行 vlog 剪辑风格：炼化与复刻
@@ -16,7 +16,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 
 | 文件 | 什么时候读 |
 |---|---|
-| [measure.md](references/measure.md) | 炼化：命令顺序、每个测量字段和阈值、Claude 判读清单、labels.json 格式 |
+| [measure.md](references/measure.md) | 炼化：命令顺序、每个测量字段和阈值、判读清单、labels.json 格式 |
 | [style-schema.md](references/style-schema.md) | 写或审风格包：style.json 每个字段、STYLE.md 模板 |
 | [apply.md](references/apply.md) | 复刻：素材索引、brief、剪辑计划、MCP 搭建顺序、读回格式 |
 | [resolve-routes.md](references/resolve-routes.md) | 任何 Resolve 操作：每个元素走哪条路线、探针清单、常见坑 |
@@ -41,7 +41,15 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 - 所有 JSON 和 Markdown 里只写相对路径：项目文件相对 root，风格包素材相对风格目录。
 - 只在调用工具的那一刻用 `scripts/paths.py resolve` 拼绝对路径，不写回任何文件。`paths.py check` 能查出违规的文件。例外：OCR 从片子里读到的文字如果只是以 `/` 开头（比如屏幕上的 `/bpm`），只列成提示，不计入绝对路径数；值里含真实文件系统路径的仍算违规。
 
-## 2. 环境
+## 2. 前提和环境
+
+对跑这个 skill 的 agent 和机器的要求：
+
+- **macOS。** OCR 用 Apple Vision（`vision_ocr.swift`），照片的拍摄时间和格式转换用 `sips`（`prep.py`、`photo_clips.py`），别的系统跑不了这几步。
+- **agent 能在用户的机器上跑命令、读写 root 下的文件。**
+- **agent 能看图。** 炼化的判读、复刻时的审片拼图（`story.py review`）、静帧和总览图核对都要看图。不能看图时只能测量、出草稿，判读交给用户。
+- **判读不听声音。** 不管 agent 能不能听，声音的结论都只来自测量和转写，这样结果能复现。
+- **搭时间线要 davinci-resolve MCP 和 Resolve Studio。** 外部脚本只有 Studio 能用；免费版只有 21.0.x 能走应用内桥接，21.1 起不行。没有 MCP 时停在 `cut_plan.json`，交给用户手动搭。
 
 | 依赖 | 用途 | 说明 |
 |---|---|---|
@@ -50,9 +58,9 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 | xcrun swift | `vision_ocr.swift` | Apple Vision 中文 OCR，直接解释执行，不留编译产物 |
 | opencli + yt-dlp | 下载 B 站视频 | 借 Chrome 的登录状态；1080p 就够 |
 | `trash` | 清理 | 一律移进废纸篓，不用 `rm` |
-| davinci-resolve MCP | 实时搭时间线 | samuelgursky/davinci-resolve-mcp，注册为 `davinci-resolve` 和 `davinci-resolve-advanced`；注册后要重启 Claude Code 才看得到工具 |
+| davinci-resolve MCP | 实时搭时间线 | samuelgursky/davinci-resolve-mcp，注册为 `davinci-resolve` 和 `davinci-resolve-advanced`；注册后要新开一个会话（有的客户端要重启）才看得到工具 |
 
-第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `~/.cache/torch/hub/checkpoints/beat_this-final0.ckpt`，没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。
+第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变），没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。
 
 纯标准库的脚本用 `python3 -I -B` 运行，其余用 uv。下载下来的文件只作为参数传给脚本，不在下载目录里运行任何东西。
 
@@ -73,14 +81,14 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 2. **OCR。** 对原片跑 `vision_ocr.swift --fps 4`。
 3. **测画面。** `measure_video.py`：剪辑点、转场候选、运动、look card、文字轨迹、事件条、总览图。
 4. **测声音。** `measure_audio.py`：响度、人声段、转写、拍点、onset、换曲候选、压低幅度估算。然后 `measure_video.py --redo text`，用人声段重新给文字分类。
-5. **判读。** `aggregate.py labels` 生成骨架；Claude 看 `sheets/` 和 `strips/`，按 measure.md 的清单把 labels.json 的空格填上。时间以测量为准，标签只补类型和描述；看不准的 `sure` 填 false。字体只判断类别。Claude 听不到声音，声音的结论只来自测量和转写。
+5. **判读。** `aggregate.py labels` 生成骨架；agent 看 `sheets/` 和 `strips/`，按 measure.md 的清单把 labels.json 的空格填上。时间以测量为准，标签只补类型和描述；看不准的 `sure` 填 false。字体只判断类别。判读不听声音，声音的结论只来自测量和转写（见第 2 节）。
    - 测到的推拉多半是机位在动（无人机、车、步行），要看 `strips/moves_*.jpg` 逐个判 digital / camera，风格里的推拉比例只算 digital。
    - 转场候选误报很多（暗镜头、运动中切），每条都看事件条再定。
 6. **汇总。** `aggregate.py draft --name <名字> <参考目录>… --out vlog-style/styles/<名字>/style.json`。对不上测量的标签会被拒收，列进 `evidence.rejected_labels`。多个参考时比较参考之间是否一致；只有一个参考时比较它的各章节之间，只出现在少数章节的标为「单一来源」。
    - 参考目录可以是 `cache/refs/<id>`，也可以是 keep 留下的 `styles/<博主|misc>/refs/<id>`。
    - `--out` 已经存在时拒绝覆盖，因为定稿的 style.json 里有手写的项。重炼时不加 `--out`，草稿写到第一个参考目录下的 `style.draft.json`，对照着把变化并回去；确实要整个覆盖才加 `--force`。
    - 合并的参考来自不同 UP 主（mid）时会打印警告。
-7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md 和 sources.md，补完 style.json 里 Claude 才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
+7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md 和 sources.md，补完 style.json 里要看过画面才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
    - sources.md 开头是出处表：UP 主（名字、mid、空间链接）、视频（标题、链接、发布日期、时长）、测量日期，至少要有视频链接。style.json 的 `sources[]` 由 aggregate 从 meta.json 填好 url、title、author，和出处表对一遍。出处主要给人回溯，复刻时默认不去看原片（见第 5 节）。
 8. **验收。** 过一遍 [qa.md](references/qa.md) 的炼化清单，再把 STYLE.md 交给用户审。
 9. **试剪。** 用户给几段素材走一遍 apply（工程名 `vlog-style-QA-*`），对照关键帧和统计；问题改回风格包，记进 learnings.md。
@@ -120,7 +128,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 5. 和用户一起写 `plan/brief.json`：时长、章节和标签、地点标题、音乐、不用和优先用的片段，以及每章的调色参考 `look_ref`（光线和地方最像的子包）、夜景和暖光室内这类不修色偏的章。有对话时先 `story.py dump` 读转写，章节按真实发生的事分，agent 起草纸面剪辑 `plan/story.json`，**用户确认后**才往下走。
 6. `plan_cut.py --style <名字> --project <项目> --explain`，有人声时再跑 `duck.py`。有 story 时 agent 先用 `story.py review` 的拼图自查时间、对话和画面、重复、跳接四项。把计划表和拼图给用户看，确认后用 `subs.py` 出字幕给用户校对，再跑 `grade.py solve` 按章算 CDL，摘要和警告转述给用户（撞边界、色偏修不到是素材的光线，如实说）。**计划和字幕都确认后才进 Resolve**。
 7. 用户同意后，有照片时先 `photo_clips.py` 做照片短片，再用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。调色按 `plan/grade.json` 给每个条目 `safe_set_cdl`。
-8. 验收：`compare.py readback`、每章导出静帧用该章的 `look_ref` 跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
+8. 验收：`compare.py normalize` 把 `timeline clip_where` 的回复整理成读回，再跑 `compare.py readback`；每章导出静帧用该章的 `look_ref` 跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
 9. 交付时间线，向用户说明手动收尾清单（标记在时间线开头，第一条是手动设置播放帧率）。
 
 ## 6. refine：按反馈改风格

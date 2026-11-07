@@ -245,7 +245,14 @@ python3 -I -B subs.py --project <项目>
    - V1 的全部条目一次放，再放 V2（`track: 2` 的 cutaway）。照片条目（`kind: photo`）和视频一样按帧放，`startFrame` 是 0；放好后 `scale` 不是 1 的条目用 `timeline_item set_transform {ZoomX: scale, ZoomY: scale}` 缩小（探针 #14），读回 `get_transform` 核对。`audio: mute` 的条目只放视频（mediaType 1）；没有 story 时 `audio: keep` 的条目照旧视频音频一起放。
    - `dialogue[]` 一次放到 A1，只放音频（mediaType 2），源区间用对白条目自己的 `src_in`/`src_out`，可以和画面不同（J/L cut，探针 #13）。`ambient[]` 同样放到 A4。
    - `speed` 不是 1 的条目 `endFrame` 另算，见第 8 步。先读回时间线起始帧，不要假设从 0 开始。
-6. **读回核对，再套字幕样式。** 读回每个条目，视频和音频轨都要，整理成 compare.py 的格式（见下一节），跑 `compare.py readback`。`timeline clip_where` 一次就能读回所有轨道的位置和源帧；59.94 素材读回的 `source_end` 少 1 帧，以 `get_source_end_frame` 为准或留 1 帧容差（常见坑第 20 条）。不通过就删掉这条时间线，查原因后重建新版本。已经放上去的条目无法移动或修剪。
+6. **读回核对，再套字幕样式。** 先 `timeline get_current` 记下 `start_frame`（clip_where 不返回它），再 `timeline clip_where` 不带过滤，一次读回所有轨道的位置和源帧，把整个回复原样存成 `$P/qa/clip_where.json`。条目很多时可以按 `track_type` 分几次读，存成几个文件。然后：
+
+   ```sh
+   python3 -I -B compare.py normalize "$P"/qa/clip_where*.json --start-frame <start_frame> --out "$P/qa/readback.json"
+   python3 -I -B compare.py readback "$P/qa/readback.json" --plan "$P/plan/cut_plan.json" --style <风格>
+   ```
+
+   normalize 在 stderr 报两种警告：读到的条目比时间线上少（读的时候过滤了），或有条目在起始帧之前（起始帧填错了）。有警告就先补读或改正再核对。readback 给源出点留 1 个源帧的容差，因为 59.94 素材读回少 1 帧（常见坑第 20 条）。不通过就删掉这条时间线，查原因后重建新版本。已经放上去的条目无法移动或修剪。
 
    通过后马上套字幕样式：`timeline_ai set_subtitle_preset`，`preset` 用 `Simple White`，`inputs` 写 font、fontStyle、size、position（数值见风格包 STYLE.md 的字幕换算，框高 ≈ 1.1 × size，中心 y ≈ 0.9875 − position y），`revision_name` 写 `<时间线名>_subs`。没缓存的预设不能 dry run。它导出再导入出一条新时间线，原时间线留着。实测条目位置、源帧、音量、缩放、CDL 都带过去了，但 markers 和 Fusion 合成（标题、推拉）没验证，所以放在这些之前做。之后的步骤都先 `timeline set_current` 到新的那条，并再读回一次。没有字幕时跳过。
 7. **转场。** 从最后一条往前，对有 `transition_out` 的条目按 `transition_out.resolve` 的 type 和 category 加转场，传短名，`position:end`、`alignment:center`。返回 `success:false` 多半是余量不够，改成硬切并告诉用户。
@@ -291,13 +298,16 @@ python3 -I -B subs.py --project <项目>
 
 ## 8. 验收
 
-**读回格式**（compare.py readback 的输入，帧号用绝对帧号，end 不含该帧）：
+**读回格式**（compare.py readback 的输入，`compare.py normalize` 从 clip_where 的回复生成，帧号用绝对帧号，end 不含该帧；`source_end`、`source_fps` 有就核对，`subtitle` 只记录不核对）：
 
 ```json
 {"start_frame": 108000,
- "video": {"1": [{"start": 108000, "end": 108090, "source_start": 0, "name": "C0001.MP4"}],
+ "video": {"1": [{"start": 108000, "end": 108090, "source_start": 0, "source_end": 179, "source_fps": 59.94,
+                  "name": "C0001.MP4"}],
            "3": [{"start": 108600, "end": 108659, "name": "title-t001"}]},
- "audio": {"1": [{"start": 108000, "end": 108300, "source_start": 480, "name": "C0003.MP4"}]}}
+ "audio": {"1": [{"start": 108000, "end": 108300, "source_start": 480, "source_end": 1079, "source_fps": 59.94,
+                  "name": "C0003.MP4"}]},
+ "subtitle": {"1": [{"start": 108060, "end": 108120, "name": "两秒"}]}}
 ```
 
 ```sh
@@ -306,7 +316,7 @@ uv run --python 3.13 --script compare.py look "$P"/qa/stills/<章名>/*.jpg --st
   --out "$P/qa/look_<章名>.json"   # 每章一次
 ```
 
-- readback 要求每个计划条目都在、顺序对、帧号对。V2 和 V1 一样按 track 分组；有 `dialogue[]` 或 `ambient[]` 时还要读回 A1、A4，每条的位置和源入点也要对。转场两侧的边允许偏差半个转场长度。镜头时长分布只报告，不判失败。
+- readback 要求每个计划条目都在、顺序对、帧号对。V2 和 V1 一样按 track 分组；有 `dialogue[]` 或 `ambient[]` 时还要读回 A1、A4，每条的位置和源入出点也要对。100% 速度的条目源入出点允许差 1 个源帧；转场两侧的边允许偏差半个转场长度（源帧按素材帧率折算）。镜头时长分布只报告，不判失败。
 - 静帧：按章核对。每章挑 2–3 个镜头，把播放头放过去，用 `ExportCurrentFrameAsStill` 导出到 `qa/stills/<章名>/`，用该章的 `look_ref` 跑 `compare.py look`（brief 没写 look_ref 的章用剪辑计划的风格包）。把结果和 grade.json 里该章的 `predicted` 比：两者接近而 look 不通过，是 grade.json 的警告里已经说过的（撞边界、色偏修不到、夜景不提亮），如实告诉用户原因，不再硬调；两者差得远，是公式和 Resolve 对不上，按探针 #16 的方法查。
 - 把静帧拼成总览，和参考的总览图（或风格包 `stills/`）并排看一遍，再交给用户。只读回不算通过，清单见 qa.md。
 
