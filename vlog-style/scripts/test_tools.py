@@ -31,6 +31,8 @@ import duck  # noqa: E402
 import paths  # noqa: E402
 import plan_cut  # noqa: E402
 import prep  # noqa: E402
+import story  # noqa: E402
+import subs  # noqa: E402
 
 FIX = Path(__file__).resolve().parent / "fixtures"
 
@@ -81,6 +83,15 @@ class DownloadTest(TempRoot):
         src, _ = self.fetch()
         self.assertEqual(src.name, "a.mp4")
         self.assertEqual(self.seen.read_text().strip(), str(prep.DOWNLOAD_TIMEOUT_S))
+
+    def test_a_leftover_temp_file_is_not_taken_for_the_download(self):
+        src = self.P.ref("BV1test") / "src"
+        src.mkdir(parents=True)
+        (src / "v.mp4").write_bytes(b"x" * 10)
+        (src / "v.temp.mp4").write_bytes(b"x" * 11)  # interrupted while embedding the cover
+        found, _ = self.fetch()
+        self.assertEqual(found.name, "v.mp4")
+        self.assertFalse(self.seen.exists())  # the finished file is kept, no second download
 
     def test_a_timeout_set_by_the_user_wins(self):
         self.fetch(**{prep.OPENCLI_TIMEOUT_ENV: "7200"})
@@ -443,6 +454,232 @@ class ReadbackTest(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertTrue(any(f"#{j + 1}" in i for i in res["issues"]), res["issues"])
         self.assertTrue(any(i.startswith("V3:") for i in res["issues"]), res["issues"])
+
+
+class StoryReadbackTest(unittest.TestCase):
+    """V2 and A1 are read back like everything else."""
+
+    @classmethod
+    def setUpClass(cls):
+        import test_plan_cut as tp
+        style = dict(json.loads((FIX / "style.json").read_text(encoding="utf-8")))
+        style["audio"] = {**style["audio"], "broll_ambient_db": -18}
+        cls.style = style
+        cls.plan = plan_cut.build(style, tp.trip(), tp.plan_brief(), None, None, tp.plan_story())
+
+    def readback(self, s0=108000):
+        video: dict = {}
+        audio: dict = {}
+        for v in self.plan["video"]:
+            video.setdefault(str(v["track"]), []).append(
+                {"start": s0 + v["rec_in"], "end": s0 + v["rec_out"], "source_start": v["src_in"]})
+        for t in self.plan["titles"]:
+            video.setdefault(str(t["track"]), []).append({"start": s0 + t["rec_in"], "end": s0 + t["rec_out"]})
+        for d in [*self.plan["dialogue"], *self.plan["ambient"]]:
+            audio.setdefault(str(d["track"]), []).append(
+                {"start": s0 + d["rec_in"], "end": s0 + d["rec_out"], "source_start": d["src_in"]})
+        return {"start_frame": s0, "video": video, "audio": audio}
+
+    def test_exact_build_passes(self):
+        res = compare.check_readback(self.readback(), self.plan, self.style)
+        self.assertTrue(res["ok"], res["issues"])
+        total = len(self.plan["video"]) + len(self.plan["titles"]) + len(self.plan["dialogue"]) + len(self.plan["ambient"])
+        self.assertEqual(res["items_exact"], total)
+
+    def test_a_missing_or_moved_cutaway_fails(self):
+        rb = self.readback()
+        rb["video"]["2"][0]["start"] += 1
+        self.assertTrue(any(i.startswith("V2 #1") for i in compare.check_readback(rb, self.plan)["issues"]))
+        rb = self.readback()
+        del rb["video"]["2"][0]
+        self.assertTrue(any(i.startswith("V2:") for i in compare.check_readback(rb, self.plan)["issues"]))
+
+    def test_dialogue_that_is_missing_moved_or_wrongly_sourced_fails(self):
+        rb = self.readback()
+        del rb["audio"]["1"]
+        self.assertTrue(any(i.startswith("A1:") for i in compare.check_readback(rb, self.plan)["issues"]))
+        rb = self.readback()
+        rb["audio"]["1"][0]["end"] += 1  # audio has no transition to hide in
+        self.assertTrue(any(i.startswith("A1 #1") for i in compare.check_readback(rb, self.plan)["issues"]))
+        rb = self.readback()
+        rb["audio"]["1"][0]["source_start"] += 10
+        self.assertTrue(any("source in" in i for i in compare.check_readback(rb, self.plan)["issues"]))
+
+    def test_ambience_has_its_own_track(self):
+        rb = self.readback()
+        del rb["audio"]["4"]
+        self.assertTrue(any(i.startswith("A4:") for i in compare.check_readback(rb, self.plan)["issues"]))
+
+    def test_rhythm_is_what_the_viewer_sees(self):
+        res = compare.check_readback(self.readback(), self.plan, self.style)
+        v1 = [v for v in self.plan["video"] if v["track"] == 1]
+        self.assertGreater(res["rhythm"]["got"]["n"], len(v1))  # cutaways add cuts
+        self.assertEqual(res["rhythm"]["got"]["median"], res["rhythm"]["plan"]["median"])
+
+
+class SubsTest(unittest.TestCase):
+    PLAN = {"timeline": {"fps": 29.97}, "dialogue": [
+        {"src_in": 0, "src_out": 1200, "rec_in": 300, "rec_out": 900, "source_fps": 59.94,
+         "sentences": [[120, 360, "今天到了小镇。"], [420, 720, "这里的路很窄，但是人特别热情，大家都在外面晒太阳聊天"]]}]}
+
+    def test_59_94_source_on_a_29_97_timeline(self):
+        rows = subs.timed_lines(self.PLAN, None)
+        self.assertEqual(rows[0][:2], (360.0, 480.0))  # source 120..360 is timeline 300+60..300+180
+        cues = subs.cues_from(rows, 29.97, 18, {})
+        self.assertAlmostEqual(cues[0]["a"], 360 / 29.97, places=3)
+        self.assertAlmostEqual(cues[0]["b"], 480 / 29.97, places=3)
+        self.assertEqual(cues[0]["text"], "今天到了小镇")  # the closing 。 goes
+
+    def test_clipped_to_what_the_item_plays(self):
+        plan = {"timeline": {"fps": 30.0}, "dialogue": [
+            {"src_in": 100, "src_out": 200, "rec_in": 0, "rec_out": 100, "source_fps": 30.0,
+             "sentences": [[50, 150, "前半句听不到"], [150, 400, "后半句也听不完"]]}]}
+        self.assertEqual(subs.timed_lines(plan, None), [(0.0, 50.0, "前半句听不到"), (50.0, 100.0, "后半句也听不完")])
+
+    def test_without_dialogue_it_reads_kept_sound_from_the_index(self):
+        plan = {"timeline": {"fps": 30.0}, "video": [
+            {"clip": "A", "src_in": 0, "src_out": 300, "rec_in": 0, "rec_out": 300, "source_fps": 30.0, "audio": "keep"},
+            {"clip": "A", "src_in": 300, "src_out": 600, "rec_in": 300, "rec_out": 600, "source_fps": 30.0, "audio": "mute"}]}
+        index = {"clips": [{"id": "A", "sentences": [[30, 60, "听得到"], [330, 360, "静音的听不到"]]}]}
+        self.assertEqual(subs.timed_lines(plan, index), [(30.0, 60.0, "听得到")])
+
+    def test_long_lines_break_at_punctuation_then_by_length(self):
+        self.assertEqual(subs.split_line("这里的路很窄，但是人特别热情，大家都在外面晒太阳聊天", 18),
+                         ["这里的路很窄，但是人特别热情", "大家都在外面晒太阳聊天"])
+        self.assertEqual(subs.split_line("一" * 40, 18), ["一" * 18, "一" * 18, "一" * 4])
+        self.assertEqual(subs.split_line("真的吗？太好了！", 18), ["真的吗？", "太好了！"])  # never run two sentences together
+
+    def test_time_is_shared_by_character_count(self):
+        cues = subs.cues_from([(0.0, 300.0, "这里的路很窄，" + "一" * 15)], 30.0, 18, {})
+        self.assertEqual(len(cues), 2)
+        self.assertAlmostEqual(cues[0]["b"] - cues[0]["a"], 10 * 6 / 21, places=3)
+
+    def test_cues_never_overlap_and_are_readable(self):
+        rows = [(0.0, 3.0, "快"), (3.0, 6.0, "很快"), (6.0, 60.0, "正常长度的一句话"), (60.0, 90.0, "下一句")]
+        cues = subs.cues_from(rows, 30.0, 18, {})
+        for a, b in zip(cues, cues[1:]):
+            self.assertLessEqual(a["b"], b["a"] + 1e-9)
+        for c in cues:
+            self.assertGreaterEqual(c["b"] - c["a"], subs.MIN_CUE_S - 1e-9, c)
+
+    def test_corrections_survive_regenerating(self):
+        cues = subs.cues_from([(0.0, 90.0, "欢迎来到特罗姆色")], 30.0, 18, {"特罗姆色": "特罗姆瑟"})
+        self.assertEqual(cues[0]["text"], "欢迎来到特罗姆瑟")
+
+    def test_srt_text(self):
+        text = subs.to_srt([{"a": 1.0, "b": 2.5, "text": "一"}, {"a": 3661.25, "b": 3662.0, "text": "二"}])
+        self.assertEqual(text, "1\n00:00:01,000 --> 00:00:02,500\n一\n\n2\n01:01:01,250 --> 01:01:02,000\n二\n\n")
+
+    def test_hand_edits_are_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            plan, out = Path(tmp) / "plan.json", Path(tmp) / "subs.srt"
+            plan.write_text(json.dumps(self.PLAN, ensure_ascii=False), encoding="utf-8")
+            argv = ["--plan", str(plan), "--out", str(out)]
+            with redirect_stderr(io.StringIO()):
+                self.assertEqual(subs.main(argv), 0)
+                out.write_text("改过", encoding="utf-8")
+                self.assertEqual(subs.main(argv), 1)
+                self.assertEqual(out.read_text(encoding="utf-8"), "改过")
+                self.assertEqual(subs.main([*argv, "--force"]), 0)
+            self.assertIn("今天到了小镇", out.read_text(encoding="utf-8"))
+
+
+class StoryDumpTest(unittest.TestCase):
+    def test_lists_clips_by_day_with_real_time_and_breaks(self):
+        import test_plan_cut as tp
+        index = tp.trip()
+        text = story.dump(index)
+        self.assertLess(text.index("第 1 天"), text.index("第 3 天"))
+        self.assertLess(text.index("### TALK1"), text.index("### TALK3"))
+        self.assertRegex(text, r"\[00:02\.00–00:06\.\d\d\] 今天到了小镇")
+        self.assertIn("02-11 09:00:00", text)
+
+    def test_says_when_times_are_missing(self):
+        import test_plan_cut as tp
+        index = tp.trip()
+        index["clips"][0].update(shot_at=None, day=None)
+        self.assertIn("没有拍摄时间", story.dump(index))
+        self.assertIn("时间未知", story.dump(index))
+
+
+class FootageTimeTest(TempRoot):
+    def test_tags_and_offsets_shape_shot_at_order_and_days(self):
+        day1, day2 = "2026-02-11T09:00:00+00:00", "2026-02-12T09:00:00+00:00"
+        clock = {"device": "DJI", "probe": {"shot_at": day2, "shot_at_source": "format.creation_time", "device": "DJI"}}
+        self.assertEqual(aggregate.clip_time(clock, {}, {})["shot_at"], day2)
+        moved = aggregate.clip_time(clock, {}, {"DJI": 3600})
+        self.assertEqual(moved["shot_at"], "2026-02-12T10:00:00+00:00")
+        typed = aggregate.clip_time(clock, {"shot_at": day1}, {"DJI": 3600})
+        self.assertEqual((typed["shot_at"], typed["shot_at_source"]), (day1, "tags"))  # the user's word, no offset
+        none = aggregate.clip_time({"probe": {"shot_at": None, "shot_at_source": None}}, {}, {})
+        self.assertEqual((none["shot_at"], none["shot_at_source"]), (None, "filename"))
+        clips = [{"source": "b", "shot_at": day2, "frames": 300, "fps": 30.0},
+                 {"source": "z", "shot_at": None, "frames": 300, "fps": 30.0},
+                 {"source": "a", "shot_at": day1, "frames": 300, "fps": 30.0},
+                 {"source": "c", "shot_at": "2026-02-11T09:30:00+00:00", "frames": 300, "fps": 30.0}]
+        aggregate.order_clips(clips)
+        self.assertEqual([c["source"] for c in clips], ["b", "z", "a", "c"])  # the array itself stays put
+        self.assertEqual({c["source"]: c["order"] for c in clips}, {"a": 0, "c": 1, "b": 2, "z": 3})
+        self.assertEqual({c["source"]: c["day"] for c in clips}, {"a": 1, "c": 1, "b": 2, "z": None})
+
+    def test_camera_with_no_clock_counts_as_undated(self):
+        self.assertIsNone(prep.parse_time("1904-01-01T00:00:00Z"))
+        self.assertIsNone(prep.parse_time("1970-01-01T00:00:00.000000Z"))
+        self.assertEqual(prep.parse_time("2026-02-11T08:13:21+0100"), "2026-02-11T07:13:21+00:00")
+        fmt = {"creation_time": "2026-02-11T09:00:00.000000Z", "com.apple.quicktime.creationdate": "2026-02-11T08:00:00+0100"}
+        self.assertEqual(prep.shot_time(fmt, {}), ("2026-02-11T07:00:00+00:00", "quicktime.creationdate"))
+        self.assertEqual(prep.shot_time({}, {"creation_time": "2026-02-11T09:00:00Z"})[1], "stream.creation_time")
+        self.assertEqual(prep.shot_time({}, {}), (None, None))
+
+    def test_device_ranges_side_by_side(self):
+        clips = [{"device": "A", "shot_at": "2026-02-11T09:00:00+00:00", "shot_at_source": "format.creation_time"},
+                 {"device": "A", "shot_at": "2026-02-11T10:00:00+00:00", "shot_at_source": "format.creation_time"},
+                 {"device": "B", "shot_at": None, "shot_at_source": None}]
+        a, b = prep.device_ranges(clips)
+        self.assertEqual((a["clips"], a["first"], a["last"], a["undated"]),
+                         (2, "2026-02-11T09:00:00+00:00", "2026-02-11T10:00:00+00:00", 0))
+        self.assertEqual((b["first"], b["undated"], b["sources"]), (None, 1, []))
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class ShotTimeScanTest(TempRoot):
+    def clip(self, rel, *meta):
+        path = self.P.project("t") / "footage" / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
+                        "testsrc2=size=160x90:rate=30:duration=0.2", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                        *meta, str(path)], check=True)
+        return path
+
+    def setUp(self):
+        super().setUp()
+        paths.init(self.P, project="t")
+
+    def test_time_and_device_reach_prep_json_and_the_summary(self):
+        self.clip("dji/D1.MP4", "-metadata", "creation_time=2026-02-11T09:00:00Z")
+        self.clip("sony/S1.MP4")
+        code, out, err = self.run_main(prep.main, ["footage", "--project", "t"])
+        self.assertEqual(code, 0, err)
+        rep = json.loads(out)
+        d1 = next(c for c in rep["clips"] if c["id"] == "D1")
+        self.assertEqual((d1["shot_at"], d1["shot_at_source"]), ("2026-02-11T09:00:00+00:00", "format.creation_time"))
+        self.assertEqual({d["device"] for d in rep["devices"]}, {"dji", "sony"})  # no make or model: the card's folder
+        self.assertIn("device dji: 1 clip(s)", err)
+
+    def test_an_older_prep_json_gets_its_time_without_a_new_proxy(self):
+        self.clip("A.MP4", "-metadata", "creation_time=2026-02-11T09:00:00Z")
+        self.run_main(prep.main, ["footage", "--project", "t"])
+        d = self.P.project("t") / "proxies" / "A"
+        old = json.loads((d / "prep.json").read_text(encoding="utf-8"))
+        for k in ("shot_at", "shot_at_source", "device"):
+            del old["probe"][k]
+        del old["device"]
+        (d / "prep.json").write_text(json.dumps(old), encoding="utf-8")
+        made = (d / "proxy.mp4").stat().st_mtime_ns
+        self.run_main(prep.main, ["footage", "--project", "t"])
+        now = json.loads((d / "prep.json").read_text(encoding="utf-8"))
+        self.assertEqual(now["probe"]["shot_at"], "2026-02-11T09:00:00+00:00")
+        self.assertEqual((d / "proxy.mp4").stat().st_mtime_ns, made)
 
 
 if __name__ == "__main__":

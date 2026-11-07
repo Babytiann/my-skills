@@ -316,3 +316,9 @@ def classify_text(tracks: list[dict], speech=None, band_min: int = 5) -> dict:
             tr["kind"] = "other"
     counts = Counter(tr["kind"] for tr in tracks)
     return {"subtitle_band": band, "counts": dict(counts)}
+
+
+def flat_shots(under: list[tuple[int, int]], over: list[tuple[int, int]]) -> list[int]:
+    """Lengths of the shots a viewer sees with `over` laid on top of `under`: every edge on either is a cut."""
+    edges = sorted({x for span in [*under, *over] for x in span})
+    return [b - a for a, b in zip(edges, edges[1:])]

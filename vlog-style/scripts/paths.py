@@ -47,10 +47,11 @@ ABS_IN_TEXT = re.compile(
     r"(?<![\w:/.])(?:~/|/(?:Users|Volumes|private|tmp|var|home|opt|Library|Applications|System|mnt|media)/)"
     r"|\b[A-Za-z]:\\\\?"
 )
-# JSON fields holding text OCR read off the film. A value starting with "/" there
-# is usually on-screen text ("/bpm"), so `check` lists it as a note. One that still
-# names a real filesystem root stays a hit.
-OCR_TEXT_FIELD = re.compile(r"^\$\.(?:text\.(?:tracks|transcript)|strips\.titles|titles|samples)\[\d+\]\.text$")
+# JSON fields holding text read off the film or heard in it. A value starting with "/"
+# there is usually on-screen text ("/bpm"), so `check` lists it as a note. One that
+# still names a real filesystem root stays a hit.
+OCR_TEXT_FIELD = re.compile(r"^\$\.(?:(?:text\.(?:tracks|transcript)|strips\.titles|titles|samples)\[\d+\]\.text"
+                            r"|(?:clips\[\d+\](?:\.shots\[\d+\])?|dialogue\[\d+\])\.sentences\[\d+\]\[2\])$")
 
 
 @dataclass(frozen=True)
