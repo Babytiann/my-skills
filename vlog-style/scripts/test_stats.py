@@ -157,5 +157,56 @@ class SchemaTest(unittest.TestCase):
         self.assertFalse(schema.validate(3, {"type": "number"}))
 
 
+
+class AsrPiecesTest(unittest.TestCase):
+    def test_short_audio_is_one_piece(self):
+        self.assertEqual(stats.quiet_cuts([-20.0] * 500, 0.05), [])
+
+    def test_cuts_land_in_the_quiet_and_pieces_stay_short(self):
+        db = [-20.0] * 1500  # 75 s at 0.05 s hops
+        for i in range(480, 488):  # a pause at 24.0-24.4 s
+            db[i] = -60.0
+        for i in range(1000, 1008):  # and at 50.0-50.4 s
+            db[i] = -60.0
+        cuts = stats.quiet_cuts(db, 0.05)
+        self.assertEqual(len(cuts), 2)
+        self.assertTrue(24.0 <= cuts[0] <= 24.4, cuts)
+        self.assertTrue(50.0 <= cuts[1] <= 50.4, cuts)
+        edges = [0.0, *cuts, 75.0]
+        self.assertTrue(all(b - a <= 28.0 for a, b in zip(edges, edges[1:])), edges)
+
+    def test_no_pause_still_cuts_within_the_limit(self):
+        cuts = stats.quiet_cuts([-20.0] * 1600, 0.05)
+        pieces = [b - a for a, b in zip([0.0, *cuts], [*cuts, 80.0])]
+        self.assertTrue(all(p <= 28.0 for p in pieces), pieces)
+        self.assertTrue(all(p >= 10.0 for p in pieces[:-1]), pieces)
+
+
+class SentencesTest(unittest.TestCase):
+    @staticmethod
+    def words(*rows):
+        return [{"word": w, "start": a, "end": b} for w, a, b in rows]
+
+    def test_split_at_sentence_end_and_long_silence(self):
+        ws = self.words(("今天", 0.0, 0.4), ("到了", 0.4, 0.8), ("小镇。", 0.8, 1.2), ("我们", 1.2, 1.5),
+                        ("去", 1.5, 1.7), ("吃饭", 1.7, 2.1), ("然后", 3.5, 3.9), ("上山", 3.9, 4.3))
+        got = stats.sentences(ws)
+        self.assertEqual([g["text"] for g in got], ["今天到了小镇。", "我们去吃饭", "然后上山"])
+        self.assertEqual((got[1]["t_in"], got[1]["t_out"]), (1.2, 2.1))
+
+    def test_commas_and_short_pauses_stay_inside_a_sentence(self):
+        ws = self.words(("下雪了，", 0.0, 0.6), ("很", 1.0, 1.2), ("冷！", 1.2, 1.5))
+        self.assertEqual([g["text"] for g in stats.sentences(ws)], ["下雪了，很冷！"])
+
+    def test_language_change_splits_and_is_kept(self):
+        ws = [{"word": "你好", "start": 0.0, "end": 0.4, "lang": "zh"},
+              {"word": " Hello", "start": 0.5, "end": 0.8, "lang": "en"},
+              {"word": " there", "start": 0.8, "end": 1.1, "lang": "en"}]
+        got = stats.sentences(ws)
+        self.assertEqual([(g["text"], g["lang"]) for g in got], [("你好", "zh"), ("Hello there", "en")])
+
+    def test_blank_words_are_ignored(self):
+        self.assertEqual(stats.sentences(self.words((" ", 0.0, 0.1))), [])
+
 if __name__ == "__main__":
     unittest.main()

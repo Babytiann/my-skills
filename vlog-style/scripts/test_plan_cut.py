@@ -20,6 +20,7 @@ sys.path.insert(0, str(HERE))  # -I drops the script dir
 import paths  # noqa: E402
 import plan_cut  # noqa: E402
 import schema  # noqa: E402
+import story  # noqa: E402
 
 FIX = HERE / "fixtures"
 BASE = FIX / "baseline"
@@ -451,6 +452,21 @@ class StoryTest(unittest.TestCase):
         with self.assertRaisesRegex(plan_cut.PlanError, "music runs out"):
             self.build(brief=brief)
         self.assertEqual(self.build(brief=plan_brief(music=[]))["audio"], [])
+
+    def test_review_cells_follow_the_timeline_with_marks_and_words(self):
+        plan = self.build()
+        cells = story.cells(plan, trip())
+        self.assertEqual(len(cells), len(plan["video"]))
+        recs = {v["id"]: v["rec_in"] for v in plan["video"]}
+        self.assertEqual([recs[c["id"]] for c in cells], sorted(recs[c["id"]] for c in cells))
+        first = cells[0]
+        self.assertEqual((first["role"], first["marks"]), ("A-roll", "预告"))
+        self.assertEqual(first["said"], "这就是我们要找的地方")
+        self.assertTrue(first["when"].startswith("D3 "), first["when"])
+        cover = next(c for c in cells if c["track"] == 2)
+        before = cells[cells.index(cover) - 1]
+        self.assertLessEqual(recs[before["id"]], recs[cover["id"]])
+        self.assertTrue(cover["said"], "a cutaway sits over a line, so words are heard under it")
 
     def test_bad_stories_name_the_item(self):
         cases = [({"chapters": {"小镇": [{"clip": "NOPE", "in_s": 0, "out_s": 1}]}}, r"小镇.*\[0\].*NOPE"),

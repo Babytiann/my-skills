@@ -1137,7 +1137,7 @@ class Planner:
         spans = []
         for d in dialogue:
             ratio = d["source_fps"] / self.fps
-            for a, b, _ in d["sentences"]:
+            for a, b, *_ in d["sentences"]:
                 a, b = max(a, d["src_in"]), min(b, d["src_out"])
                 if b > a:
                     spans.append([d["rec_in"] + math.floor((a - d["src_in"]) / ratio),
@@ -1326,7 +1326,7 @@ def check_story(plan: dict, problems: list[str]) -> None:
             problems.append(f"{a['id']}/{b['id']}: dialogue overlaps on A1")
     for d in dialogue:
         tol = d["source_fps"] / fps
-        for x, y, text in d["sentences"]:
+        for x, y, text, *_ in d["sentences"]:
             if d["src_in"] >= x + tol or d["src_out"] <= y - tol:
                 problems.append(f"{d['id']}: source {d['src_in']}..{d['src_out']} cuts into a sentence ({x}..{y}: {text[:12]})")
         if d["src_in"] <= d["clear"][0] - tol or d["src_out"] >= d["clear"][1] + tol:
