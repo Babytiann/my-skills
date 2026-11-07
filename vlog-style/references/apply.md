@@ -32,6 +32,7 @@ python3 -I -B prep.py footage --project <项目>
 - **帧率**：59.94 还是 60。plan_cut 会按素材的多数自动把 30 换成 29.97。
 - **可变帧率**（`vfr: true`）：代理帧号和源素材帧号可能对不上，告诉用户，建议先转成恒定帧率。
 - **传输特性**：用户的素材是标准的 bt709（`hdr: false`）。出现 HLG 或 PQ 时先问用户，look DRX 是按 Rec.709 做的。
+- **照片**：jpg、jpeg、heic、heif、png 和视频一起扫，`proxies/<id>/` 里只有 `prep.json` 和 640 px 的 `preview.jpg`。拍摄时间读 EXIF 的 DateTimeOriginal，时区读 OffsetTimeOriginal。没有时区的按本机时区读，设备名后面加「(no time zone)」，在外地拍的就给这个设备单独写 `clock_offsets_s`。导出过或经聊天软件转发的照片常常没有拍摄时间，输出会提醒：换原片，或者在 tags.json 里写 `shot_at`。RAW（dng、cr2、arw 等）还不支持，列在 `raw_skipped` 里，请用户导出成 jpg 或 heic。同一目录的 Live Photo（`IMG_0001.HEIC` 和 `IMG_0001.MOV`）分别是 `IMG_0001_heic` 和 `IMG_0001_mov`。
 - **拍摄时间**：每个片段的 `prep.json` 记下 `shot_at`、时间来源和设备，输出末尾按设备列出时间范围。时间读自素材里的 `creation_time`，不用文件修改时间（复制素材会改掉它）；都没有时按文件名排，来源记成 `filename`。几台设备的时间范围对不上时（比如手机比相机快一小时，或者无人机写的是 UTC），在 brief 里写 `clock_offsets_s`（见第 5 节）；个别片段不对，在 tags.json 里直接写 `shot_at`。按时间剪全靠这些时间，先让用户看一眼设备时间范围。
 
 ## 3. 素材索引
@@ -51,7 +52,7 @@ done
 - `--prompt` 会替换默认提示，而默认那句负责简体和标点，所以要写成「默认那句 + 地名人名」：`--prompt "以下是普通话的旅行视频旁白，使用简体中文和标点。特罗姆瑟、罗弗敦。"`。
 - 纯风景、航拍这类没有人声的片段可以加 `--no-asr` 省时间。有人说话的片段不要加：没有转写就没有句子，plan_cut 不能拿它做 A-roll。
 
-然后 agent 看每个片段的 `sheets/`，写 `index/tags.json`：
+照片会被两个测量脚本直接跳过。然后 agent 看每个片段的 `sheets/`（照片看 `preview.jpg`），写 `index/tags.json`，照片和视频用同一套词：
 
 ```json
 {"clips": {
@@ -97,7 +98,9 @@ uv run --python 3.13 --script measure_audio.py --music "$P/music/<曲子>" --out
  "hook_tags": ["aurora"], "intro_tags": [], "interlude_tags": [], "ending_tags": ["dusk"],
  "music": [{"source": "projects/norway/music/track.wav", "start_s": 12.0}],
  "avoid": ["C0005"], "prefer": ["C0012"],
- "clock_offsets_s": {"DJI Mini 4 Pro": -3600}
+ "clock_offsets_s": {"DJI Mini 4 Pro": -3600},
+ "photos": {"chapters": {"特罗姆瑟": [{"clip": "IMG_0012", "after": 2}, {"clip": "IMG_0013", "at": "end"}]},
+            "ending": ["IMG_0100", "IMG_0101"]}
 }
 ```
 
@@ -111,6 +114,7 @@ uv run --python 3.13 --script measure_audio.py --music "$P/music/<曲子>" --out
 | `music` | 音乐，路径相对 root |
 | `avoid` / `prefer` | 不用 / 优先用的片段 id |
 | `clock_offsets_s` | 按设备名的时钟偏移（秒），加到这台设备所有片段的拍摄时间上。设备名取 `prep.py footage` 输出里的名字 |
+| `photos` | 照片放哪里。`chapters` 按章列：`after: n` 紧跟在本章 story 第 n 条 A-roll 之后，中间不插 B-roll（`after: 0` 放在第一条之前；要有 story），`at: start` / `at: end` 放在本章开头或结尾。同一处的几张连着放。章内照片和视频一样按时间走：不在本章时间窗里、或者和前后条目的时间顺序不对就报错，要放就写 `out_of_order`。`ending` 是片尾回顾连放，不管时间顺序，结尾段不够长时从章节里匀时间。每张多长、多大取风格的 `photo`。同一张只能用一次 |
 
 风格包只管「怎么剪」，拍了什么、讲什么都写在 brief 和 story 里。
 
@@ -183,6 +187,14 @@ uv run --python 3.13 --script story.py review --project <项目>
 
 有问题就改 story 或 tags 重新生成，然后把计划表和拼图给用户看（**确认点 2**）。
 
+**照片短片**（brief 写了 `photos` 时）：
+
+```sh
+python3 -I -B photo_clips.py --project <项目>
+```
+
+Resolve 不按帧放原生静图（常见坑第 27 条），所以每张照片做成时间线帧率和尺寸的短片，写到 `proxies/<id>/photo.mp4`，也就是计划里照片条目的 `source`。整张照片等比放进画面，留黑边，不裁切；按 EXIF 方向转正；标 bt709。和原片的平均色差约 2/255，是转到和素材一样的 16–235 范围造成的，看不出来。已经做过、计划又没变的照片不重做；改了计划重跑就行。原片只读。
+
 **字幕**（有人声就做）：
 
 ```sh
@@ -209,10 +221,10 @@ python3 -I -B subs.py --project <项目>
 
 1. **工程。** 先 `save` 用户当前的工程，再按 resolve-routes.md「自动建工程」新建 `vlog-<项目>-v<n>`（试剪用 `vlog-style-QA-<项目>`）：advanced server 生成空 `.drp` → `safe_project_import`（先 dry_run）→ `load` → 马上 `save`。不在用户正在剪的工程上直接改。
 2. **设置。** 先删掉模板自带的空时间线（confirm_token 两步），再写帧率：`timelineFrameRate` 只有工程里一条时间线都没有时才写得进去。帧率和分辨率取 `cut_plan.timeline`，色彩管理设为 Rec.709 Gamma 2.4。分辨率本机没探针，写完读回。播放帧率写不进去，进手动收尾清单。这些都要在导入任何媒体之前做完：WAV 会锁定导入时的帧率。然后建主时间线，先把轨道建够：视频轨建到计划里最大的 `track`，再加一条标题轨（V3）；音频轨 A1 对白、A2 音乐床、A3 原始音乐，开了环境声再加 A4。`trackIndex` 超出现有轨道数时不报错，片段会落到别的轨道上（常见坑第 3 条）。
-3. **导入。** 用 `paths.py resolve <相对路径>` 现拼绝对路径，导入 `video[].source`、`dialogue[].source`、压低版音乐床（`plan/ducked.json` 里的 `bed`）和原始音乐。绝对路径不写进任何文件。
+3. **导入。** 用 `paths.py resolve <相对路径>` 现拼绝对路径，导入 `video[].source`（照片条目是 photo_clips.py 做的 `photo.mp4`）、`dialogue[].source`、压低版音乐床（`plan/ducked.json` 里的 `bed`）和原始音乐。绝对路径不写进任何文件。
 4. **字幕文件（有 `plan/subs.srt` 时）。** 导入 .srt 后，**在放任何片段之前**用只传 `clip_ids` 的旧式 append 把它放到空的主时间线上，字幕按 .srt 里的时间落位（从时间线起点算的秒数 × 时间线帧率，探针 #15）。带 clipInfos 的 append 放 .srt 会让 Resolve 崩溃。
 5. **放片段。** 按轨分开 append，每条 clipInfo 是 mediaPoolItem、`startFrame=src_in`、`endFrame=src_out`、`recordFrame=rec_in`（MCP 的 `record_frame` 默认相对起点）、`trackIndex`：
-   - V1 的全部条目一次放，再放 V2（`track: 2` 的 cutaway）。`audio: mute` 的条目只放视频（mediaType 1）；没有 story 时 `audio: keep` 的条目照旧视频音频一起放。
+   - V1 的全部条目一次放，再放 V2（`track: 2` 的 cutaway）。照片条目（`kind: photo`）和视频一样按帧放，`startFrame` 是 0；放好后 `scale` 不是 1 的条目用 `timeline_item set_transform {ZoomX: scale, ZoomY: scale}` 缩小（探针 #14），读回 `get_transform` 核对。`audio: mute` 的条目只放视频（mediaType 1）；没有 story 时 `audio: keep` 的条目照旧视频音频一起放。
    - `dialogue[]` 一次放到 A1，只放音频（mediaType 2），源区间用对白条目自己的 `src_in`/`src_out`，可以和画面不同（J/L cut，探针 #13）。`ambient[]` 同样放到 A4。
    - `speed` 不是 1 的条目 `endFrame` 另算，见第 8 步。先读回时间线起始帧，不要假设从 0 开始。
 6. **读回核对，再套字幕样式。** 读回每个条目，视频和音频轨都要，整理成 compare.py 的格式（见下一节），跑 `compare.py readback`。`timeline clip_where` 一次就能读回所有轨道的位置和源帧；59.94 素材读回的 `source_end` 少 1 帧，以 `get_source_end_frame` 为准或留 1 帧容差（常见坑第 20 条）。不通过就删掉这条时间线，查原因后重建新版本。已经放上去的条目无法移动或修剪。

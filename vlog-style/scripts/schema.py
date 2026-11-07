@@ -115,6 +115,9 @@ STYLE = {
             "cutaway_after_s": {"type": "number", "minimum": 0}, "cutaway_share": SHARE,
             "cutaway_lead_s": {"type": "number", "minimum": 0}, "cutaway_tail_s": {"type": "number", "minimum": 0},
             "j_s": {"type": "number", "minimum": 0}, "l_s": {"type": "number", "minimum": 0}}},
+        "photo": {"type": "object", "properties": {
+            "dur_s": {"type": "number", "minimum": 0.2}, "scale": {"type": "number", "minimum": 0.1, "maximum": 1},
+            "background": {"type": "string", "enum": ["black"]}}},
         "resolve": {"type": "array", "items": {
             "type": "object", "required": ["element", "route", "status"],
             "properties": {"element": {"type": "string"}, "route": {"type": "string", "enum": ROUTES},
@@ -133,7 +136,9 @@ PLAN_CLIP = {
         "rec_in": {"type": "integer", "minimum": 0}, "rec_out": {"type": "integer", "minimum": 1},
         "speed": {"type": "number", "minimum": 0.05, "maximum": 4}, "track": {"type": "integer", "minimum": 1},
         "transition_out": {"type": ["object", "null"]}, "motion": {"type": ["object", "null"]},
-        "role": {"type": "string", "enum": ["aroll", "broll", "cutaway"]},
+        "role": {"type": "string", "enum": ["aroll", "broll", "cutaway", "photo"]},
+        "kind": {"type": "string", "enum": ["photo"]}, "photo": {"type": "string"},
+        "scale": {"type": "number", "minimum": 0.1, "maximum": 1},
     },
 }
 PLAN_DIALOGUE = {

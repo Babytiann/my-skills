@@ -32,7 +32,7 @@ import paths as vpaths  # noqa: E402
 import plan_cut  # noqa: E402
 import subs  # noqa: E402
 
-ROLE = {"aroll": "A-roll", "broll": "B-roll", "cutaway": "盖画面"}
+ROLE = {"aroll": "A-roll", "broll": "B-roll", "cutaway": "盖画面", "photo": "照片"}
 CELL_W, CELL_H, COLS, LABEL_H = 320, 180, 4, 66
 CJK_FONT = "/System/Library/Fonts/Hiragino Sans GB.ttc"
 
@@ -89,9 +89,11 @@ def cells(plan: dict, index: dict | None) -> list[dict]:
     for v in sorted(plan["video"], key=lambda v: (v["rec_in"], v["track"])):
         mid = (v["rec_in"] + v["rec_out"]) / 2
         said = next((t for a, b, t in heard if a <= mid < b), "")
+        photo = v.get("kind") == "photo"
         out.append({"id": v["id"], "section": v.get("section") or "", "track": v["track"],
-                    "role": ROLE.get(v.get("role"), v.get("kind") or ""), "clip": v["clip"],
-                    "src_s": (v["src_in"] + v["src_out"]) / 2 / float(v.get("source_fps") or fps),
+                    "role": ROLE.get(v.get("role") or v.get("kind"), v.get("kind") or ""), "clip": v["clip"],
+                    "photo": photo,
+                    "src_s": 0.0 if photo else (v["src_in"] + v["src_out"]) / 2 / float(v.get("source_fps") or fps),
                     "rec": mmss(v["rec_in"] / fps), "when": plan_cut.when(v), "marks": plan_cut.out_of_time(v),
                     "said": said})
     return out
@@ -137,7 +139,7 @@ def review(plan: dict, index: dict | None, proj: Path, out_dir: Path) -> list[Pa
                 font=head, fill=(240, 240, 240))
         for k, c in enumerate(group):
             x, y = (k % COLS) * CELL_W, 34 + (k // COLS) * (CELL_H + LABEL_H)
-            proxy = proj / "proxies" / c["clip"] / "proxy.mp4"
+            proxy = proj / "proxies" / c["clip"] / ("preview.jpg" if c["photo"] else "proxy.mp4")
             raw = grab(proxy, c["src_s"]) if proxy.exists() else None
             if raw:
                 img.paste(Image.frombytes("RGB", (CELL_W, CELL_H), raw), (x, y))

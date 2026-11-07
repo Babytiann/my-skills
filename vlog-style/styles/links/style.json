@@ -437,6 +437,11 @@
   "j_s": 0.0,
   "l_s": 0.0
  },
+ "photo": {
+  "dur_s": 2.5,
+  "scale": 0.55,
+  "background": "black"
+ },
  "resolve": [
   {
    "element": "剪辑点",

@@ -93,6 +93,7 @@ vlog-style/styles/                    仓库
 | `grade` | `summary`、`look`（见下）、`lut`、`drx`、`grain` | 测量 + labels |
 | `text` | `title`、`chapter_card`、`subtitle`，每项见下 | 测量 + labels |
 | `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]`、`broll_ambient_db`（B-roll 环境声放 A4 的电平，dB；不写就不放） | 测量；mood 和 sfx 由 Claude 根据测量写；broll_ambient_db 手填 |
+| `photo` | 照片怎么放：`dur_s`（每张几秒）、`scale`（相对铺满画面的大小，搭建时用 `set_transform` 设，1 是铺满）、`background`（目前只有 black）。不写时 3 s、1.0、black。只在 brief 写了 `photos` 时起作用 | 看参考里的照片插入：时长按镜头算，大小量照片在画面里的宽高 |
 | `aroll` | 有 story 时 A-roll 怎么剪：`speech_share`（A-roll 占全片的比例，brief 不写 `duration_s` 时用它推成片时长）、`pad_s` / `pad_out_s`（句前、句后留白，按 whisper 的时间）、`cutaway_after_s`（多长的 A-roll 才盖画面）、`cutaway_share`（盖住的比例）、`cutaway_lead_s` / `cutaway_tail_s`（开头、结尾留给说话人的秒数）、`j_s` / `l_s`（J/L cut 声音提前、延后的秒数）。不写的项用 plan_cut 的默认值 | speech_share 取参考的人声占比；其余要按说话段测，测不了的标存疑 |
 | `resolve[]` | `{element, route, status, how}`：每个用到的元素走哪条路线。route 取 `schema.ROUTES`，status 取 verified / probe / manual | aggregate 的路线表；探针后更新 |
 | `evidence` | `consistency`（每项的一致性判断）、`unverified`、`rejected_labels`、`single_source`、`beat`、`ramp_candidates`、`onsets_per_min`、`moves`（推拉的测到 / 判过 / digital 个数） | aggregate 自动写 |

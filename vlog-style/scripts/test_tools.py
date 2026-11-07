@@ -11,7 +11,9 @@ import io
 import json
 import math
 import os
+import datetime as dt
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -29,6 +31,7 @@ import cleanup  # noqa: E402
 import compare  # noqa: E402
 import duck  # noqa: E402
 import paths  # noqa: E402
+import photo_clips  # noqa: E402
 import plan_cut  # noqa: E402
 import prep  # noqa: E402
 import story  # noqa: E402
@@ -692,6 +695,159 @@ class FootageTimeTest(TempRoot):
 
 
 @unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+def exif_jpeg(path: Path, when: str | None, offset: str | None = None, orientation: int = 1,
+              make: str = "Apple", model: str = "iPhone 16 Pro", size: str = "160x120") -> Path:
+    """A JPEG carrying the EXIF a camera writes: make, model, orientation, DateTimeOriginal, OffsetTimeOriginal."""
+    plain = path.with_suffix(".plain.jpg")
+    subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"testsrc2=size={size}",
+                    "-frames:v", "1", str(plain)], check=True)
+
+    def ascii(tag, text):
+        b = text.encode() + b"\0"
+        return tag, 2, len(b), b
+
+    def ifd(entries, base):
+        n, data_at = len(entries), base + 2 + len(entries) * 12 + 4
+        body, extra = b"", b""
+        for tag, typ, cnt, val in sorted(entries):
+            if isinstance(val, int):
+                body += struct.pack(">HHII", tag, typ, cnt, val)
+            elif len(val) <= 4:
+                body += struct.pack(">HHI", tag, typ, cnt) + val.ljust(4, b"\0")
+            else:
+                body += struct.pack(">HHII", tag, typ, cnt, data_at + len(extra))
+                extra += val
+        return struct.pack(">H", n) + body + b"\0\0\0\0" + extra
+
+    sub = ([ascii(0x9003, when)] if when else []) + ([ascii(0x9011, offset)] if offset else [])
+    top = [ascii(0x010F, make), ascii(0x0110, model), (0x0112, 3, 1, struct.pack(">H", orientation))]
+    size0 = len(ifd(top + [(0x8769, 4, 1, 0)], 8))
+    tiff = b"MM\0*" + struct.pack(">I", 8) + ifd(top + [(0x8769, 4, 1, 8 + size0)], 8) + ifd(sub, 8 + size0)
+    app1 = b"Exif\0\0" + tiff
+    jpg = plain.read_bytes()
+    path.write_bytes(jpg[:2] + b"\xff\xe1" + struct.pack(">H", len(app1) + 2) + app1 + jpg[2:])
+    plain.unlink()
+    return path
+
+
+class PhotoScanTest(TempRoot):
+    def setUp(self):
+        super().setUp()
+        paths.init(self.P, project="t")
+        self.footage = self.P.project("t") / "footage"
+        (self.footage / "cardA").mkdir(parents=True)
+        (self.footage / "trip").mkdir()
+        tagged = exif_jpeg(self.footage / "cardA" / "src.jpg", "2026:02:11 21:40:00", "+01:00", orientation=6)
+        subprocess.run(["sips", "-s", "format", "heic", str(tagged), "--out", str(self.footage / "cardA" / "IMG_0001.HEIC")],
+                       check=True, capture_output=True)
+        tagged.unlink()
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
+                        "testsrc2=size=160x90:rate=30:duration=0.2", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                        str(self.footage / "cardA" / "IMG_0001.MOV")], check=True)
+        exif_jpeg(self.footage / "trip" / "IMG_0002.JPG", "2026:02:11 09:00:00", make="SONY", model="ILCE-7M4")
+        exif_jpeg(self.footage / "trip" / "IMG_0004.JPG", None, "+08:00")  # exported: zone kept, time stripped
+        (self.footage / "trip" / "DSC0003.ARW").write_bytes(b"raw")
+        exif_jpeg(self.footage / "trip" / ".hidden.jpg", "2026:02:11 10:00:00")
+
+    def test_photos_get_time_zone_device_preview_and_upright_size(self):
+        code, out, err = self.run_main(prep.main, ["footage", "--project", "t"])
+        self.assertEqual(code, 0, err)
+        rep = json.loads(out)
+        kinds = {c["id"]: c.get("kind") for c in rep["clips"]}
+        self.assertEqual(kinds, {"IMG_0001_heic": "photo", "IMG_0001_mov": None, "IMG_0002": "photo",
+                                 "IMG_0004": "photo"})
+        one = {c["id"]: c for c in rep["clips"]}
+        self.assertEqual(one["IMG_0001_heic"]["shot_at"], "2026-02-11T20:40:00+00:00")
+        self.assertEqual(one["IMG_0001_heic"]["shot_at_source"], "exif.DateTimeOriginal")
+        self.assertEqual(one["IMG_0001_heic"]["device"], "Apple iPhone 16 Pro")
+        local = dt.datetime(2026, 2, 11, 9, 0).astimezone().astimezone(dt.timezone.utc).isoformat()
+        self.assertEqual((one["IMG_0002"]["shot_at"], one["IMG_0002"]["shot_at_source"]), (local, "exif.no_zone"))
+        self.assertEqual(one["IMG_0002"]["device"], "SONY ILCE-7M4 (no time zone)")
+        self.assertIn("no time zone", err)
+        self.assertEqual(rep["raw_skipped"], ["trip/DSC0003.ARW"])
+        self.assertEqual((one["IMG_0004"]["shot_at"], one["IMG_0004"]["shot_at_source"]), (None, None))
+        self.assertIn("no shooting time", err)
+        self.assertIn("IMG_0004", err)
+        heic = json.loads((self.P.project("t") / "proxies" / "IMG_0001_heic" / "prep.json").read_text(encoding="utf-8"))
+        self.assertEqual((heic["probe"]["width"], heic["probe"]["height"]), (120, 160))  # stored sideways
+        self.assertTrue((self.P.project("t") / "proxies" / "IMG_0001_heic" / "preview.jpg").exists())
+        devices = {d["device"] for d in rep["devices"]}
+        self.assertIn("SONY ILCE-7M4 (no time zone)", devices)
+
+    def test_photos_reach_the_index_with_tags_and_clock_offsets(self):
+        self.run_main(prep.main, ["footage", "--project", "t"])
+        proj = self.P.project("t")
+        (proj / "index" / "tags.json").write_text(json.dumps({"clips": {
+            "IMG_0002": {"tags": ["harbour"], "shot_type": "wide", "light": "day", "movable": True}}}), encoding="utf-8")
+        (proj / "plan").mkdir(exist_ok=True)
+        (proj / "plan" / "brief.json").write_text(json.dumps({"clock_offsets_s": {"SONY ILCE-7M4 (no time zone)": 3600}}),
+                                                 encoding="utf-8")
+        code, _, err = self.run_main(aggregate.main, ["footage", "--project", "t"])
+        self.assertEqual(code, 0, err)
+        index = json.loads((proj / "index" / "footage.json").read_text(encoding="utf-8"))
+        self.assertEqual(index["clips"], [])  # the Live Photo's video has no measure_video.json yet
+        photos = {x["id"]: x for x in index["photos"]}
+        sony = photos["IMG_0002"]
+        local = dt.datetime(2026, 2, 11, 10, 0).astimezone().astimezone(dt.timezone.utc)
+        self.assertEqual(dt.datetime.fromisoformat(sony["shot_at"]), local)
+        self.assertEqual((sony["tags"], sony["shot_type"], sony["light"], sony["movable"]), (["harbour"], "wide", "day", True))
+        self.assertEqual(sony["preview"], "projects/t/proxies/IMG_0002/preview.jpg")
+        self.assertEqual({x["kind"] for x in index["photos"]}, {"photo"})
+        self.assertEqual(sorted(x["order"] for x in index["photos"]), [0, 1, 2])
+        self.assertIsNone(photos["IMG_0004"]["day"])
+
+
+class PhotoClipsTest(TempRoot):
+    @staticmethod
+    def probe(path: Path) -> dict:
+        r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-count_frames", "-show_entries",
+                            "stream=width,height,nb_read_frames,r_frame_rate,color_transfer,color_primaries,color_space,"
+                            "color_range", "-of", "json", str(path)], capture_output=True, text=True, check=True)
+        return json.loads(r.stdout)["streams"][0]
+
+    @staticmethod
+    def picture_width(path: Path, w: int, h: int) -> int:
+        raw = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-i", str(path), "-frames:v", "1", "-f", "rawvideo",
+                              "-pix_fmt", "gray", "-"], capture_output=True, check=True).stdout
+        lit = [x for x in range(w) if max(raw[y * w + x] for y in range(h)) > 40]
+        return lit[-1] - lit[0] + 1
+
+    @staticmethod
+    def item(pid, src, rec_in, n):
+        return {"id": f"v{rec_in}", "section": "x", "kind": "photo", "clip": pid, "photo": f"projects/t/footage/{src}",
+                "source": f"projects/t/proxies/{pid}/photo.mp4", "source_fps": 29.97, "src_in": 0, "src_out": n,
+                "rec_in": rec_in, "rec_out": rec_in + n, "speed": 1.0, "track": 1}
+
+    def test_clips_fit_the_timeline_stand_upright_and_are_kept_while_current(self):
+        paths.init(self.P, project="t")
+        proj = self.P.project("t")
+        footage = proj / "footage"
+        exif_jpeg(footage / "side.jpg", "2026:02:11 21:40:00", "+01:00", orientation=6, size="320x240")
+        plain = exif_jpeg(footage / "w.jpg", "2026:02:11 21:41:00", "+01:00", size="320x240")
+        subprocess.run(["sips", "-s", "format", "heic", str(plain), "--out", str(footage / "wide.HEIC")],
+                       check=True, capture_output=True)
+        plain.unlink()
+        plan = {"timeline": {"fps": 29.97, "width": 640, "height": 360},
+                "video": [self.item("S", "side.jpg", 0, 45), self.item("W", "wide.HEIC", 45, 30),
+                          self.item("W", "wide.HEIC", 75, 60)]}
+        done = photo_clips.make(self.P, plan)
+        self.assertEqual({d["clip"]: (d["frames"], d["made"]) for d in done}, {"S": (45, True), "W": (60, True)})
+        for pid, frames, width in (("S", 45, 270), ("W", 60, 480)):  # 3:4 upright and 4:3, fitted to 360 high
+            clip = proj / "proxies" / pid / "photo.mp4"
+            info = self.probe(clip)
+            self.assertEqual((info["width"], info["height"], int(info["nb_read_frames"]), info["r_frame_rate"]),
+                             (640, 360, frames, "30000/1001"))
+            self.assertEqual((info["color_transfer"], info["color_primaries"], info["color_space"], info["color_range"]),
+                             ("bt709", "bt709", "bt709", "tv"))
+            self.assertLessEqual(abs(self.picture_width(clip, 640, 360) - width), 4, pid)
+        again = photo_clips.make(self.P, plan)
+        self.assertEqual({d["clip"]: d["made"] for d in again}, {"S": False, "W": False})
+        plan["video"][2]["src_out"] = plan["video"][2]["rec_out"] - plan["video"][2]["rec_in"] + 30
+        again = photo_clips.make(self.P, plan)
+        self.assertEqual({d["clip"]: (d["frames"], d["made"]) for d in again}, {"S": (45, False), "W": (90, True)})
+        self.assertTrue((footage / "side.jpg").exists() and (footage / "wide.HEIC").exists())
+
+
 class ShotTimeScanTest(TempRoot):
     def clip(self, rel, *meta):
         path = self.P.project("t") / "footage" / rel

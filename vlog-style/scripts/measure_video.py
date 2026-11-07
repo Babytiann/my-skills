@@ -827,6 +827,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     d = args.dir.expanduser().resolve()
     prep = json.loads((d / "prep.json").read_text(encoding="utf-8"))
+    if prep.get("kind") == "photo":  # its preview.jpg is the sheet; aggregate.py footage indexes it as it is
+        log(f"{d.name}: a photo, nothing to measure")
+        return 0
     proxy = d / prep["proxy"]["file"]
     fps, pw, ph = float(prep["proxy"]["fps"]), int(prep["proxy"]["width"]), int(prep["proxy"]["height"])
     per_shot = args.per_shot or (3 if prep["proxy"]["duration_s"] <= LONG_S else 1)

@@ -631,7 +631,8 @@ def order_clips(clips: list[dict]) -> None:
 
     Days come from long gaps, not calendar dates: a time tag may be local or UTC and
     a trip crosses zones, while nobody films through the night. Clips with no time
-    follow the dated ones in file-name order and belong to no day.
+    follow the dated ones in file-name order and belong to no day. Photos take part
+    as instants.
     """
     day, last_end = 1, None
     for n, c in enumerate(sorted(clips, key=lambda c: (c["shot_at"] is None, epoch(c["shot_at"]) if c["shot_at"] else 0,
@@ -642,7 +643,7 @@ def order_clips(clips: list[dict]) -> None:
             if last_end is not None and t - last_end >= NEW_DAY_GAP_S:
                 day += 1
             c["day"] = day
-            last_end = max(last_end or t, t + c["frames"] / c["fps"])
+            last_end = max(last_end or t, t + (c["frames"] / c["fps"] if c.get("fps") else 0.0))
 
 
 def cmd_footage(project: str) -> int:
@@ -650,9 +651,19 @@ def cmd_footage(project: str) -> int:
     proj = P.project(project)
     tags = load_json(proj / "index" / "tags.json", {}) or {}
     offsets = (load_json(proj / "plan" / "brief.json", {}) or {}).get("clock_offsets_s") or {}
-    clips, sharp_all = [], []
+    clips, photos, sharp_all = [], [], []
     for d in sorted((proj / "proxies").iterdir()) if (proj / "proxies").exists() else []:
         prep, mv = load_json(d / "prep.json"), load_json(d / "measure_video.json")
+        if prep and prep.get("kind") == "photo":
+            ct = (tags.get("clips") or {}).get(d.name, {})
+            photos.append({"id": d.name, "kind": "photo", "source": prep["source"]["path"],
+                           "width": prep["probe"]["width"], "height": prep["probe"]["height"],
+                           "preview": P.rel(d / prep["preview"]), **clip_time(prep, ct, offsets),
+                           "shot_type": ct.get("shot_type"), "tags": ct.get("tags") or [],
+                           **({"reject": True} if ct.get("reject") else {}),
+                           **({"movable": True} if ct.get("movable") else {}),
+                           **({"light": ct["light"]} if ct.get("light") else {})})
+            continue
         if not prep or not mv or "scan" not in mv:
             print(f"skip {d.name}: needs prep.json and measure_video.json", file=sys.stderr)
             continue
@@ -686,7 +697,7 @@ def cmd_footage(project: str) -> int:
                       "width": prep["probe"]["width"], "height": prep["probe"]["height"],
                       "hdr": prep["probe"]["hdr"], **clip_time(prep, ct, offsets), "sentences": sentences,
                       "shots": shots})
-    order_clips(clips)
+    order_clips(clips + photos)
     order = sorted(sharp_all)
     for c in clips:
         for s in c["shots"]:
@@ -694,9 +705,11 @@ def cmd_footage(project: str) -> int:
             s["sharp"] = round(sum(1 for v in order if v <= raw) / max(1, len(order)), 3)
     out = proj / "index" / "footage.json"
     out.parent.mkdir(exist_ok=True)
-    out.write_text(json.dumps({"clips": clips}, ensure_ascii=False, indent=1), encoding="utf-8")
-    untagged = sum(1 for c in clips for s in c["shots"] if not s["tags"])
-    print(f"wrote {P.rel(out)}: {len(clips)} clips, {sum(len(c['shots']) for c in clips)} shots, {untagged} untagged")
+    out.write_text(json.dumps({"clips": clips, **({"photos": photos} if photos else {})}, ensure_ascii=False, indent=1),
+                   encoding="utf-8")
+    untagged = sum(1 for c in clips for s in c["shots"] if not s["tags"]) + sum(1 for x in photos if not x["tags"])
+    print(f"wrote {P.rel(out)}: {len(clips)} clips, {sum(len(c['shots']) for c in clips)} shots"
+          + (f", {len(photos)} photos" if photos else "") + f", {untagged} untagged")
     return 0
 
 

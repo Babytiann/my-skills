@@ -39,7 +39,7 @@ import json
 import math
 import random
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
@@ -65,6 +65,8 @@ AROLL_DEFAULTS = {"pad_s": 0.15, "pad_out_s": 0.25, "cutaway_after_s": 6.0, "cut
                   "cutaway_lead_s": 1.5, "cutaway_tail_s": 1.0, "j_s": 0.0, "l_s": 0.0}
 ORDER_TOLERANCE_S = 300.0  # shots of one scene may swap within this; further back is not allowed
 LIGHTS = ["day", "golden", "blue", "night"]  # neighbours in this list can sit next to each other
+PHOTO_DEFAULTS = {"dur_s": 3.0, "scale": 1.0, "background": "black"}
+PHOTO_CLIP = "photo.mp4"  # beside the photo's preview.jpg in proxies/<id>/
 FIRST_GAP_WEIGHT = 1.5  # a chapter opens wider: Links sets the scene with wide and aerial shots
 CAPACITY_USABLE = 0.8
 
@@ -183,6 +185,8 @@ class Planner:
         if not clips:
             raise PlanError("footage index has no clips")
         self.clips = {c["id"]: c for c in clips}
+        self.photos = {p["id"]: p for p in index.get("photos") or []}
+        self.photo = {**PHOTO_DEFAULTS, **(style.get("photo") or {})}
         style_fps = brief.get("fps") or style["deliverable"]["fps"]
         self.fps = ntsc_fps(style_fps, [c["fps"] for c in clips]) if not brief.get("fps") else float(style_fps)
         self.min_shot = float(style["rhythm"].get("min_shot_s") or 0.5)
@@ -198,6 +202,7 @@ class Planner:
         self.aroll = {**AROLL_DEFAULTS, **(style.get("aroll") or {})}
         self.t0: dict[str, float] = {}
         self.untimed: set[str] = set()
+        self.untimed_photos: set[str] = set()
         self.cursor: float | None = None
         self.anchors: dict = {}
         self.windows: dict[str, tuple[float, float]] = {}
@@ -208,6 +213,8 @@ class Planner:
             self.resolve_story()
         if self.chrono:
             self.chapter_windows()
+        if brief.get("photos"):
+            self.place_photos()
 
     # -- time ----------------------------------------------------------
     def clip_times(self) -> None:
@@ -215,18 +222,22 @@ class Planner:
         if not any(c.get("shot_at") or "order" in c for c in clips):
             raise PlanError("chronological order needs shot_at/order in the index: rerun aggregate.py footage")
         cursor = 0.0
-        for c in sorted(clips, key=lambda c: c.get("order", math.inf)):
+        for c in sorted([*clips, *self.photos.values()], key=lambda c: c.get("order", math.inf)):
+            photo = c["id"] in self.photos  # an instant: it never moves the cursor the clips share
             if c.get("shot_at"):
                 self.t0[c["id"]] = epoch(c["shot_at"])
             else:
                 self.t0[c["id"]] = cursor
-                self.untimed.add(c["id"])
-            cursor = self.t0[c["id"]] + (c.get("frames") or 0) / c["fps"]
+                (self.untimed_photos if photo else self.untimed).add(c["id"])
+            if not photo:
+                cursor = self.t0[c["id"]] + (c.get("frames") or 0) / c["fps"]
         if self.untimed:
             self.warnings.append(f"{len(self.untimed)} clip(s) have no shooting time and follow file-name order: "
                                  + ", ".join(sorted(self.untimed)))
 
     def time_at(self, cid: str, frame: float) -> float:
+        if cid in self.photos:  # an instant
+            return self.t0[cid]
         return self.t0[cid] + frame / self.clips[cid]["fps"]
 
     def chapter_windows(self) -> None:
@@ -275,6 +286,92 @@ class Planner:
         if not math.isfinite(t):
             return "open"
         return dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime("%m-%d %H:%M:%S")
+
+    def place_photos(self) -> None:
+        """brief.photos: pictures inside chapters, and a run of them at the end.
+
+        A photo in a chapter keeps the clock like footage does (its window and the
+        order of the items around it); the ending run is a named exception, a look
+        back over the trip, so it takes no part in the order.
+        """
+        spec = self.brief["photos"]
+        names = [c.get("name") for c in self.brief.get("chapters") or []]
+        roles = {s["role"] for s in self.style["structure"]["sections"]}
+        frames = max(1, round(float(self.photo["dur_s"]) * self.fps))
+        seen: set[str] = set()
+
+        def anchor(pid, where: str, **extra) -> dict:
+            p = self.photos.get(pid)
+            if p is None:
+                kind = " (it is a video clip)" if pid in self.clips else ""
+                raise PlanError(f"{where}: {pid!r} is not a photo in the index{kind}")
+            if pid in seen:
+                raise PlanError(f"{where}: {pid} is used twice")
+            seen.add(pid)
+            if p.get("reject"):
+                self.warnings.append(f"{where}: {pid} is marked reject in tags.json")
+            a = {"kind": "photo", "where": where, "clip": pid, "frames": frames, **extra}
+            for key in ("movable", "light"):
+                if p.get(key):
+                    a[key] = p[key]
+            if self.chrono and not extra.get("recap"):
+                if pid in self.untimed_photos:
+                    self.warnings.append(f"{where}: {pid} has no shooting time, so nothing checks that it belongs here")
+                else:
+                    a["t0"] = a["t1"] = self.t0[pid]
+            return a
+
+        chapters = self.anchors.setdefault("chapters", {})
+        for name, items in (spec.get("chapters") or {}).items():
+            if name not in names:
+                raise PlanError(f"photos.chapters: {name!r} is not a chapter in the brief ({', '.join(map(str, names))})")
+            if "chapter" not in roles:
+                raise PlanError("photos.chapters needs a chapter section in the style")
+            row = chapters.setdefault(name, [])
+            lines = [i for i, a in enumerate(row) if a["kind"] == "aroll"]
+            inserts = []
+            for k, item in enumerate(items):
+                where = f"photos.chapters[{name!r}][{k}]"
+                item = {"clip": item} if isinstance(item, str) else item
+                extra = {"out_of_order": item["out_of_order"]} if item.get("out_of_order") else {}
+                if "after" in item:
+                    n = int(item["after"])
+                    if self.story is None:
+                        raise PlanError(f"{where}: after counts this chapter's story lines; without a story use "
+                                        "at: start or at: end")
+                    if not 0 <= n <= len(lines):
+                        raise PlanError(f"{where}: after {n}, but {name} has {len(lines)} line(s) in the story")
+                    pos, extra["slot"] = (lines[n - 1] + 1 if n else 0), f"after {n}"
+                else:
+                    edge = item.get("at", "end")
+                    if edge not in ("start", "end"):
+                        raise PlanError(f"{where}: at is start or end, not {edge!r}")
+                    pos, extra["edge"], extra["slot"] = (0 if edge == "start" else len(row)), edge, edge
+                inserts.append((pos, k, anchor(item.get("clip"), where, **extra)))
+            for pos, _, a in sorted(inserts, key=lambda x: (x[0], x[1]), reverse=True):
+                row.insert(pos, a)
+        ending = spec.get("ending") or []
+        if ending:
+            if "ending" not in roles:
+                raise PlanError("photos.ending needs an ending section in the style")
+            self.anchors["ending"] = [anchor(pid, f"photos.ending[{k}]", recap=True) for k, pid in enumerate(ending)]
+        if self.chrono and spec.get("chapters"):
+            self.check_story_times(self.brief.get("chapters") or [])
+
+    def photo_item(self, n: int, sec: dict, a: dict, rec_in: int, rec_out: int) -> dict:
+        """A photo on V1. It plays from a short clip at the timeline's rate (photo_clips.py makes it):
+        Resolve places a native still at its default 5 s whatever the frame range (resolve-routes.md)."""
+        p = self.photos[a["clip"]]
+        item = {"id": f"v{n:03d}", "section": sec["name"], "kind": "photo", "clip": a["clip"],
+                "source": str(PurePosixPath(p["preview"]).parent / PHOTO_CLIP), "photo": p["source"],
+                "source_fps": self.fps, "src_in": 0, "src_out": rec_out - rec_in, "rec_in": rec_in, "rec_out": rec_out,
+                "speed": 1.0, "track": 1, "audio": "mute", "tags": list(p.get("tags") or []),
+                "shot_type": p.get("shot_type"), "transition_out": None, "motion": None,
+                "scale": float(self.photo["scale"])}
+        for key in ("out_of_order", "movable", "recap"):
+            if a.get(key):
+                item[key] = a[key]
+        return item
 
     def check_story_times(self, chapters: list[dict]) -> None:
         """A paper edit is a draft too: it may not run against the clock without saying why."""
@@ -400,6 +497,8 @@ class Planner:
     def anchors_of(self, sec: dict) -> list[dict]:
         if sec["role"] == "hook":
             return self.anchors.get("hook") or []
+        if sec["role"] == "ending":
+            return self.anchors.get("ending") or []
         return self.chapter_anchors(sec["name"]) if sec["role"] == "chapter" else []
 
     def spoken_frames(self, items: list[dict]) -> int:
@@ -767,8 +866,12 @@ class Planner:
         return None
 
     def extend_tail(self, anchors: list[dict], frames: int) -> bool:
-        """Give a remainder too small for any shot to the last spoken line, if the source has silence for it."""
+        """Give a remainder too small for any shot to the last spoken line, if the source has silence for it,
+        or to a photo after that line, which can be held as long as needed."""
         for a in reversed(anchors):
+            if a["kind"] == "photo":
+                a["frames"] += frames
+                return True
             if a["kind"] != "aroll":
                 continue
             clip = self.clips[a["clip"]]
@@ -798,13 +901,29 @@ class Planner:
         fps, min_f = self.fps, round(self.min_shot * self.fps)
         budget = sec["frames"] - sum(a["frames"] for a in anchors)
         gaps = self.gap_limits(sec, anchors)
+        if sec["role"] == "ending" and self.chrono and sec.get("window"):
+            edge = self.edge_gap({**sec, "frames": budget})  # the closing footage still follows the last line
+            if edge:
+                for g in gaps:
+                    g["lo"], g["hi"] = max(g["lo"], edge["lo"]), min(g["hi"], edge["hi"])
         if self.chrono and sec.get("window"):
             for g in gaps:
                 g["span"] = self.time_span({**sec, "gap": g})
         if sec["role"] == "hook":  # opens on the words; whatever is left follows them
             weights = [0.0] * len(anchors) + [1.0]
+        elif sec["role"] == "ending":  # the closing footage, then the photo run to the last frame
+            weights = [1.0] + [0.0] * len(anchors)
         else:
             weights = [FIRST_GAP_WEIGHT] + [1.0] * len(anchors)
+            for k in range(1, len(anchors)):  # a photo follows its line; photos put in one place run together
+                a = anchors[k]
+                if a["kind"] == "photo" and ((a.get("slot") or "").startswith("after")
+                                             or anchors[k - 1].get("slot") == a["slot"]):
+                    weights[k] = 0.0
+            if anchors[0].get("edge") == "start":
+                weights[0] = 0.0
+            if anchors[-1].get("edge") == "end":
+                weights[-1] = 0.0
         # sampled shot lengths never use a gap's footage to the last frame
         caps = [CAPACITY_USABLE * self.capacity({**sec, "gap": g}) for g in gaps]
         shares, left = allocate(budget, weights, caps, min_f)
@@ -865,6 +984,11 @@ class Planner:
 
     def place_fixed(self, seg: dict, sec: dict, video: list[dict], type_counts: dict) -> str:
         a = seg["fixed"]
+        if a["kind"] == "photo":
+            video.append(self.photo_item(len(video) + 1, sec, a, seg["rec_in"], seg["rec_out"]))
+            if self.pins_time(a):
+                self.cursor = a["t0"] if self.cursor is None else max(self.cursor, a["t0"])
+            return a["clip"]
         cid, clip = a["clip"], self.clips[a["clip"]]
         shot = clip["shots"][a["shot"]]
         item = self.clip_item(len(video) + 1, sec, cid, clip, a["shot"], shot, a["src_in"], a["src_out"],
@@ -1014,7 +1138,7 @@ class Planner:
         for chapter in (self.anchors.get("chapters") or {}).values():
             items += chapter
         for a in items:
-            if a["kind"] != "showcase":
+            if a["kind"] not in ("showcase", "photo"):
                 self.used[a["clip"]].append((a["src_in"], a["src_out"]))
             for c in a.get("cover") or []:
                 self.used[c["clip"]].append((c["src_in"], c["src_out"]))
@@ -1174,7 +1298,7 @@ class Planner:
                 wanted = layout[nxt["sec"]]["style"].get("transition_in")
                 if boundary != "within" and wanted and wanted != "hard_cut":
                     self.warnings.append(f"{layout[nxt['sec']]['name']}: {wanted} into this section dropped, "
-                                         "a spoken line stays on a hard cut")
+                                         "a spoken line or a photo stays on a hard cut")
                 continue
             kind = self.pick_transition(boundary, layout[nxt["sec"]] if boundary != "within" else None)
             seg["t_out"] = kind
@@ -1186,7 +1310,7 @@ class Planner:
         dialogue: list[dict] = []
         if self.story is not None:
             for v in video:
-                v.setdefault("role", "broll")
+                v.setdefault("role", "photo" if v.get("kind") == "photo" else "broll")
                 v["audio"] = "mute"
             video = video + self.cutaways(len(video) + 1)
             dialogue = self.dialogue()
@@ -1194,8 +1318,10 @@ class Planner:
                 v["audio"] = "mute"
         if self.chrono:
             for v in video:
+                if v["clip"] in self.untimed_photos:  # no time to show or to check
+                    continue
                 v["t_src"] = round(self.time_at(v["clip"], v["src_in"]), 3)
-                v["day"] = self.clips[v["clip"]].get("day")
+                v["day"] = (self.photos if v.get("kind") == "photo" else self.clips)[v["clip"]].get("day")
         plan = {
             "schema_version": 1,
             "style": self.style["name"],
@@ -1286,7 +1412,7 @@ class Planner:
     def speech(self, video: list[dict]) -> list[list[int]]:
         spans = []
         for v in video:
-            if v["speed"] != 1.0:
+            if v["speed"] != 1.0 or v.get("kind") == "photo":
                 continue
             clip = self.clips[v["clip"]]
             ratio = clip["fps"] / self.fps
@@ -1347,9 +1473,10 @@ def check_order(plan: dict, problems: list[str]) -> None:
             if not v.get("movable") or not v.get("light"):
                 problems.append(f"{v['id']}: borrowed from another time but not marked movable with a light")
             continue
-        if v.get("movable") or v.get("showcase"):
+        if v.get("movable") or v.get("showcase") or v.get("recap"):
             continue
-        t0, t1 = v["t_src"], v["t_src"] + (v["src_out"] - v["src_in"]) / v["source_fps"]
+        t0 = v["t_src"]
+        t1 = t0 if v.get("kind") == "photo" else t0 + (v["src_out"] - v["src_in"]) / v["source_fps"]
         lo, hi = window
         if (hi is not None and t0 > hi + 0.5) or (lo is not None and t1 < lo - 0.5):
             problems.append(f"{v['id']}: {v['clip']} was shot outside the time of {v['section']}")
@@ -1411,6 +1538,8 @@ def out_of_time(v: dict) -> str:
     marks = []
     if v.get("preview"):
         marks.append("预告")
+    if v.get("recap"):
+        marks.append("片尾回顾")
     if v.get("borrowed"):
         marks.append(f"借用 D{v['day']}" if v.get("day") else "借用")
     if v.get("showcase"):
@@ -1474,7 +1603,8 @@ def explain(plan: dict) -> str:
              "| # | 时间 | 段落 | 素材 | 景别/标签 | 变速 | 运动 | 转出 |", "|---|---|---|---|---|---|---|---|"]
     for c in plan["video"]:
         t = c["transition_out"]
-        lines.append(f"| {c['id']} | {tc(c['rec_in'])}–{tc(c['rec_out'])} | {c['section']} | {c['clip']} "
+        lines.append(f"| {c['id']} | {tc(c['rec_in'])}–{tc(c['rec_out'])} | {c['section']} | {c['clip']}"
+                     f"{'（照片）' if c.get('kind') == 'photo' else ''} "
                      f"| {c.get('shot_type') or ''} {'/'.join(c['tags'][:3])} | {'' if c['speed'] == 1 else f'{c['speed']:.0%}'} "
                      f"| {c['motion']['type'] if c['motion'] else ''} | {f'{t['kind']} {t['frames']}f' if t else '硬切'} |")
     if plan["titles"]:
