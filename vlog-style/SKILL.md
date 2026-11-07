@@ -127,9 +127,9 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 4. 音乐：`measure_audio.py --music <曲子> --out index/beats.json`。
 5. 和用户一起写 `plan/brief.json`：时长、章节和标签、地点标题、音乐、不用和优先用的片段，以及每章的调色参考 `look_ref`（光线和地方最像的子包）、夜景和暖光室内这类不修色偏的章。有对话时先 `story.py dump` 读转写，章节按真实发生的事分，agent 起草纸面剪辑 `plan/story.json`，**用户确认后**才往下走。
 6. `plan_cut.py --style <名字> --project <项目> --explain`，有人声时再跑 `duck.py`。有 story 时 agent 先用 `story.py review` 的拼图自查时间、对话和画面、重复、跳接四项。把计划表和拼图给用户看，确认后用 `subs.py` 出字幕给用户校对，再跑 `grade.py solve` 按章算 CDL，摘要和警告转述给用户（撞边界、色偏修不到是素材的光线，如实说）。**计划和字幕都确认后才进 Resolve**。
-7. 用户同意后，有照片时先 `photo_clips.py` 做照片短片，再用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。调色按 `plan/grade.json` 给每个条目 `safe_set_cdl`。
+7. 用户同意后，有照片时先 `photo_clips.py` 做照片短片，再用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。调色按 `plan/grade.json` 给每个条目 `safe_set_cdl`。电平按 `mix.py dialogue` 写的 `plan/mix.json` 设；能渲染音频时，再用 `mix.py master` 把整片调到 −14 LUFS。
 8. 验收：`compare.py normalize` 把 `timeline clip_where` 的回复整理成读回，再跑 `compare.py readback`；每章导出静帧用该章的 `look_ref` 跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
-9. 交付时间线，向用户说明手动收尾清单（标记在时间线开头，第一条是手动设置播放帧率）。
+9. 交付时间线，向用户说明手动收尾清单（标记在时间线开头，第一条是手动设置播放帧率）。用户要求导出时，渲染完按 apply.md §9 测成片，跑 `compare.py final`。`ok` 和 `complete` 都为 true 才算交付，不通过的项如实告诉用户。
 
 ## 6. refine：按反馈改风格
 
