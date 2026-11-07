@@ -15,8 +15,8 @@ dialogue  measures each dialogue[] item over its own source range (ffmpeg
 master    measures an audio-only render of the timeline as built with the
           current mix.json, and shifts every audio item by the same master_db
           so the film lands on --lufs, unless that would put the true peak
-          above --peak: then the peak wins and the shortfall is reported (a
-          limiter on the main bus is a manual finish). master_db accumulates,
+          above --peak: then the peak wins and a shortfall of 0.5 LU or more
+          is reported (a limiter on the main bus is a manual finish). master_db accumulates,
           so a second render after writing the new values refines it.
 
 plan/mix.json, relative paths only:
@@ -46,6 +46,7 @@ import paths as vpaths  # noqa: E402
 
 VOLUME_RANGE = (-100.0, 30.0)  # what AudioVolume accepts (resolve-routes.md)
 UNMEASURED = -69.0  # ebur128 reports -70 LUFS when nothing passes the gate
+SHORT_LU = 0.5  # a peak-held film closer than this to --lufs is on target (probe #17 ended 0.1 LU short)
 
 
 class MixError(Exception):
@@ -148,9 +149,10 @@ def apply_master(mix: dict, plan: dict, render: Path, P: vpaths.Paths, lufs: flo
     delta = lufs - m["lufs"]
     if m["true_peak_dbtp"] + delta > peak:
         delta = peak - m["true_peak_dbtp"]
-        warnings.append(f"master: the true peak ({m['true_peak_dbtp']:+.1f} dBTP) holds the film at "
-                        f"{m['lufs'] + delta:.1f} LUFS, {lufs - m['lufs'] - delta:.1f} LU short of {lufs}; "
-                        "a limiter on the main bus in Fairlight gets it there (manual finish)")
+        if lufs - m["lufs"] - delta >= SHORT_LU:
+            warnings.append(f"master: the true peak ({m['true_peak_dbtp']:+.1f} dBTP) holds the film at "
+                            f"{m['lufs'] + delta:.1f} LUFS, {lufs - m['lufs'] - delta:.1f} LU short of {lufs}; "
+                            "a limiter on the main bus in Fairlight gets it there (manual finish)")
     total = round(float((mix.get("master") or {}).get("master_db") or 0) + delta, 1)
     try:
         rel = P.rel(render)
