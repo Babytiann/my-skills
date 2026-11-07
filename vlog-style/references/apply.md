@@ -94,7 +94,7 @@ uv run --python 3.13 --script measure_audio.py --music "$P/music/<曲子>" --out
  "duration_s": 180,
  "seed": 1,
  "chapters": [{"name": "特罗姆瑟", "tags": ["tromso"], "title": "特罗姆瑟 · 挪威", "card": null, "weight": 1,
-               "window": ["2026-02-11T08:00:00+01:00", null]}],
+               "window": ["2026-02-11T08:00:00+01:00", null], "look_ref": "links/polar-night", "night": false}],
  "hook_tags": ["aurora"], "intro_tags": [], "interlude_tags": [], "ending_tags": ["dusk"],
  "music": [{"source": "projects/norway/music/track.wav", "start_s": 12.0}],
  "avoid": ["C0005"], "prefer": ["C0012"],
@@ -109,7 +109,7 @@ uv run --python 3.13 --script measure_audio.py --music "$P/music/<曲子>" --out
 | `duration_s` | 成片时长。有 story 时可以不写，按 A-roll 总长 ÷ 风格的 `aroll.speech_share` 推 |
 | `seed` | 随机种子，换一个就换一版剪法，同一个种子结果完全一样 |
 | `fps` | 可选，覆盖风格包的交付帧率 |
-| `chapters` | 按顺序的章节：`tags` 选镜头，`title` 地点标题，`card` 章节卡，`weight` 时长权重（有 story 时不写，按该章 A-roll 的长短定），`window` 可选的时间窗 `[开始, 结束]`（ISO 8601，一头可以是 null） |
+| `chapters` | 按顺序的章节：`tags` 选镜头，`title` 地点标题，`card` 章节卡，`weight` 时长权重（有 story 时不写，按该章 A-roll 的长短定），`window` 可选的时间窗 `[开始, 结束]`（ISO 8601，一头可以是 null）。调色用三项（grade.py）：`look_ref` 这一章往哪个子包的 look 调，选和这章光线、地方最像的（如 `links/kula-kangri`；不写就用剪辑计划的风格包并警告，博主级的包色偏键少）；`night` 写 true 是夜景，只压暗不提亮、不修色偏（不写时源 L50 < 25 自动按夜景，会警告；写 false 就不自动判）；`cast` 写 false 不修色偏，用于暖光室内这类光线本身就是事实的章，默认 true |
 | `*_tags` | 开头钩子、片头、过渡段、结尾各用哪些标签的镜头。片头和结尾不填时，默认用第一章和最后一章的标签 |
 | `music` | 音乐，路径相对 root |
 | `avoid` / `prefer` | 不用 / 优先用的片段 id |
@@ -170,6 +170,24 @@ python3 -I -B duck.py --project <项目>          # 有人声又有音乐时
 `plan/cut_plan.json` 里全是整数帧号：`src_in`/`src_out` 是源帧号，`rec_in`/`rec_out` 是时间线帧号（0 是时间线起点），end 都不含该帧。`checks.ok` 必须为 true。`warnings` 要转述给用户。
 
 把 `--explain` 的表格和相关片段的总览图给用户看，**用户确认后才进 Resolve**。不满意就改 brief、tags 或换 seed 重新生成。
+
+**按章算调色。** 计划确认后：
+
+```sh
+uv run --python 3.13 --script grade.py solve --project <项目>
+```
+
+每章从代理里取静帧（每个 V1/V2 条目源区间中点一帧，每章最多 12 张），解一个 ASC CDL（slope、offset、power 各三通道，加 sat），让这章的 look 落进 `look_ref` 子包的范围，写进 `plan/grade.json`。默认做法和例外：
+
+- 已经在范围内的键不动（只罚超出半个容差的部分），所以每章保留自己的光线，不会被统一拉到同一个亮度。
+- 夹值：slope 0.7–1.3、offset ±0.05、power 0.8–1.2、sat 0.7–1.3，色偏项 R/B slope ±0.06、offset ±0.02（起步值）。撞到边界会警告，这时剩下的差距是素材本身的光线，如实告诉用户，不为了过 look 检查硬拉。
+- 夜景章只压暗：power 固定 1、slope ≤ 1、offset ≤ 0，只拟合 L01 和 chroma。
+- 色偏只修目标里有的键，`cast: false` 的章不修。修不到的写在警告里，此时 §8 的 look 不通过可以接受，要写明原因。
+- 照片跟所属章用同一个 CDL，但不参与拟合（手机已经处理过）。hook、片头、过渡段、结尾的条目跟拍摄时间落在其时间窗里的章走，不在任何时间窗里就跟最近的章；没有拍摄时间的跟时间线上最近的章。
+- 一章里静帧的 L50 相差超过 20 会警告，建议拆章：一个 CDL 照顾不了两种光线。
+- 代理是什么样就按什么样量。log 素材会大片撞边界，要先做转换（不在本步范围）。
+
+stderr 的摘要表和 `warnings` 转述给用户。想用 Resolve 里导出的未调色静帧代替代理（比如代理色彩不准时），按章名分子目录放好，加 `--stills <目录>`。`grade.py preview --grade plan/grade.json --chapter <章> <静帧>...` 把某章的 CDL 套到静帧上出 PNG，可以先给用户看效果。
 
 **有 story 时**，计划里多了 `dialogue[]`（A1 对白，每条带它的句子）、`ambient[]`（只在开了 `audio.broll_ambient_db` 时有）和 `story_stats`。`video[]` 每条带 `role`（aroll / broll / cutaway）、拍摄时间和例外标记，cutaway 在 V2。`--explain` 多了角色、拍摄时间和说明几列，A-roll 行显示首句，V2 和对白单独列表，还有 A-roll 占比、压平后的镜头中位数和风格的对照。差得多要说明原因，不为了凑数改内容。
 
@@ -264,7 +282,8 @@ python3 -I -B subs.py --project <项目>
 
    花括号里的 a、b、N 写成算好的数字。
 10. **标题。** `titles[]` 每条单独建一个时间线，在里面 `insert_fusion_title`（`template`），再用 `fusion_comp bulk_set_inputs` 写标题条目 comp 里 `Template` 节点的 StyledText、Font、Style、Size、Center（不用 `set_title_text`：它只是猜着用 SetProperty 写文字，也不管字体）。两种字体（比如衬线时间 + 黑体地名）：在同一个 comp 里 `add_tool` 一个 TextPlus（`Line2`）和一个 Merge，Background ← Template，Foreground ← Line2，MediaOut1.Input ← Merge1。`style.position` 的原点在左上，Fusion 的 Center 原点在左下，写入时 y 要换成 1 − y。回到主时间线，把标题时间线当片段放到 V3 的 `rec_in`，`endFrame` 给 `rec_out − rec_in`，超过 5 秒也行。标题时间线的媒体池条目 id 用 `folder get_clips` 按名字找，`media_pool_item get_timeline` 能确认它是哪条时间线（常见坑第 24 条）。导出静帧核对文字。
-11. **调色。** 风格包的 look DRX 要按这个配方生成：`drx generate` 出一张中性图做底，`drx merge` 把 CDL 和颗粒作为 newNodes 加进去（底图里不要放真实节点，会被有损重写；不要用 `drx lut_apply`，它会丢掉一级调色）。V1 和 V2 的每个条目 `safe_apply_drx` 套一次（套用会替换整个节点图，confirm_token 两步），再 `graph set_lut` 把 LUT 套到节点 1。LUT 先 `lut install` 装进 MCP 子目录并 `refresh_luts`。只有 LUT 时直接 `graph set_lut`。导出静帧跑 `compare.py look`。
+11. **调色。** 默认按章套 `plan/grade.json`（§6 算出的）：V1 和 V2 的每个条目，照片也算，用 `items[条目 id]` 找到所属章，调 `timeline_item_color safe_set_cdl`，参数直接用该章的 `resolve`。每次检查返回值。CDL 读不回来，所以套完按 §8 每章导出静帧核对。公式和 Resolve 的一致性目前只验证过 slope，offset、power、sat 待探针（resolve-routes.md 探针 #16），核对结果离预测远时先怀疑这一点，用 `grade.py preview --graded` 比。
+    例外：风格包的 `grade.lut`、`grade.drx`、`grade.grain` 有值时，先套这些，再写 CDL。DRX 按这个配方生成：`drx generate` 出一张中性图做底，`drx merge` 把颗粒作为 newNodes 加进去（底图里不要放真实节点，会被有损重写；不要用 `drx lut_apply`，它会丢掉一级调色）。每个条目 `safe_apply_drx` 套一次（套用会替换整个节点图，confirm_token 两步），再 `graph set_lut` 把 LUT 套到节点 1。LUT 先 `lut install` 装进 MCP 子目录并 `refresh_luts`。只有 LUT 时直接 `graph set_lut`。grade.py 从代理算的 CDL 不含 LUT 和 DRX 的效果，所以这时先套好它们，每章导出几张静帧放进 `qa/stills_raw/<章名>/`，再跑 `grade.py solve --project <项目> --stills "$P/qa/stills_raw"`，用新的 grade.json 写 CDL。这几样和 `safe_set_cdl` 叠用时 CDL 落在哪个节点还没探针过，第一次用先在 `vlog-style-QA-*` 里试。
 12. **声音。** 压低版音乐床放 A2，原始音乐放 A3 并静音。片段音量用 `timeline_item set_property {key:"AudioVolume", value:<dB>}`，不要用 `set_audio Volume`（它写的是旧键，什么都不改）。片尾淡出等用 `set_fades {options:{FadeIn, FadeOut}}`，整数帧。对白在 A1，音量按条目设。风噪重的对白轨可以开人声分离：`timeline set_voice_isolation_state {track_index:1, state:{isEnabled:true, amount:<0–100>}}`，默认关，开之前先听过或问过用户。
 13. **字幕核对。** 字幕样式已在第 6 步套好。静帧里看不到字幕，要烧录渲染一小段（只在 `vlog-style-QA-*` 或用户同意时），用 `vision_ocr` 量框高和中心，和 style.text.subtitle 比；差得多就调 size、position 重新套。这个预设写不了描边（常见坑第 28 条）。导出成片时设 `ExportSubtitle:true`、`SubtitleFormat:"BurnIn"`。
 14. **标记。** `markers[]` 打到时间线上；`Timeline.AddMarker` 用相对时间线起点的帧号，直接用 `rec`。第一个标记是手动收尾清单，其中包括手动设置播放帧率。
@@ -283,11 +302,12 @@ python3 -I -B subs.py --project <项目>
 
 ```sh
 python3 -I -B compare.py readback "$P/qa/readback.json" --plan "$P/plan/cut_plan.json" --style <风格>
-uv run --python 3.13 --script compare.py look "$P"/qa/stills/*.jpg --style <风格> --out "$P/qa/look.json"
+uv run --python 3.13 --script compare.py look "$P"/qa/stills/<章名>/*.jpg --style <该章 look_ref> \
+  --out "$P/qa/look_<章名>.json"   # 每章一次
 ```
 
 - readback 要求每个计划条目都在、顺序对、帧号对。V2 和 V1 一样按 track 分组；有 `dialogue[]` 或 `ambient[]` 时还要读回 A1、A4，每条的位置和源入点也要对。转场两侧的边允许偏差半个转场长度。镜头时长分布只报告，不判失败。
-- 静帧：在每章挑 2–3 个镜头，把播放头放过去，用 `ExportCurrentFrameAsStill` 导出到 `qa/stills/`。look 不通过时按提示调 DRX，重新导出核对。
+- 静帧：按章核对。每章挑 2–3 个镜头，把播放头放过去，用 `ExportCurrentFrameAsStill` 导出到 `qa/stills/<章名>/`，用该章的 `look_ref` 跑 `compare.py look`（brief 没写 look_ref 的章用剪辑计划的风格包）。把结果和 grade.json 里该章的 `predicted` 比：两者接近而 look 不通过，是 grade.json 的警告里已经说过的（撞边界、色偏修不到、夜景不提亮），如实告诉用户原因，不再硬调；两者差得远，是公式和 Resolve 对不上，按探针 #16 的方法查。
 - 把静帧拼成总览，和参考的总览图（或风格包 `stills/`）并排看一遍，再交给用户。只读回不算通过，清单见 qa.md。
 
 ## 9. 导出（只在用户要求时）
