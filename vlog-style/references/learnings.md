@@ -154,7 +154,7 @@
 - 场景：炼化 BV1sHqPBLExZ，measure_video.py 的推拉判定
 - 做法：对推拉镜头算「仿射拟合残差 / 光流幅度」，想用视差大小区分剪辑加的推拉（无视差）和机位前移（有视差）
 - 问题：手标 20 个镜头对照，两类的视差比重叠，高空航拍前飞几乎没有视差；残差还受人物走动、雪地低纹理影响
-- 修法：测量只负责「稳不稳」（`zoom_eff` ≥ 0.95，排除人走过、转身造成的假推拉）；数字还是机位由 Claude 看 `strips/moves_*.jpg` 判，aggregate 只按 digital 算推拉比例
+- 修法：测量只负责「稳不稳」（`zoom_eff` ≥ 0.95，排除人走过、转身造成的假推拉）；数字还是机位由 agent 看 `strips/moves_*.jpg` 判，aggregate 只按 digital 算推拉比例
 
 ## 2026-11-01 黑场判定只看两侧基线：极夜片里大量误报
 - 场景：同上，measure_video.py 的 luma_event / snap_cuts

@@ -142,7 +142,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
    - 用 ffmpeg 解合成素材或无色彩标签的素材做比对时，要指定 bt709 矩阵；默认按 bt601 解，颜色对不上。
    - 静帧里不显示字幕，字幕要渲染一小段看。
 19. **调色 DRX 的坑。** `drx lut_apply` 会把一级调色节点丢掉；`drx merge` 会把底图里的节点有损重写，所以底图只用 `drx generate` 出的中性图，真实节点全放 newNodes；LUT 最后用 `graph set_lut` 单独套。
-20. **混帧率素材的源出点。** `project_manager snapshot` 给的 `source_end` 对 59.94 素材差一帧（299 对 300），以 `timeline_item get_source_end_frame` 为准。`timeline clip_where` 也一样：59.94 素材请求 600–1200 读回 `source_end` 1199，29.97 素材请求 300–600 读回 600。读回核对源出点时留 1 个源帧的容差。
+20. **混帧率素材的源出点。** `project_manager snapshot` 给的 `source_end` 对 59.94 素材差一帧（299 对 300），以 `timeline_item get_source_end_frame` 为准。`timeline clip_where` 也一样：59.94 素材请求 600–1200 读回 `source_end` 1199，29.97 素材请求 300–600 读回 600。读回核对源出点时留 1 个源帧的容差，`compare.py readback` 已经这样做（`compare.py normalize` 把 clip_where 的回复整理成它的输入）。
 21. **.srt 导入会让 Resolve 崩溃。** 用 clip_infos（带位置参数）append .srt，Resolve 直接崩溃。要先用只传 `clip_ids` 的旧式 append 把 .srt 放到一条空时间线上，字幕按 .srt 里的时间落位（从时间线起点算的秒数 × 时间线帧率，取整，#15），再放视频。崩溃后重开 Resolve、`project_manager load` 不弹窗，但没保存的改动会丢，所以每一步做完都 `save`。
 22. **音量的键名。** 21.1 的条目属性是 `AudioVolume`（dB）、`AudioPan` 等。MCP 的 `set_audio Volume` 写的是旧键，返回 `Volume:false` 加一条 known_limitation，实际什么都没改；用 `set_property {key:"AudioVolume"}`。音频条目上不带 key 的 `get_property` 返回 false，要逐个键读。
 23. **合成模式要传数字。** 取 Resolve 的 `COMPOSITE_*` 常量：NORMAL 0、ADD 1、MULTIPLY 4、SCREEN 5、OVERLAY 6、SOFTLIGHT 8、LIGHTEN 10、LINEAR_DODGE 19、INVERTED_LUM 31。`set_composite` 返回的 `CompositeMode:true` 不是读回值，要再 `get_composite`。

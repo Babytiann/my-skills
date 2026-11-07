@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Measurements + Claude's labels -> draft style.json, or a footage index.
+"""Measurements + the agent's labels -> draft style.json, or a footage index.
 
   python3 -I -B aggregate.py labels REF_DIR
       write REF_DIR/labels.json: every measured event, title and a chapter
-      proposal, with blanks for Claude to fill after viewing sheets/ and strips/
+      proposal, with blanks for the agent to fill after viewing sheets/ and strips/
   python3 -I -B aggregate.py draft --name NAME REF_DIR... [--out style.json] [--size 3840x2160] [--force]
       reconcile labels with measurements, pool the references (or, with one
       reference, its chapters) and write a schema-checked draft style.json;
@@ -14,7 +14,7 @@
       hand-written parts. Without --out the draft goes to REF_DIR/style.draft.json.
   python3 -I -B aggregate.py footage --project NAME
       index/footage.json for plan_cut.py from each clip's measurements plus
-      Claude's index/tags.json
+      the agent's index/tags.json
 
 Reconciliation: times come from measurement. A label must point at a measured
 item (event i, title track, shot i, or a chapter span); anything else is

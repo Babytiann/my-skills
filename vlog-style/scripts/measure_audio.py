@@ -36,7 +36,7 @@ DIR is a prep.py folder (asr16k.wav + music44k.wav). Writes DIR/measure_audio.js
 --sentences (apply) transcribes in pieces under 30 s with word timestamps and
 regroups the words into sentences; --language auto detects each piece's
 language. Without them the output is unchanged.
-Claude cannot hear: every sound conclusion in a style pack comes from here.
+Labelling does not listen: every sound conclusion in a style pack comes from here.
 """
 
 from __future__ import annotations

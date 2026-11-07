@@ -4,7 +4,7 @@
 
 | 文件 | 给谁看 | 内容 |
 |---|---|---|
-| `STYLE.md` | 人和 Claude | 按做片顺序写的完整流程，每条都有数值、依据和一致性标注 |
+| `STYLE.md` | 人和 agent | 按做片顺序写的完整流程，每条都有数值、依据和一致性标注 |
 | `style.json` | plan_cut.py、compare.py | 同一套流程的机器参数，`schema.py style` 校验通过才算数 |
 | `sources.md` | 人 | 开头是出处表（模板见下）：参考片链接、UP 主、发布日期、时长、测量日期；然后写用了哪些章节。参考片本身不保留，测量 keep 在 root 的 `refs/` 下，需要重测时按链接重新下 |
 
@@ -73,12 +73,12 @@ vlog-style/styles/                    仓库
 
 ## style.json 字段
 
-机器契约在 `scripts/schema.py` 的 `STYLE`。`aggregate.py draft` 生成草稿，Claude 审过、补完再定稿。
+机器契约在 `scripts/schema.py` 的 `STYLE`。`aggregate.py draft` 生成草稿，agent 审过、补完再定稿。
 
 | 字段 | 含义 | 来源 |
 |---|---|---|
 | `schema_version` | 固定为 1 | — |
-| `name`、`summary` | 名字和一句话风格 | summary 由 Claude 写 |
+| `name`、`summary` | 名字和一句话风格 | summary 由 agent 写 |
 | `sources[]` | `{id, url, title, measured, author}`。url、title 必填：B 站视频的 url 是视频链接，本地文件 url 留空、title 用文件名；author 可选 | aggregate 自动填：measured 取 measure_video.json 测量时写下的日期（旧文件没有才用当天），title、author、url 取参考目录里的 meta.json |
 | `basis` | `multi_reference`（多个参考之间比较）或 `single_reference_chapters`（一个参考的各章之间比较） | 参考个数 |
 | `deliverable` | `fps`、`width`、`height`、`duration_s`（分布）、`letterbox`（遮幅宽高比，没有为 null） | 参考片的帧率；尺寸默认 3840×2160，按用户素材定 |
@@ -92,7 +92,7 @@ vlog-style/styles/                    仓库
 | `effects[]` | `{type, ...}`，如颗粒、光晕、漏光、暗角 | labels |
 | `grade` | `summary`、`look`（见下）、`lut`、`drx`、`grain` | 测量 + labels |
 | `text` | `title`、`chapter_card`、`subtitle`，每项见下 | 测量 + labels |
-| `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]`、`broll_ambient_db`（B-roll 环境声放 A4 的电平，dB；不写就不放） | 测量；mood 和 sfx 由 Claude 根据测量写；broll_ambient_db 手填 |
+| `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]`、`broll_ambient_db`（B-roll 环境声放 A4 的电平，dB；不写就不放） | 测量；mood 和 sfx 由 agent 根据测量写；broll_ambient_db 手填 |
 | `photo` | 照片怎么放：`dur_s`（每张几秒）、`scale`（相对铺满画面的大小，搭建时用 `set_transform` 设，1 是铺满）、`background`（目前只有 black）。不写时 3 s、1.0、black。只在 brief 写了 `photos` 时起作用 | 看参考里的照片插入：时长按镜头算，大小量照片在画面里的宽高 |
 | `aroll` | 有 story 时 A-roll 怎么剪：`speech_share`（A-roll 占全片的比例，brief 不写 `duration_s` 时用它推成片时长）、`pad_s` / `pad_out_s`（句前、句后留白，按 whisper 的时间）、`cutaway_after_s`（多长的 A-roll 才盖画面）、`cutaway_share`（盖住的比例）、`cutaway_lead_s` / `cutaway_tail_s`（开头、结尾留给说话人的秒数）、`j_s` / `l_s`（J/L cut 声音提前、延后的秒数）。不写的项用 plan_cut 的默认值 | speech_share 取参考的人声占比；其余要按说话段测，测不了的标存疑 |
 | `resolve[]` | `{element, route, status, how}`：每个用到的元素走哪条路线。route 取 `schema.ROUTES`，status 取 verified / probe / manual | aggregate 的路线表；探针后更新 |

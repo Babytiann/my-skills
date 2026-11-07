@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tests for cleanup.py, duck.py and compare.py readback. Run: python3 -I -B test_tools.py
+"""Tests for cleanup.py, duck.py and compare.py readback and normalize. Run: python3 -I -B test_tools.py
 
 The duck render test needs ffmpeg on PATH and is skipped without it.
 """
@@ -427,11 +427,14 @@ class ReadbackTest(unittest.TestCase):
         cls.style = load("style.json")
         cls.plan = plan_cut.build(cls.style, load("footage.json"), load("brief.json"), load("beats.json"))
 
-    def readback(self, s0=86400):
+    def readback(self, s0=86400, out_delta=None):
+        """out_delta: also read back source_end, this many frames off each clip's planned source out."""
         video: dict = {}
         for v in self.plan["video"]:
-            video.setdefault(str(v["track"]), []).append(
-                {"start": s0 + v["rec_in"], "end": s0 + v["rec_out"], "source_start": v["src_in"]})
+            item = {"start": s0 + v["rec_in"], "end": s0 + v["rec_out"], "source_start": v["src_in"]}
+            if out_delta is not None:
+                item["source_end"] = v["src_out"] + out_delta
+            video.setdefault(str(v["track"]), []).append(item)
         for t in self.plan["titles"]:
             video.setdefault(str(t["track"]), []).append({"start": s0 + t["rec_in"], "end": s0 + t["rec_out"]})
         return {"start_frame": s0, "video": video}
@@ -458,6 +461,17 @@ class ReadbackTest(unittest.TestCase):
         self.assertFalse(res["ok"])
         self.assertTrue(any(f"#{j + 1}" in i for i in res["issues"]), res["issues"])
         self.assertTrue(any(i.startswith("V3:") for i in res["issues"]), res["issues"])
+
+    def test_source_out_may_read_back_one_short(self):
+        res = compare.check_readback(self.readback(out_delta=-1), self.plan)  # 59.94 media does
+        self.assertTrue(res["ok"], res["issues"])
+        rb = self.readback(out_delta=-1)
+        j = next(i for i, v in enumerate(self.plan["video"]) if v["track"] == 1 and not v["transition_out"]
+                 and float(v.get("speed", 1)) == 1.0)
+        rb["video"]["1"][j]["source_end"] -= 1  # two short at a hard cut: fails
+        issues = compare.check_readback(rb, self.plan)["issues"]
+        self.assertEqual([i for i in issues if "source out" in i and f"#{j + 1} " in i], issues)
+        self.assertEqual(len(issues), 1, issues)
 
 
 class StoryReadbackTest(unittest.TestCase):
@@ -508,6 +522,13 @@ class StoryReadbackTest(unittest.TestCase):
         rb = self.readback()
         rb["audio"]["1"][0]["source_start"] += 10
         self.assertTrue(any("source in" in i for i in compare.check_readback(rb, self.plan)["issues"]))
+        d = self.plan["dialogue"][0]
+        for off, ok in ((-1, True), (2, False)):
+            rb = self.readback()
+            rb["audio"]["1"][0]["source_end"] = d["src_out"] + off
+            issues = compare.check_readback(rb, self.plan)["issues"]
+            self.assertEqual(not issues, ok, issues)
+            self.assertTrue(ok or any(i.startswith("A1 #1") and "source out" in i for i in issues), issues)
 
     def test_ambience_has_its_own_track(self):
         rb = self.readback()
@@ -519,6 +540,74 @@ class StoryReadbackTest(unittest.TestCase):
         v1 = [v for v in self.plan["video"] if v["track"] == 1]
         self.assertGreater(res["rhythm"]["got"]["n"], len(v1))  # cutaways add cuts
         self.assertEqual(res["rhythm"]["got"]["median"], res["rhythm"]["plan"]["median"])
+
+
+class NormalizeTest(TempRoot):
+    """clip_where_p13.json is a live reply (probe #13 timeline: V1 x3, V2, A1 x3, two subtitles)."""
+
+    def setUp(self):
+        super().setUp()
+        self.reply = json.loads((FIX / "clip_where_p13.json").read_text(encoding="utf-8"))
+
+    def test_groups_tracks_and_drops_what_readback_does_not_use(self):
+        rb, warns = compare.normalize([self.reply], 108000)
+        self.assertEqual(warns, [])
+        self.assertEqual(rb["start_frame"], 108000)
+        self.assertEqual({k: {t: len(v) for t, v in rb[k].items()} for k in compare.KINDS},
+                         {"video": {"1": 3, "2": 1}, "audio": {"1": 3}, "subtitle": {"1": 2}})
+        self.assertEqual([g["start"] for g in rb["video"]["1"]], [108000, 108300, 108600])
+        self.assertEqual(rb["video"]["1"][0], {"start": 108000, "end": 108300, "name": "p5994.mp4",
+                                               "source_start": 600, "source_end": 1199, "source_fps": 59.94})
+        self.assertEqual(rb["subtitle"]["1"][0], {"start": 108060, "end": 108120, "name": "两秒"})
+        self.assertNotIn("timeline_item_id", json.dumps(rb))
+
+    def test_reply_shapes_and_merging(self):
+        whole, _ = compare.normalize([self.reply], 108000)
+        clips = self.reply["result"]["clips"]
+        self.assertEqual(compare.normalize([self.reply["result"]], 108000)[0], whole)
+        self.assertEqual(compare.normalize([clips], 108000)[0], whole)
+        part = {**self.reply["result"], "clips": clips[:4], "match_count": 4}
+        self.assertEqual(compare.normalize([part, self.reply], 108000), (whole, []))  # an item read twice counts once
+        rb, warns = compare.normalize([part], 108000)
+        self.assertEqual(sum(len(v) for k in compare.KINDS for v in rb[k].values()), 4)
+        self.assertTrue(any("filtered" in w for w in warns), warns)
+        with self.assertRaises(ValueError):
+            compare.normalize([{"result": {"success": True, "items": []}}], 108000)
+
+    def test_the_live_readback_passes_against_what_was_built(self):
+        def clip(n, track, rec, src, fps, frames=300):
+            return {"id": f"v{n:03d}", "track": track, "rec_in": rec, "rec_out": rec + frames, "src_in": src,
+                    "src_out": src + round(frames * fps / 29.97), "source_fps": fps, "speed": 1.0, "transition_out": None}
+        plan = {"timeline": {"fps": 29.97, "duration_frames": 900}, "titles": [],
+                "video": [clip(1, 1, 0, 600, 59.94), clip(2, 1, 300, 600, 59.94), clip(3, 1, 600, 300, 29.97),
+                          clip(4, 2, 100, 1500, 59.94, 60)],
+                "dialogue": [clip(5, 1, 0, 480, 59.94), clip(6, 1, 300, 600, 59.94), clip(7, 1, 600, 300, 29.97)],
+                "ambient": []}
+        rb, _ = compare.normalize([self.reply], 108000)
+        res = compare.check_readback(rb, plan)
+        self.assertTrue(res["ok"], res["issues"])  # 59.94 source ends read back one short, and pass
+        self.assertEqual(res["items_exact"], 7)
+        plan["video"][3]["src_out"] += 2
+        self.assertTrue(any("V2 #1 v004: source out" in i for i in compare.check_readback(rb, plan)["issues"]))
+
+    def test_a_start_frame_past_the_first_item_warns(self):
+        _, warns = compare.normalize([self.reply], 108300)
+        self.assertTrue(any("before --start-frame 108300" in w for w in warns), warns)
+
+    def test_cli_writes_a_readback_the_check_reads(self):
+        out = self.root / "readback.json"
+        self.root.mkdir(parents=True)
+        code, stdout, err = self.run_main(compare.main, ["normalize", str(FIX / "clip_where_p13.json"),
+                                                         "--start-frame", "108000", "--out", str(out)])
+        self.assertEqual((code, stdout, err), (0, "", ""))
+        rb = json.loads(out.read_text(encoding="utf-8"))
+        self.assertEqual(rb, compare.normalize([self.reply], 108000)[0])
+        self.assertEqual(paths.check([out]), [])
+        bad = self.root / "bad.json"
+        bad.write_text('{"x": 1}', encoding="utf-8")
+        with self.assertRaises(SystemExit) as cm:
+            self.run_main(compare.main, ["normalize", str(bad), "--start-frame", "0"])
+        self.assertIn("not a timeline clip_where reply", str(cm.exception))
 
 
 class SubsTest(unittest.TestCase):

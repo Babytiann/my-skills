@@ -739,7 +739,7 @@ def stage_strips(d: Path, proxy: Path, fps: float, pw: int, ph: int, cuts: dict,
 
 def render_moves(d: Path, proxy: Path, fps: float, pw: int, ph: int, scan: dict) -> list[dict]:
     """10 % / 50 % / 90 % frames of sampled push/pull shots. The scale trend alone cannot tell
-    a digital push-in from a drone, car or walking move; Claude labels `move` from these."""
+    a digital push-in from a drone, car or walking move; the agent labels `move` from these."""
     moves = [s for s in scan["shots"] if s["motion"]["type"] in ("push_in", "pull_out")]
     if len(moves) > MOVES_MAX:
         moves = [moves[int(k * len(moves) / MOVES_MAX)] for k in range(MOVES_MAX)]

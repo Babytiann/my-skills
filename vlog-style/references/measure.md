@@ -1,6 +1,6 @@
 # 测量与判读
 
-参考片的分析只用本地测量，再由 Claude 看抽帧拼图和事件条判读。参考片和用户素材都不上传到任何视频理解服务。时间一律以本地测量为准，Claude 的标签只负责补上类型和描述。
+参考片的分析只用本地测量，再由 agent 看抽帧拼图和事件条判读。参考片和用户素材都不上传到任何视频理解服务。时间一律以本地测量为准，agent 的标签只负责补上类型和描述。
 
 ## 顺序和命令
 
@@ -26,7 +26,7 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 - **先画面后声音。** 声音那一步要从画面结果里取烧录字幕，当作人声段，并优先用作转写。第 5 步再拿人声段回去，帮助给文字分类。
 - **第一次运行会下载模型。**
   - torch 等依赖约 2 GB，已经下好。
-  - beat_this 的权重 81 MB。服务器很慢，下载会被截断，所以不由脚本自动下载，要手动下到 `~/.cache/torch/hub/checkpoints/beat_this-final0.ckpt`。没下好时脚本自动改用 librosa，`beats.engine` 会记为 `librosa`，这时没有重拍。
+  - beat_this 的权重 81 MB。服务器很慢，下载会被截断，所以不由脚本自动下载，要手动下到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变）。没下好时脚本自动改用 librosa，`beats.engine` 会记为 `librosa`，这时没有重拍。
   - whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。默认会跑；没有人声的片子，或者烧录字幕已经覆盖旁白时，加 `--no-asr`（先看字幕段有没有长空档）。
 - **在合成测试片上实测：** 16 秒的片子跑完全部测量约 10 秒。长片的耗时在第一次真实炼化时记到这里。博主模式的第一批（links 是 29–55 分钟）每步跑完都记一下耗时，再决定更长的片子要不要入池。
   - 实测（M 系列 Mac，1080p 下载，`--no-asr`，单位分钟；判读没有计时）：
@@ -46,7 +46,7 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 | text | 把 OCR 结果串成轨迹，再分成字幕、标题、其他三类（stats.link_text / classify_text） | `tracks[]`、`subtitle_band`、`transcript`（字幕文本） |
 | scan | 按 320 宽逐帧扫一遍，记录：亮度、清晰度（拉普拉斯方差）、过曝和死黑比例、LK 光流仿射（缩放、平移）。由此得到遮幅、每个镜头的运动，以及转场和特效的候选。闪白和黑场下的剪辑点会移到闪白或黑场的中点（`snap`），因为那里看不出画面在哪一帧切换；每次都从检测器给的原始剪辑点（`cuts[].raw`）算起，重跑 scan 不会叠加 | `letterbox`、`shots[]`（motion.type / zoom / zoom_eff / pan / shake、exposure_ok、best、ramp_candidate、freeze）、`events[]`、`keyframes[]` |
 | look | 从每个镜头的关键帧测 Lab 数值，测之前遮掉遮幅、字幕带和 OCR 文字框 | `summary`（每项的中位数和 MAD）、`hue_hist`、`per_shot[]` |
-| strips | 在每个候选事件前后各取 0.5 秒，按原帧率拼成事件条。另外为每次标题出入场、每章抽几个硬切也各拼一条。标题颜色从框内像素测。推拉镜头最多抽 24 个，各取 10%、50%、90% 三帧拼成 `strips/moves_*.jpg`，给 Claude 判断是剪辑加的还是机位在动 | `events[].strip`、`titles[]`（含 colour：fill、edge）、`moves[]` |
+| strips | 在每个候选事件前后各取 0.5 秒，按原帧率拼成事件条。另外为每次标题出入场、每章抽几个硬切也各拼一条。标题颜色从框内像素测。推拉镜头最多抽 24 个，各取 10%、50%、90% 三帧拼成 `strips/moves_*.jpg`，给 agent 判断是剪辑加的还是机位在动 | `events[].strip`、`titles[]`（含 colour：fill、edge）、`moves[]` |
 | sheets | 用关键帧拼成总览图，每张 6×8 格。10 分钟以内的片子每个镜头取 3 张，更长的取 1 张 | `sheets[]` |
 
 运动类型的判定阈值：
@@ -55,7 +55,7 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 - `complex`：总缩放过了 1.04，但不稳定、也不是摇或俯仰。多是人或车在画面里动，或者机位边走边转。
 - `handheld`：抖动 RMS ≥0.12% 画面宽。
 
-`push_in` / `pull_out` 只说明画面在稳定地放大或缩小，不区分原因。无人机前飞、车载、步行、拿着东西往镜头凑，都会测成推拉；剪辑里加的数字推拉也是。plan_cut 只会给静止镜头加数字推拉，所以风格包里的推拉比例只按 Claude 判为 `digital` 的算（见判读清单第 2 步）。
+`push_in` / `pull_out` 只说明画面在稳定地放大或缩小，不区分原因。无人机前飞、车载、步行、拿着东西往镜头凑，都会测成推拉；剪辑里加的数字推拉也是。plan_cut 只会给静止镜头加数字推拉，所以风格包里的推拉比例只按 agent 判为 `digital` 的算（见判读清单第 2 步）。
 
 `shake` 的单位是「抖动 RMS 占画面宽的百分比」，`selection.max_shake` 用的是同一个单位。
 
@@ -87,9 +87,9 @@ BPM 的算法：先取拍点间隔的中位数，再对落在中位数 ±15% 以
 uv run --python 3.13 --script measure_audio.py --music <音乐文件> --out <项目>/index/beats.json
 ```
 
-## Claude 判读清单
+## 判读清单
 
-Claude 听不到声音，声音相关的结论只能来自测量和转写。看图时，顺序如下：
+判读不听声音，声音相关的结论只能来自测量和转写（SKILL.md 第 2 节）。看图时，顺序如下：
 
 1. **总览图（sheets）+ 字幕。** 划分结构：开头钩子、片头、按地点分章、过渡段、结尾。看每章的开场镜头是什么样的。镜头标签里，`P+`/`P-` 是推和拉，`<`/`>` 是摇，`^`/`v` 是俯仰，`Z~` 是不稳定的缩放，`~` 是手持。
 2. **推拉镜头（strips/moves_*.jpg）。** labels.json 的 `shots` 里预填了抽样的推拉镜头，逐个填 `move`：
@@ -111,7 +111,7 @@ Claude 听不到声音，声音相关的结论只能来自测量和转写。看�
 6. **全片特效。**
    - 颗粒（平台二次压缩之后测不准，只能看图判断：无 / 轻 / 中 / 重）。
    - 光晕、漏光、暗角、遮幅。
-7. **调色。** 一句话概括基调。数值以 look 的测量为准，Claude 只写概括，不改数值。
+7. **调色。** 一句话概括基调。数值以 look 的测量为准，判读只写概括，不改数值。
 8. **选镜头规律。** 景别配比（`shots[]` 里标 shot_type）、开场用什么镜头、哪类镜头从来不用。
 
 ### 判读约定
@@ -154,7 +154,7 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 
 ## labels.json
 
-由 `aggregate.py labels` 生成骨架，Claude 只填空格。例子：
+由 `aggregate.py labels` 生成骨架，agent 只填空格。例子：
 
 ```json
 {
@@ -175,7 +175,7 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 - 章节的 role 必须是 hook、intro、chapter、interlude、ending 之一，时间必须在片长之内且不能倒退。
 - 事件、标题、镜头、特效都必须指向测到的序号（event `i`、title `track`、shot `i`），或者标为 `global`。
 - 对不上的标签写进 `evidence.rejected_labels`，不会被悄悄用掉。
-- 测到了但 Claude 没标的转场，按测量值计入，同时列进 `evidence.unverified`。
+- 测到了但判读没标的转场，按测量值计入，同时列进 `evidence.unverified`。
 - 镜头的 `move` 只能是 digital 或 camera。推拉比例 = 测到的推拉占比 × 判过的里面 digital 的比例；一个都没判时按全部算，同时记进 `evidence.unverified`。判断的计数在 `evidence.moves`。
 
 ## 已知限制
