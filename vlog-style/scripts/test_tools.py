@@ -30,6 +30,7 @@ import aggregate  # noqa: E402
 import cleanup  # noqa: E402
 import compare  # noqa: E402
 import duck  # noqa: E402
+import grade  # noqa: E402
 import paths  # noqa: E402
 import photo_clips  # noqa: E402
 import plan_cut  # noqa: E402
@@ -886,6 +887,78 @@ class ShotTimeScanTest(TempRoot):
         now = json.loads((d / "prep.json").read_text(encoding="utf-8"))
         self.assertEqual(now["probe"]["shot_at"], "2026-02-11T09:00:00+00:00")
         self.assertEqual((d / "proxy.mp4").stat().st_mtime_ns, made)
+
+
+class GradeChapterTest(unittest.TestCase):
+    """grade.py's stdlib half: which chapter an item takes its grade from, bounds, the Resolve argument."""
+
+    def plan(self):
+        sec = lambda name, role, a, b, w=None: {"name": name, "role": role, "rec_in": a, "rec_out": b,  # noqa: E731
+                                               **({"window": w} if w else {})}
+        item = lambda i, s, a, b, **kw: {"id": i, "section": s, "clip": "c", "rec_in": a, "rec_out": b,  # noqa: E731
+                                         "track": 1, **kw}
+        return {"sections": [sec("hook", "hook", 0, 100), sec("A", "chapter", 100, 400, [1000, 2000]),
+                             sec("B", "chapter", 400, 700, [3000, 4000]), sec("ending", "ending", 700, 800)],
+                "video": [item("v001", "hook", 0, 50, t_src=3500), item("v006", "hook", 50, 100, t_src=1500),
+                          item("v002", "A", 100, 400), item("v003", "B", 400, 700),
+                          item("v004", "ending", 700, 720, t_src=2100), item("v005", "ending", 720, 780)]}
+
+    def test_items_take_their_chapter(self):
+        got = grade.chapter_of(self.plan())
+        self.assertEqual(got["v002"], "A")  # in a chapter section
+        self.assertEqual(got["v003"], "B")
+        self.assertEqual(got["v001"], "B")  # hook shot inside B's window
+        self.assertEqual(got["v006"], "A")
+        self.assertEqual(got["v004"], "A")  # outside every window: nearest in time
+        self.assertEqual(got["v005"], "B")  # no time: nearest on the timeline
+
+    def test_no_chapter_sections_is_one_group(self):
+        plan = self.plan()
+        plan["sections"] = [{"name": "main", "role": "intro", "rec_in": 0, "rec_out": 800}]
+        self.assertEqual(set(grade.chapter_of(plan).values()), {"all"})
+
+    def test_stills_skip_photos_and_spread(self):
+        plan = {"video": [{"id": f"v{i:03d}", "rec_in": i * 10, "rec_out": i * 10 + 10, "track": 1 + i % 2}
+                          for i in range(20)]}
+        plan["video"].append({"id": "p001", "kind": "photo", "rec_in": 5, "rec_out": 15, "track": 1})
+        owner = {v["id"]: "A" for v in plan["video"]}
+        got = [v["id"] for v in grade.pick_items(plan, owner, "A")]
+        self.assertEqual(len(got), grade.MAX_STILLS)
+        self.assertNotIn("p001", got)
+        self.assertEqual((got[0], got[-1]), ("v000", "v019"))
+
+    def test_each_channel_clamped(self):
+        p = {**grade.NEUTRAL, "slope": 1.3, "r_slope": 0.06, "offset": 0.05, "r_offset": 0.02}
+        cdl, clamped = grade.compose(p)
+        self.assertEqual(cdl["slope"][0], 1.3)
+        self.assertEqual(cdl["offset"][0], 0.05)
+        self.assertEqual(set(clamped), {"slope.R", "offset.R"})
+        self.assertEqual(grade.at_bound(p, grade.bounds_for(False, True)), ["slope", "offset", "r_slope", "r_offset"])
+
+    def test_night_only_darkens(self):
+        b = grade.bounds_for(True, True)
+        self.assertEqual(b["power"], (1.0, 1.0))
+        self.assertEqual(b["slope"][1], 1.0)
+        self.assertEqual(b["offset"][1], 0.0)
+        self.assertTrue(all(b[k] == (0.0, 0.0) for k in grade.CAST_PARAMS))
+        cdl, _ = grade.compose({**grade.NEUTRAL, "b_slope": 0.06, "r_offset": 0.02}, night=True)
+        self.assertLessEqual(max(cdl["slope"]), 1.0)
+        self.assertLessEqual(max(cdl["offset"]), 0.0)
+        self.assertEqual(grade.at_bound({**grade.NEUTRAL}, b), [])  # slope 1 is the night cap, not a bound hit
+        no_cast = grade.bounds_for(False, False)
+        self.assertTrue(all(no_cast[k] == (0.0, 0.0) for k in grade.CAST_PARAMS))
+        self.assertEqual(no_cast["slope"], grade.BOUNDS["slope"])
+
+    def test_resolve_argument_strings(self):
+        cdl, _ = grade.compose({**grade.NEUTRAL, "slope": 1.12346, "offset": -0.0123, "power": 0.9, "sat": 1.1})
+        r = grade.resolve_args(cdl)
+        self.assertEqual(set(r), {"NodeIndex", "Slope", "Offset", "Power", "Saturation"})
+        self.assertTrue(all(isinstance(v, str) for v in r.values()))
+        self.assertEqual(r["NodeIndex"], "1")
+        self.assertEqual(r["Slope"], "1.1235 1.1235 1.1235")
+        self.assertEqual(r["Offset"], "-0.0123 -0.0123 -0.0123")
+        self.assertEqual(r["Power"], "0.9000 0.9000 0.9000")
+        self.assertEqual(r["Saturation"], "1.1000")
 
 
 if __name__ == "__main__":

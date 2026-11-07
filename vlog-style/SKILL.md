@@ -117,10 +117,10 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 2. `prep.py footage` 检查帧率、可变帧率、传输特性，生成代理；照片读拍摄时间和时区，生成预览。
 3. 逐片段 `measure_video.py --skip strips` 和 `measure_audio.py --sentences --language auto`；agent 看总览图写 `index/tags.json`（景别、标签、光线、哪些风景可移动）；`aggregate.py footage` 生成 `index/footage.json`。先让用户看一眼 `prep.py footage` 列出的各设备时间范围，时钟不对就在 brief 里写偏移。
 4. 音乐：`measure_audio.py --music <曲子> --out index/beats.json`。
-5. 和用户一起写 `plan/brief.json`：时长、章节和标签、地点标题、音乐、不用和优先用的片段。有对话时先 `story.py dump` 读转写，章节按真实发生的事分，agent 起草纸面剪辑 `plan/story.json`，**用户确认后**才往下走。
-6. `plan_cut.py --style <名字> --project <项目> --explain`，有人声时再跑 `duck.py`。有 story 时 agent 先用 `story.py review` 的拼图自查时间、对话和画面、重复、跳接四项。把计划表和拼图给用户看，确认后用 `subs.py` 出字幕给用户校对。**两样都确认后才进 Resolve**。
-7. 用户同意后，有照片时先 `photo_clips.py` 做照片短片，再用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。
-8. 验收：`compare.py readback`、导出静帧跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
+5. 和用户一起写 `plan/brief.json`：时长、章节和标签、地点标题、音乐、不用和优先用的片段，以及每章的调色参考 `look_ref`（光线和地方最像的子包）、夜景和暖光室内这类不修色偏的章。有对话时先 `story.py dump` 读转写，章节按真实发生的事分，agent 起草纸面剪辑 `plan/story.json`，**用户确认后**才往下走。
+6. `plan_cut.py --style <名字> --project <项目> --explain`，有人声时再跑 `duck.py`。有 story 时 agent 先用 `story.py review` 的拼图自查时间、对话和画面、重复、跳接四项。把计划表和拼图给用户看，确认后用 `subs.py` 出字幕给用户校对，再跑 `grade.py solve` 按章算 CDL，摘要和警告转述给用户（撞边界、色偏修不到是素材的光线，如实说）。**计划和字幕都确认后才进 Resolve**。
+7. 用户同意后，有照片时先 `photo_clips.py` 做照片短片，再用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。调色按 `plan/grade.json` 给每个条目 `safe_set_cdl`。
+8. 验收：`compare.py readback`、每章导出静帧用该章的 `look_ref` 跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
 9. 交付时间线，向用户说明手动收尾清单（标记在时间线开头，第一条是手动设置播放帧率）。
 
 ## 6. refine：按反馈改风格
@@ -154,7 +154,7 @@ for t in test_paths test_stats test_plan_cut test_tools; do python3 -I -B $t.py;
 uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg、uv、xcrun
 ```
 
-`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare、cleanup keep（再用留下的测量重炼、两份参考合并），检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。`KEEP=1` 保留临时目录，方便查看拼图。
+`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare、cleanup keep（再用留下的测量重炼、两份参考合并），检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。另有 grade.py 的按章调色：从已知 CDL 的结果解回来、在范围内不动、撞边界要警告、暗素材自动按夜景只压暗、照片不进拟合、`preview` 自比为 0。`KEEP=1` 保留临时目录，方便查看拼图。
 
 ## 10. 当前状态
 

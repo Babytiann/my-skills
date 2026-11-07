@@ -141,8 +141,24 @@ def check_readback(rb: dict, plan: dict, style: dict | None = None) -> dict:
 
 # ---------------------------------------------------------------- look
 
-def measure_stills(files: list[Path]) -> list[dict]:
+def still_mask(rgb):
+    """A still at the analysis width and its picture mask (letterbox bars out), as measure_video measures."""
     import cv2
+    import numpy as np
+
+    import measure_video as mv
+
+    h, w = rgb.shape[:2]
+    if w > mv.AW:
+        rgb = cv2.resize(rgb, (mv.AW, max(2, round(mv.AW * h / w))), interpolation=cv2.INTER_AREA)
+    g = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+    top, bot = mv.letterbox(g.mean(axis=1)[None, :])
+    mask = np.zeros(g.shape, bool)
+    mask[top:g.shape[0] - bot] = True
+    return rgb, mask
+
+
+def measure_stills(files: list[Path]) -> list[dict]:
     import numpy as np
     from PIL import Image
 
@@ -150,14 +166,7 @@ def measure_stills(files: list[Path]) -> list[dict]:
 
     rows = []
     for f in files:
-        rgb = np.asarray(Image.open(f).convert("RGB"))
-        h, w = rgb.shape[:2]
-        if w > mv.AW:
-            rgb = cv2.resize(rgb, (mv.AW, max(2, round(mv.AW * h / w))), interpolation=cv2.INTER_AREA)
-        g = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
-        top, bot = mv.letterbox(g.mean(axis=1)[None, :])
-        mask = np.zeros(g.shape, bool)
-        mask[top:g.shape[0] - bot] = True
+        rgb, mask = still_mask(np.asarray(Image.open(f).convert("RGB")))
         st = mv.look_of(rgb, mask)
         if st:
             rows.append({"file": f.name, **st})

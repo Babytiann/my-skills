@@ -481,9 +481,9 @@
   },
   {
    "element": "调色",
-   "route": "offline_drx",
-   "status": "verified",
-   "how": "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"
+   "route": "live_api",
+   "status": "probe",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块）；slope 已验证（#13），offset/power/sat 待探针 #16。风格包有 LUT/颗粒时先套中性 DRX + drx merge [颗粒]、graph set_lut 到节点 1，再写 CDL"
   },
   {
    "element": "音乐压低",

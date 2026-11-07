@@ -19,6 +19,8 @@ those answers within tolerance: cuts +-1 frame, zoom +-0.03, text +-0.25 s, BPM 
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import shutil
@@ -438,6 +440,148 @@ class ReviewSheetTest(unittest.TestCase):
                 subprocess.run(["trash", str(tmp)])
             else:
                 shutil.rmtree(tmp, ignore_errors=True)
+
+def card_of(look: dict, **shift) -> dict:
+    """A look card (zero MAD, so each key's floor is its tolerance) from a measured look, keys shifted."""
+    return {k: {"median": v + shift.get(k, 0), "mad": 0} for k, v in look.items() if v is not None}
+
+
+class GradeTest(unittest.TestCase):
+    """grade.py solves a chapter's CDL on synthetic frames whose answer is known."""
+
+    @classmethod
+    def setUpClass(cls):
+        import compare
+        import grade
+
+        cls.g = grade
+        cls.frames = [compare.still_mask(texture(s, 320, 180, (1.0, 0.9, 0.8))) for s in (11, 12, 13)]
+        cls.src = grade.median_look(grade.frame_looks(cls.frames))
+
+    def test_converges_to_a_known_cdl(self):
+        known = {"slope": [1.12 * 1.03, 1.12, 1.12], "offset": [-0.01, -0.02, -0.02], "power": [0.92] * 3,
+                 "sat": 1.15}
+        target = card_of(self.g.median_look(self.g.frame_looks(self.frames, known)))
+        res = self.g.solve(self.frames, target, self.src, night=False, cast=True)
+        fitted = {k: v for k, v in res["look"].items() if v["fit"]}
+        self.assertIn("mid_a", fitted)
+        self.assertTrue(all(v["ok"] for v in fitted.values()), fitted)
+        self.assertLessEqual(res["evals"], self.g.EVALS)
+        self.assertEqual(res, self.g.solve(self.frames, target, self.src, night=False, cast=True))  # deterministic
+
+    def test_inside_the_card_stays_put(self):
+        target = card_of(self.src, L50=1.0, chroma=-1.0)  # within half a tolerance: nothing to fix
+        res = self.g.solve(self.frames, target, self.src, night=False, cast=True)
+        self.assertEqual(res["cdl"], self.g.compose(self.g.NEUTRAL)[0])
+
+    def test_out_of_reach_hits_the_bound_and_says_so(self):
+        target = card_of(self.src, L50=35.0)
+        g = self.g.grade_chapter("A", self.frames, target, None, True)
+        self.assertTrue(g["at_bound"])
+        self.assertTrue(any(w.startswith("at bound") for w in g["warnings"]), g["warnings"])
+        self.assertFalse(g["look"]["L50"]["ok"])
+        self.assertLessEqual(max(g["cdl"]["slope"]), self.g.BOUNDS["slope"][1])
+
+    def test_dark_footage_is_graded_as_night(self):
+        dark = [(np.round(rgb * 0.25).astype(np.uint8), m) for rgb, m in self.frames]
+        src = self.g.median_look(self.g.frame_looks(dark))
+        self.assertLess(src["L50"], self.g.NIGHT_L50)
+        g = self.g.grade_chapter("night", dark, card_of(self.src), None, True)
+        self.assertTrue(g["night"])
+        self.assertEqual(g["night_from"], "auto")
+        self.assertFalse(g["cast"])
+        self.assertLessEqual(g["look"]["L50"]["predicted"], src["L50"] + 0.5)
+        self.assertEqual(g["cdl"]["power"], [1.0] * 3)
+        self.assertLessEqual(max(g["cdl"]["slope"]), 1.0)
+        self.assertLessEqual(max(g["cdl"]["offset"]), 0.0)
+        self.assertEqual({k for k, v in g["look"].items() if v["fit"]}, set(self.g.NIGHT_FIT))
+        told = self.g.grade_chapter("night", dark, card_of(self.src), False, True)  # the brief outranks the guess
+        self.assertFalse(told["night"])
+
+    def test_solve_reads_proxies_and_leaves_photos_out(self):
+        tmp = Path(tempfile.mkdtemp(prefix="vlog-grade-"))
+        try:
+            png = tmp / "tex.png"
+            Image.fromarray(texture(11, 640, 360, (1.0, 0.9, 0.8))).save(png)
+            (tmp / "proxies" / "c1").mkdir(parents=True)
+            subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-loop", "1", "-framerate", "10", "-i", str(png),
+                            "-t", "2", "-pix_fmt", "yuv420p", str(tmp / "proxies" / "c1" / "proxy.mp4")], check=True)
+            item = {"section": "A", "track": 1, "src_in": 0}
+            plan = {"style": "synthetic", "sections": [{"name": "A", "role": "chapter", "rec_in": 0, "rec_out": 60}],
+                    "video": [{**item, "id": "v001", "clip": "c1", "source_fps": 10, "src_out": 20, "rec_in": 0,
+                               "rec_out": 30},
+                              {**item, "id": "v002", "kind": "photo", "clip": "p1", "source_fps": 30, "src_out": 30,
+                               "rec_in": 30, "rec_out": 60}]}
+            files = {"plan.json": plan, "brief.json": {"chapters": [{"name": "A"}]},
+                     "style.json": {"name": "synthetic", "grade": {"look": card_of(self.src, L50=8.0)}}}
+            for name, data in files.items():
+                (tmp / name).write_text(json.dumps(data), encoding="utf-8")
+            args = ["solve", "--plan", str(tmp / "plan.json"), "--brief", str(tmp / "brief.json"),
+                    "--proxies", str(tmp / "proxies"), "--style-file", str(tmp / "style.json"),
+                    "--out", str(tmp / "grade.json")]
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(self.g.main(args), 0)
+            out = json.loads((tmp / "grade.json").read_text(encoding="utf-8"))
+            self.assertEqual(out["items"], {"v001": "A", "v002": "A"})
+            ch = out["chapters"][0]
+            self.assertEqual([s["item"] for s in ch["stills"]], ["v001"])
+            self.assertEqual(ch["look_ref"], "synthetic")
+            self.assertEqual(ch["resolve"], self.g.resolve_args(ch["cdl"]))
+            self.assertNotIn(str(tmp), (tmp / "grade.json").read_text(encoding="utf-8"))
+        finally:
+            if os.environ.get("KEEP"):
+                print(f"\nkept {tmp}", file=sys.stderr)
+            elif shutil.which("trash"):
+                subprocess.run(["trash", str(tmp)])
+            else:
+                shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_preview_against_its_own_render_is_exact(self):
+        tmp = Path(tempfile.mkdtemp(prefix="vlog-preview-"))
+        try:
+            Image.fromarray(texture(13, 640, 360, (1.0, 0.9, 0.8))).save(tmp / "s.png")
+            cdl = self.g.compose({**self.g.NEUTRAL, "slope": 1.1, "power": 0.9, "sat": 1.2})[0]
+            grade = {"chapters": [{"name": "A", "cdl": cdl}]}
+            first = self.g.preview(grade, "A", [tmp / "s.png"], None, tmp / "out")
+            self.assertGreater(first["predicted"]["L50"], self.src["L50"] - 10)
+            png = tmp / "out" / first["stills"][0]["png"]
+            again = self.g.preview(grade, "A", [tmp / "s.png"], [png], tmp / "out2")
+            self.assertEqual(again["stills"][0]["mean_abs_diff"], {"R": 0.0, "G": 0.0, "B": 0.0})
+            self.assertTrue(again["look_diff"] and all(d == 0 for d in again["look_diff"].values()))
+        finally:
+            if os.environ.get("KEEP"):
+                print(f"\nkept {tmp}", file=sys.stderr)
+            elif shutil.which("trash"):
+                subprocess.run(["trash", str(tmp)])
+            else:
+                shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_measure_stills_masks_the_letterbox(self):
+        """compare.measure_stills goes through still_mask: 320 px wide, the bars out of the mask."""
+        import compare
+        import measure_video as mv
+
+        img = texture(12, 640, 360, (1.0, 0.9, 0.8))
+        img[:54] = 0
+        img[-54:] = 0
+        small, mask = compare.still_mask(img)
+        self.assertEqual(small.shape[:2], (180, 320))
+        self.assertFalse(mask[:27].any() or mask[-27:].any())
+        self.assertTrue(mask[27:-27].all())
+        tmp = Path(tempfile.mkdtemp(prefix="vlog-stills-"))
+        try:
+            Image.fromarray(img).save(tmp / "s.png")
+            rows = compare.measure_stills([tmp / "s.png"])
+            self.assertEqual(rows, [{"file": "s.png", **mv.look_of(small, mask)}])
+            self.assertGreater(rows[0]["L01"], 5)  # the black bars would pull it to 0
+        finally:
+            if os.environ.get("KEEP"):
+                print(f"\nkept {tmp}", file=sys.stderr)
+            elif shutil.which("trash"):
+                subprocess.run(["trash", str(tmp)])
+            else:
+                shutil.rmtree(tmp, ignore_errors=True)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
