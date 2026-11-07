@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tests for cleanup.py, duck.py and compare.py readback and normalize. Run: python3 -I -B test_tools.py
+"""Tests for cleanup.py, duck.py, mix.py and compare.py readback, normalize and final. Run: python3 -I -B test_tools.py
 
-The duck render test needs ffmpeg on PATH and is skipped without it.
+The render and film tests need ffmpeg on PATH and are skipped without it.
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ import cleanup  # noqa: E402
 import compare  # noqa: E402
 import duck  # noqa: E402
 import grade  # noqa: E402
+import mix  # noqa: E402
 import paths  # noqa: E402
 import photo_clips  # noqa: E402
 import plan_cut  # noqa: E402
@@ -420,6 +421,118 @@ class DuckRenderTest(TempRoot):
         self.assertEqual(paths.check([plan_path.parent / "ducked.json"]), [])
 
 
+class MixItemsTest(unittest.TestCase):
+    def test_story_plans_level_dialogue_and_leave_clips_silent(self):
+        import test_plan_cut as tp
+        style = dict(json.loads((FIX / "style.json").read_text(encoding="utf-8")))
+        style["audio"] = {**style["audio"], "broll_ambient_db": -18}
+        plan = plan_cut.build(style, tp.trip(), tp.plan_brief(), None, None, tp.plan_story())
+        items = mix.items_of(plan)
+        kinds = {k: [i for i in items if i["kind"] == k] for k in ("dialogue", "ambient", "music", "clip")}
+        self.assertEqual(len(kinds["dialogue"]), len(plan["dialogue"]))
+        self.assertEqual({i["track"] for i in kinds["dialogue"]}, {1})
+        self.assertEqual({(i["track"], i["base_db"]) for i in kinds["ambient"]}, {(4, -18.0)})
+        self.assertEqual(kinds["clip"], [])  # the clips' own sound is not on the timeline
+
+    def test_without_a_story_the_kept_clips_are_the_sound(self):
+        load = lambda n: json.loads((FIX / n).read_text(encoding="utf-8"))  # noqa: E731
+        plan = plan_cut.build(load("style.json"), load("footage.json"), load("brief.json"), load("beats.json"))
+        items = mix.items_of(plan)
+        self.assertEqual(sorted(i["id"] for i in items if i["kind"] == "clip"),
+                         sorted(v["id"] for v in plan["video"] if v["audio"] == "keep"))
+        self.assertEqual([i["track"] for i in items if i["kind"] == "music"], [2])
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class MixRenderTest(TempRoot):
+    def setUp(self):
+        super().setUp()
+        self.proj = self.P.project("p")
+        for d in ("footage", "plan", "render"):
+            (self.proj / d).mkdir(parents=True)
+
+    def tone(self, name, expr, secs=6):
+        """A stereo wav from an aevalsrc expression per channel ('L|R')."""
+        out = self.proj / "footage" / name
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-f", "lavfi", "-i",
+                        f"aevalsrc={expr}:s=48000:d={secs}", "-c:a", "pcm_s24le", str(out)], check=True)
+        return out
+
+    def plan(self, dialogue):
+        plan = {"timeline": {"fps": 30, "duration_frames": 180}, "video": [], "titles": [], "ambient": [],
+                "audio": [{"id": "m001", "kind": "music", "source": "x", "rec_in": 0, "rec_out": 180, "track": 2}],
+                "dialogue": [{"id": f"d{n:03d}", "source": f"projects/p/footage/{name}", "source_fps": 30,
+                              "src_in": 30, "src_out": 150, "rec_in": 60 * (n - 1), "rec_out": 60 * n, "track": 1}
+                             for n, name in enumerate(dialogue, 1)]}
+        path = self.proj / "plan" / "cut_plan.json"
+        path.write_text(json.dumps(plan), encoding="utf-8")
+        return plan, path
+
+    def test_dialogue_is_brought_to_the_target(self):
+        s = "sin(2*PI*300*t)"
+        self.tone("loud.wav", f"0.5*{s}|0.5*{s}")
+        self.tone("soft.wav", f"0.1*{s}|0.1*{s}")
+        self.tone("faint.wav", f"0.0005*{s}|0.0005*{s}")
+        self.tone("onemic.wav", f"0.1*{s}|0.005*{s}")
+        plan, _ = self.plan(["loud.wav", "soft.wav", "faint.wav", "onemic.wav"])
+        res = mix.level_dialogue(plan, self.P, -16.0, 12.0, 6.0)
+        d = {i["id"]: i for i in res["items"]}
+        for k in ("d001", "d002"):
+            self.assertAlmostEqual(d[k]["measured_lufs"] + d[k]["base_db"], -16.0, delta=0.11)
+            src = self.P.abs(plan["dialogue"][int(k[1:]) - 1]["source"])
+            got = mix.measure(src, 1.0, 4.0)  # the same range, played at the new volume
+            self.assertAlmostEqual(got["lufs"] + d[k]["volume_db"], -16.0, delta=0.2)
+        self.assertEqual(d["d003"]["base_db"], 12.0)
+        self.assertTrue(any(w.startswith("d003") and "clamped" in w for w in res["warnings"]), res["warnings"])
+        self.assertTrue(any(w.startswith("d004") and "mic" in w for w in res["warnings"]), res["warnings"])
+        self.assertFalse(any(w.startswith(("d001", "d002")) for w in res["warnings"]), res["warnings"])
+        self.assertEqual(d["m001"]["volume_db"], 0.0)
+
+    def test_master_lands_on_the_target_and_refines(self):
+        s = "sin(2*PI*300*t)"
+        self.tone("v.wav", f"0.05*{s}|0.05*{s}")
+        plan, path = self.plan(["v.wav"])
+        render = self.proj / "render" / "a.wav"
+        shutil.copy(self.tone("mixdown.wav", f"0.05*{s}|0.05*{s}"), render)
+        code, _, err = self.run_main(mix.main, ["dialogue", "--project", "p"])
+        self.assertEqual(code, 0, err)
+        code, _, err = self.run_main(mix.main, ["master", "--project", "p", "--render", str(render)])
+        self.assertEqual(code, 0, err)
+        out = json.loads((path.parent / "mix.json").read_text(encoding="utf-8"))
+        self.assertEqual(out["master"]["expected"]["lufs"], -14.0)
+        self.assertEqual(out["master"]["render"], "projects/p/render/a.wav")
+        first = out["master"]["master_db"]
+        self.assertEqual({i["id"]: i["volume_db"] for i in out["items"]}["m001"], first)
+        self.assertEqual(paths.check([path.parent / "mix.json"]), [])
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", str(self.proj / "footage" / "mixdown.wav"),
+                        "-af", f"volume={first}dB", "-c:a", "pcm_s24le", str(render)], check=True)
+        self.run_main(mix.main, ["master", "--project", "p", "--render", str(render)])  # rendered with the new values
+        out = json.loads((path.parent / "mix.json").read_text(encoding="utf-8"))
+        self.assertAlmostEqual(out["master"]["master_db"], first, delta=0.2)
+        self.assertAlmostEqual(out["master"]["measured"]["lufs"], -14.0, delta=0.2)
+
+    def test_the_peak_wins_over_loudness(self):
+        self.tone("v.wav", "0.05*sin(2*PI*300*t)|0.05*sin(2*PI*300*t)")
+        plan, _ = self.plan(["v.wav"])
+        hit = r"0.003*sin(2*PI*300*t)+between(t\,3\,3.02)*0.9*sin(2*PI*300*t)"  # commas escaped for lavfi
+        render = self.tone("peaky.wav", f"{hit}|{hit}")
+        res = mix.apply_master(mix.level_dialogue(plan, self.P, -16.0, 12.0, 6.0), plan, render, self.P, -14.0, -1.0)
+        self.assertEqual(res["master"]["expected"]["true_peak_dbtp"], -1.0)
+        self.assertLess(res["master"]["expected"]["lufs"], -14.0)
+        self.assertTrue(any(w.startswith("master: the true peak") for w in res["warnings"]), res["warnings"])
+
+    def test_a_changed_plan_or_a_short_render_is_caught(self):
+        self.tone("v.wav", "0.05*sin(2*PI*300*t)|0.05*sin(2*PI*300*t)")
+        plan, _ = self.plan(["v.wav"])
+        res = mix.level_dialogue(plan, self.P, -16.0, 12.0, 6.0)
+        short = self.tone("short.wav", "0.05*sin(2*PI*300*t)|0.05*sin(2*PI*300*t)", secs=3)
+        self.assertTrue(any("render the whole timeline" in w
+                            for w in mix.apply_master(res, plan, short, self.P, -14.0, -1.0)["warnings"]))
+        plan["dialogue"][0]["rec_out"] += 1
+        with self.assertRaises(mix.MixError):
+            mix.apply_master(res, plan, short, self.P, -14.0, -1.0)
+
+
 class ReadbackTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -608,6 +721,209 @@ class NormalizeTest(TempRoot):
         with self.assertRaises(SystemExit) as cm:
             self.run_main(compare.main, ["normalize", str(bad), "--start-frame", "0"])
         self.assertIn("not a timeline clip_where reply", str(cm.exception))
+
+
+def v1(n, clip, a, b, src_in=0, track=1, **kw):
+    return {"id": f"v{n:03d}", "clip": clip, "track": track, "rec_in": a, "rec_out": b, "src_in": src_in,
+            "src_out": src_in + b - a, "transition_out": None, **kw}
+
+
+class FinalPlanTest(unittest.TestCase):
+    """compare.py final: the checks that read the plan and the measurements, not the film."""
+
+    def plan(self):
+        return {"timeline": {"fps": 30, "duration_frames": 300, "width": 640, "height": 360},
+                "video": [v1(1, "a", 0, 120, transition_out={"kind": "dissolve", "frames": 12}),
+                          v1(2, "b", 120, 210), v1(3, "c", 210, 270), v1(4, "c", 270, 300, src_in=60),
+                          v1(5, "d", 200, 240, track=2), v1(6, "e", 280, 300, track=2)]}
+
+    @staticmethod
+    def cuts(*frames):
+        return {"cuts": [{"frame": f, "t": round(f / 30, 3)} for f in frames]}
+
+    def test_planned_cuts_are_what_the_viewer_sees(self):
+        got = [(c["frame"], c["kind"], c["tol"]) for c in compare.planned_cuts(self.plan())]
+        # 210 is under the V2 cutaway, 270 carries clip c on, 300 is the end
+        self.assertEqual(got, [(120, "dissolve", 7), (200, "cutaway", 1), (240, "cutaway", 1), (280, "cutaway", 1)])
+
+    def test_cuts_found_moved_missed_and_extra(self):
+        plan = self.plan()
+        res = compare.check_cuts(self.cuts(120, 200, 240, 280), plan)
+        self.assertEqual((res["ok"], res["found"], res["missed"], res["extra"]), (True, 4, [], []))
+        res = compare.check_cuts(self.cuts(125, 202, 240, 280, 160), plan)  # a dissolve's middle may sit off
+        self.assertFalse(res["ok"])
+        self.assertEqual(res["issues"], ["cutaway at frame 200 (0:06.67) is at 202 (+2)"])
+        self.assertEqual((res["found"], res["moved"], res["extra"]), (3, 1, [160]))
+        res = compare.check_cuts(self.cuts(120, 200, 240), plan)
+        self.assertFalse(res["ok"])
+        self.assertIn("1 of 4 planned cuts not found", res["issues"][0])
+        self.assertTrue(compare.check_cuts(self.cuts(120, 200, 240), plan, missed_share=0.5)["ok"])
+        self.assertFalse(compare.check_cuts({"cuts": []}, plan)["ok"])
+
+    def test_spec(self):
+        plan = self.plan()
+        info = {"codec": "h264", "width": 640, "height": 360, "fps": 30.0, "duration_s": 10.0,
+                "audio": {"codec": "aac", "channels": 2, "sample_rate": 48000}}
+        self.assertEqual(compare.check_spec(info, plan)["issues"], [])
+        bad = {**info, "width": 1920, "height": 1080, "fps": 29.97, "duration_s": 10.1, "audio": None}
+        issues = compare.check_spec(bad, plan)["issues"]
+        self.assertEqual(len(issues), 4, issues)
+        self.assertTrue(issues[0].startswith("1920x1080") and issues[-1] == "no audio stream", issues)
+
+    def test_srt_reads_back_what_subs_writes(self):
+        cues = [{"a": 0.3, "b": 1.5, "text": "今天我们去海边"}, {"a": 3661.25, "b": 3663.0, "text": "第二行"}]
+        self.assertEqual(compare.parse_srt(subs.to_srt(cues)), cues)
+        hand = "1\r\n00:00:01.000 --> 00:00:02,500\r\n两行\r\n字幕\r\n\r\n\r\n2\r\n00:00:03,000 --> 00:00:04,000\r\nb\r\n"
+        self.assertEqual(compare.parse_srt(hand), [{"a": 1.0, "b": 2.5, "text": "两行 字幕"},
+                                                   {"a": 3.0, "b": 4.0, "text": "b"}])
+
+    def test_subtitles_on_screen_at_their_time_and_place(self):
+        cues = [{"a": 1.0, "b": 2.5, "text": "今天我们去海边"}, {"a": 4.0, "b": 5.0, "text": "这是一张老照片。"}]
+
+        def track(a, b, text, y=0.9, h=0.05):
+            return {"t_in": a, "t_out": b, "text": text, "center": [0.5, y], "height": h}
+        want = {"position": [0.5, 0.9], "height_frac": 0.05}
+        text = {"step": 0.25, "tracks": [track(1.1, 2.4, "今天我们去海边"), track(4.0, 5.0, "这是一张老照片")]}
+        res = compare.check_subs(text, cues, want)
+        self.assertEqual((res["ok"], res["read"], res["center_y"]), (True, 2, 0.9))
+        text = {"step": 0.25, "tracks": [track(1.6, 2.4, "今天我们去海边", y=0.85, h=0.07), track(4.0, 5.0, "别的字")]}
+        issues = compare.check_subs(text, cues, want)["issues"]
+        self.assertEqual(len(issues), 4, issues)
+        self.assertIn("on screen 1.60–2.40 s, planned 1.00–2.50 s", issues[0])
+        self.assertIn("not read on screen (closest 「别的字」)", issues[1])
+        self.assertTrue(issues[2].startswith("subtitle centre y 0.850") and "size" in issues[3], issues)
+        self.assertTrue(compare.check_subs({"tracks": []}, cues, None)["issues"][0].endswith("not read on screen"))
+
+    def test_speech_against_the_subtitles(self):
+        cues = [{"a": a, "b": a + 1.5, "text": t} for a, t in ((1, "今天我们去海边"), (4, "这是一张老照片"),
+                                                              (7, "天气很好"), (10, "我们回家了"))]
+        rows = lambda d: [{"t_in": c["a"] + d, "text": c["text"] + "，然后"} for c in cues]  # noqa: E731
+        res = compare.check_sync(rows(0.1), cues)
+        self.assertEqual((res["ok"], res["lines"], res["median_offset_s"]), (True, 4, 0.1))
+        res = compare.check_sync(rows(-0.5), cues)
+        self.assertFalse(res["ok"])
+        self.assertIn("speech starts -0.50 s from its subtitle", res["issues"][0])
+        res = compare.check_sync(rows(0.1)[:2] + [{"t_in": 7.0, "text": "完全不同的话"}], cues)
+        self.assertIsNone(res["ok"])
+        self.assertIn("only 2 heard line(s)", res["skipped"])
+
+    def test_whisper_rows_never_the_burned_in_captions(self):
+        seg = [{"t_in": 1.0, "t_out": 2.0, "text": "x"}]
+        self.assertEqual(compare.whisper_rows({"transcript": {"source": "captions", "segments": seg, "whisper": seg}}),
+                         seg)
+        self.assertEqual(compare.whisper_rows({"transcript": {"source": "captions", "segments": seg, "whisper": None}}),
+                         [])
+        self.assertEqual(compare.whisper_rows({"transcript": {"source": "whisper", "segments": seg, "whisper": None}}),
+                         seg)
+        self.assertEqual(compare.whisper_rows(None), [])
+
+    def test_style_report(self):
+        style = json.loads((FIX / "style.json").read_text(encoding="utf-8"))
+        cuts = {"fps": 30, "n_frames": 300, "cuts": [{"frame": 90}, {"frame": 210}], "counts": {"hard": 1, "gradual": 1}}
+        res = compare.style_report(cuts, {"speech_share": 0.4}, style)
+        self.assertEqual(res["shot_len_s"]["got"]["n"], 3)
+        self.assertEqual(res["shot_len_s"]["style"], style["rhythm"]["shot_len_s"])
+        self.assertEqual(res["hard_cut_share"], {"got": 0.5, "style": 0.8})
+        self.assertEqual(res["speech_share"]["got"], 0.4)
+        self.assertEqual(compare.style_report(None, None, None), {})
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class FinalFilmTest(TempRoot):
+    """An 8 s 640x360 film whose faults are known: black 2-3 s, a still 3-6 s, silence 3-5.5 s."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.dir = tempfile.TemporaryDirectory()
+        cls.film = Path(cls.dir.name) / "film.mov"
+        tone = r"0.22*sin(2*PI*440*t)*not(between(t\,3\,5.5))"  # commas escaped for lavfi
+        pic = ["testsrc2=d=2", "color=c=black:d=1", "color=c=gray:d=3", "testsrc2=d=2"]
+        inputs = [x for src in pic for x in ("-f", "lavfi", "-i", f"{src}:s=640x360:r=30")]
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", *inputs,
+                        "-f", "lavfi", "-i", f"aevalsrc={tone}|{tone}:s=48000",
+                        "-filter_complex", "[0:v][1:v][2:v][3:v]concat=n=4:v=1:a=0[v]", "-map", "[v]", "-map", "4:a",
+                        "-t", "8", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-c:a", "pcm_s16le",
+                        str(cls.film)], check=True, timeout=60)  # pcm: AAC would smear the silence's edges
+        cls.spans = compare.detect(cls.film, 8.0)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.dir.cleanup()
+
+    @staticmethod
+    def plan(dip=True, photo=True, music=((0, 240),)):
+        """A dips to black into B, a photo holds 3-6 s, C ends it; music where given."""
+        return {"timeline": {"fps": 30, "duration_frames": 240, "width": 640, "height": 360}, "titles": [],
+                "video": [v1(1, "a", 0, 75, transition_out={"kind": "dip_to_black", "frames": 30} if dip else None),
+                          v1(2, "b", 75, 90), v1(3, "p", 90, 180, **({"kind": "photo"} if photo else {})),
+                          v1(4, "c", 180, 240)],
+                "audio": [{"id": f"m{n:03d}", "kind": "music", "track": 2, "rec_in": a, "rec_out": b}
+                          for n, (a, b) in enumerate(music, 1)], "ambient": []}
+
+    def test_detection_finds_the_planted_faults(self):
+        self.assertEqual(self.spans, {"black": [(2.0, 3.0)], "freeze": [(3.0, 6.0)], "silence": [(3.0, 5.5)]})
+
+    def test_the_plan_explains_black_stills_and_silence(self):
+        res = compare.check_gaps(self.spans, self.plan(), None, 8.0)
+        self.assertEqual(res["issues"], ["silence 0:03.00–0:05.50 where the plan has sound"])
+        self.assertTrue(compare.check_gaps(self.spans, self.plan(music=((0, 85), (170, 240))), None, 8.0)["ok"])
+        issues = compare.check_gaps(self.spans, self.plan(dip=False, photo=False, music=()), None, 8.0)["issues"]
+        self.assertEqual(issues, ["black 0:02.00–0:03.00 (no grade.json: night chapters unknown)",
+                                  "frozen picture 0:03.00–0:06.00"])
+        night = {"chapters": [{"name": "dusk"}, {"name": "night", "night": True}],
+                 "items": {"v001": "night", "v002": "night", "v004": "dusk"}}
+        self.assertTrue(compare.check_gaps(self.spans, self.plan(dip=False, music=()), night, 8.0)["ok"])
+        night["items"]["v002"] = "dusk"  # 2.5-3 s is no longer night
+        self.assertEqual(compare.check_gaps(self.spans, self.plan(dip=False, music=()), night, 8.0)["issues"],
+                         ["black 0:02.00–0:03.00"])
+
+    def test_loudness(self):
+        res = compare.check_loudness(self.film, -14.0, -1.0)
+        self.assertTrue(res["ok"], res)
+        self.assertAlmostEqual(res["lufs"], -14.0, delta=0.5)
+        res = compare.check_loudness(self.film, -23.0, -20.0)
+        self.assertEqual(len(res["issues"]), 2, res)
+        self.assertTrue(res["issues"][0].endswith("want -23.0 ± 1: run mix.py master on an audio-only render"))
+        self.assertIn("true peak", res["issues"][1])
+
+    def test_cli_is_incomplete_until_the_film_is_measured(self):
+        plan_dir = self.root / "plan"
+        plan_dir.mkdir(parents=True)
+        plan_path = plan_dir / "cut_plan.json"
+        plan_path.write_text(json.dumps(self.plan(music=((0, 85), (170, 240)))), encoding="utf-8")
+        cues = [{"a": a, "b": a + 1.2, "text": t} for a, t in ((0.3, "今天我们去海边"), (3.2, "这是一张老照片"),
+                                                               (6.1, "天气很好"))]
+        (plan_dir / "subs.srt").write_text(subs.to_srt(cues), encoding="utf-8")
+        out = self.root / "final.json"
+        argv = ["final", str(self.film), "--plan", str(plan_path), "--out", str(out)]
+        code, _, err = self.run_main(compare.main, argv)
+        res = json.loads(out.read_text(encoding="utf-8"))
+        self.assertEqual((code, res["ok"], res["complete"]), (0, True, False), err)
+        self.assertEqual({k for k, c in res["checks"].items() if c["ok"] is None}, {"cuts", "subtitles", "sync"})
+        self.assertIn("not complete", err)
+
+        measured = self.root / "measured"
+        measured.mkdir()
+        mv = {"cuts": {"fps": 30, "n_frames": 240, "counts": {"hard": 2, "gradual": 1},
+                       "cuts": [{"frame": f, "t": round(f / 30, 3)} for f in (75, 90, 180)]},
+              "text": {"step": 0.25, "tracks": [{"t_in": c["a"], "t_out": c["b"], "text": c["text"],
+                                                 "center": [0.5, 0.9], "height": 0.05} for c in cues]}}
+        au = {"speech_share": 0.45, "transcript": {"source": "captions", "segments": [],
+                                                   "whisper": [{"t_in": c["a"] + 0.05, "text": c["text"]} for c in cues]}}
+        (measured / "measure_video.json").write_text(json.dumps(mv), encoding="utf-8")
+        (measured / "measure_audio.json").write_text(json.dumps(au), encoding="utf-8")
+        code, _, err = self.run_main(compare.main, [*argv, "--measured", str(measured)])
+        res = json.loads(out.read_text(encoding="utf-8"))
+        self.assertEqual((code, res["ok"], res["complete"]), (0, True, True), err)
+        self.assertEqual(res["checks"]["sync"]["lines"], 3)
+        self.assertEqual(res["style"]["hard_cut_share"]["got"], 0.667)
+        self.assertEqual(paths.check([out]), [])
+
+        plan_path.write_text(json.dumps(self.plan()), encoding="utf-8")  # music over the silence
+        code, _, err = self.run_main(compare.main, [*argv, "--measured", str(measured), "--lufs", "-23"])
+        self.assertEqual(code, 1)
+        self.assertIn("silence 0:03.00–0:05.50 where the plan has sound", err)
+        self.assertIn("want -23.0 ± 1", err)
 
 
 class SubsTest(unittest.TestCase):

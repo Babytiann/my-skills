@@ -291,7 +291,16 @@ python3 -I -B subs.py --project <项目>
 10. **标题。** `titles[]` 每条单独建一个时间线，在里面 `insert_fusion_title`（`template`），再用 `fusion_comp bulk_set_inputs` 写标题条目 comp 里 `Template` 节点的 StyledText、Font、Style、Size、Center（不用 `set_title_text`：它只是猜着用 SetProperty 写文字，也不管字体）。两种字体（比如衬线时间 + 黑体地名）：在同一个 comp 里 `add_tool` 一个 TextPlus（`Line2`）和一个 Merge，Background ← Template，Foreground ← Line2，MediaOut1.Input ← Merge1。`style.position` 的原点在左上，Fusion 的 Center 原点在左下，写入时 y 要换成 1 − y。回到主时间线，把标题时间线当片段放到 V3 的 `rec_in`，`endFrame` 给 `rec_out − rec_in`，超过 5 秒也行。标题时间线的媒体池条目 id 用 `folder get_clips` 按名字找，`media_pool_item get_timeline` 能确认它是哪条时间线（常见坑第 24 条）。导出静帧核对文字。
 11. **调色。** 默认按章套 `plan/grade.json`（§6 算出的）：V1 和 V2 的每个条目，照片也算，用 `items[条目 id]` 找到所属章，调 `timeline_item_color safe_set_cdl`，参数直接用该章的 `resolve`。每次检查返回值。CDL 读不回来，所以套完按 §8 每章导出静帧核对。公式和 Resolve 的 SetCDL 一致（resolve-routes.md 探针 #16，每通道平均差 ≤ 0.36/255）。核对结果离预测远时，先查 CDL 写的节点对不对、有没有被后来套的 DRX 冲掉，再用 `grade.py preview --graded` 比。
     例外：风格包的 `grade.lut`、`grade.drx`、`grade.grain` 有值时，先套这些，再把 CDL 写到节点 2。DRX 按这个配方生成：`drx generate` 出一张中性图做底，`drx merge` 把 [空的 CDL 节点, 颗粒] 作为 newNodes 加进去，没有颗粒就只加空节点（底图里不要放真实节点，会被有损重写；不要用 `drx lut_apply`，它会丢掉一级调色）。每个条目 `safe_apply_drx` 套一次（套用会替换整个节点图，confirm_token 两步），再 `graph set_lut` 把 LUT 套到节点 1。LUT 先 `lut install` 装进 MCP 子目录并 `refresh_luts`。只有 LUT 时也这样建两个节点：同一个节点里 Resolve 先算 CDL 再算 LUT，两者同在节点 1 就成了先 CDL 后 LUT，和下面从静帧解出来的对不上。grade.py 从代理算的 CDL 不含 LUT 和 DRX 的效果，所以这时先套好它们，每章导出几张静帧放进 `qa/stills_raw/<章名>/`，再跑 `grade.py solve --project <项目> --stills "$P/qa/stills_raw" --node 2`，用新的 grade.json 写 CDL（`resolve` 块里已经是节点 2）。CDL 一定在 DRX 之后写：重套 DRX 会连 CDL 一起换掉整个节点图（#16）。
-12. **声音。** 压低版音乐床放 A2，原始音乐放 A3 并静音。片段音量用 `timeline_item set_property {key:"AudioVolume", value:<dB>}`，不要用 `set_audio Volume`（它写的是旧键，什么都不改）。片尾淡出等用 `set_fades {options:{FadeIn, FadeOut}}`，整数帧。对白在 A1，音量按条目设。风噪重的对白轨可以开人声分离：`timeline set_voice_isolation_state {track_index:1, state:{isEnabled:true, amount:<0–100>}}`，默认关，开之前先听过或问过用户。
+12. **声音。** 压低版音乐床放 A2，原始音乐放 A3 并静音。片段音量用 `timeline_item set_property {key:"AudioVolume", value:<dB>}`，不要用 `set_audio Volume`（它写的是旧键，什么都不改）。片尾淡出等用 `set_fades {options:{FadeIn, FadeOut}}`，整数帧。风噪重的对白轨可以开人声分离：`timeline set_voice_isolation_state {track_index:1, state:{isEnabled:true, amount:<0–100>}}`，默认关，开之前先听过或问过用户。
+    电平按 `plan/mix.json` 设：
+
+    ```sh
+    python3 -I -B mix.py dialogue --project <项目>                       # 每条对白拉到 −16 LUFS
+    python3 -I -B mix.py master --project <项目> --render "$P/qa/mix.wav"   # 整片 −14 LUFS，真峰值 ≤ −1 dBTP
+    ```
+
+    dialogue 按每条对白自己的源区间量积分响度（有门限，停顿几乎不算），增益夹在 ±12 dB；太短或太轻量不出来的留 0 dB，列在警告里。立体声左右差超过 6 dB 也警告：可能只有一边有麦，要在 Resolve 里把这条映射到响的那一声道（手动收尾）。`items[]` 每条的 `volume_db` 写到该轨上起始帧为 `start_frame + rec_in` 的音频条目（在 clip_where 的回复里按轨道和起始帧找）：A1 对白、A4 环境声（风格的 `broll_ambient_db`）、A2 音乐床，没有 story 时还有保留原声的片段；A3 是静音的原始音乐，不写。
+    写完渲染一条只有音频的整条时间线（常见坑第 7 条的 Audio Only 设置，`TargetDir` 是 `$P/qa`，`CustomName` 是 `mix`），再跑 master：所有音频条目加同一个 `master_db`，让整片落到 `--lufs`；这样会让真峰值超过 `--peak` 时以峰值为准，差多少报出来，Fairlight 主母线上的限幅器是手动收尾。`master_db` 是累加的，写回新的 `volume_db` 后再渲一次、再跑一次更准，变化不到 0.5 dB 就停。没有对白时可以直接跑 master。音频渲染和第 13 步一样，只在 `vlog-style-QA-*` 或用户同意时做；不做就只用 dialogue 的值，整片响度写进手动收尾清单。
 13. **字幕核对。** 字幕样式已在第 6 步套好。静帧里看不到字幕，要烧录渲染一小段（只在 `vlog-style-QA-*` 或用户同意时），用 `vision_ocr` 量框高和中心，和 style.text.subtitle 比；差得多就调 size、position 重新套。这个预设写不了描边（常见坑第 28 条）。导出成片时设 `ExportSubtitle:true`、`SubtitleFormat:"BurnIn"`。
 14. **标记。** `markers[]` 打到时间线上；`Timeline.AddMarker` 用相对时间线起点的帧号，直接用 `rec`。第一个标记是手动收尾清单，其中包括手动设置播放帧率。
 15. **保存工程。**
@@ -323,3 +332,25 @@ uv run --python 3.13 --script compare.py look "$P"/qa/stills/<章名>/*.jpg --st
 ## 9. 导出（只在用户要求时）
 
 先保存工程，再用 `render prepare_delivery_job` 排队：母版用 ProRes 422 HQ，发布用 H.265 Main10。传 `CustomName`，时间线名里有 `/` 或 `:` 会导致渲染失败。用户明确说要开始渲染才开始。
+
+**核对成片。** 读回和静帧查的是时间线，导出本身还会出错：字幕没烧进去、音画不同步、响度不对、多出黑场。渲染完测成片，再和计划比：
+
+```sh
+F=<成片文件>; M="$P/qa/final"
+python3 -I -B prep.py proxy "$F" --out "$M"
+xcrun swift vision_ocr.swift "$F" --fps 4 --out "$M/ocr.json"
+uv run --python 3.13 --script measure_video.py "$M" --skip strips
+uv run --python 3.13 --script measure_audio.py "$M" --sentences --language auto
+python3 -I -B compare.py final "$F" --plan "$P/plan/cut_plan.json" --measured "$M" --style <风格> --out "$P/qa/final.json"
+```
+
+任何一项不通过，退出码就是 1：
+
+- 规格：尺寸、帧率和 `cut_plan.timeline` 一致，时长差不超过 1.5 帧，有音轨。
+- 黑场、静帧、静音：计划能解释的不算。黑场可以在 dip_to_black 转场附近和夜景章（grade.json 里 `night` 的章）里，静帧可以在照片条目上，静音可以在计划里没有声音的地方，开头 1 秒和结尾 2 秒都不算。没有 grade.json 时不知道哪些是夜景章，黑场会多报。
+- 响度：积分响度在 `--lufs` ±1 以内，真峰值不超过 `--peak`。编码会让峰值多出零点几 dB，超了就用低一点的 `--peak` 重跑 mix.py master。
+- 切点：只比观众看得到的切点，也就是没被 V2 盖住的 V1 边、V2 自己的两边；同一素材接着播的两条算一个镜头。硬切允许 ±1 帧，有转场再加半个转场长度。偏得更远的判失败；找不到的超过一成判失败（相似镜头之间的切点检测器会漏）；多出来的（闪白、甩镜头、镜头内的跳动）只列出来。
+- 字幕：subs.srt 的每一句都要在画面上读到（文字相似度 ≥ 0.8），出现和消失的时间差在一个 OCR 步长（4 fps 时是 0.25 s）加 0.1 s 以内，中心 y 和框高跟风格的 `text.subtitle` 一致（±0.015、±15%）。
+- 音画同步：whisper 听到的每句开头，和它开头对应的那句字幕比，中位数在 ±0.2 s 以内。比的是 whisper 的句子，不是烧录字幕，否则就成了字幕自己和自己比。
+
+没给 `--measured`，或者少跑了哪一步测量，对应的检查标成跳过，`complete` 为 false。跳过不算通过。镜头时长、硬切占比、人声占比和风格并排列在 `style` 里，只报告。subs.srt 和 grade.json 默认取 cut_plan 所在的目录。
