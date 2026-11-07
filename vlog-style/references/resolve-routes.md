@@ -12,28 +12,30 @@
 - **待探针**：本机还没跑过。
 - **手动**：没有可用的 API，只能手动做。
 
-「本机」一列是 2026-11-02 在 21.1.1.10 + MCP 4.15.3 上跑探针的结论，括号里是探针序号。本机否掉的路线已经换成备选，`style.json` 里的 `resolve[].status` 和 `aggregate.py` 的 ROUTES 同步改过。Resolve 或 MCP 升级后要重跑探针。
+「本机」一列是在 21.1.1.10 + MCP 4.15.3 上跑探针的结论，括号里是探针序号：#1–#12 是 2026-11-02 跑的，#13–#15 是 2026-11-07 跑的。本机否掉的路线已经换成备选，`style.json` 里的 `resolve[].status` 和 `aggregate.py` 的 ROUTES 同步改过。Resolve 或 MCP 升级后要重跑探针。
 
 ## 路线表
 
 | 风格元素（route） | 做法 | 状态 | 本机 |
 |---|---|---|---|
-| 剪辑点、B-roll、J/L cut、音乐床（live_api） | `append_to_timeline`，传 clipInfos 一次放好。`startFrame`/`endFrame` 是源素材帧号，从 0 开始，end 不含该帧；`record_frame` 相对时间线起点。每次 append 之后都读回 | 已验证 | 通过（#2、#3）：入出点逐帧一致，静帧对得上。混帧率素材的源出点读回见常见坑第 20 条 |
+| 剪辑点、B-roll、J/L cut、音乐床（live_api） | `append_to_timeline`，传 clipInfos 一次放好。`startFrame`/`endFrame` 是源素材帧号，从 0 开始，按素材自己的帧率算，end 不含该帧；`record_frame` 相对时间线起点。有对白时画面和声音分开放：V1、V2 传 `media_type 1`，A1 传 `media_type 2`，两边的源区间可以不同，J/L cut 就靠这个。每次 append 之后都读回 | 已验证 | 通过（#2、#3、#13）：入出点逐帧一致，静帧对得上；只放音频的条目源区间比画面提前 2 秒，渲染出来的声画偏移和计划一致；非零起始时间码的素材、单声道素材放立体声轨都没问题。混帧率素材的源出点读回见常见坑第 20 条 |
 | 叠化（live_api） | `add_transition` Cross Dissolve，`position:end`、`alignment:center`。两侧素材都要有余量。从时间线末尾往前加，以免条目序号漂移 | 已验证 | 通过（#4）：时长 12 帧跨剪辑点前后各 6 帧 |
 | 黑场过渡、Smooth Cut（live_api） | `add_transition`：Dip To Color Dissolve / Smooth Cut，传短名 | 已验证 | 通过（#4）：黑场静帧平均亮度 10.6 |
 | 闪白、甩镜、急推、抖动转场（fusion） | `add_transition`，category 设为 `fusion`，传短名：Brightness Flash、Pan Left/Right、Crash Zoom、Camera Shake | 已验证 | 通过（#4）：闪白静帧平均亮度 225.5，其余三种静帧都能看到效果 |
 | 划像（live_api） | `add_transition`，具体名字没试过 | 待探针 | 未探针 |
 | 恒定慢动作（live_api） | `set_speed {options:{Percentage}}`，传百分数（50 就是 50%）。60p 素材放在 30p 或 24p 时间线上，50% 或 40% 的慢动作最干净。60p 时间线还要 `set_retime` 设为 `optical_flow` | 已验证 | 通过（#10）：条目时长不变，从源入点起按新速度播，静帧逐帧对上。`optical_flow` 读回 process 3 |
 | 定格、倒放（live_api） | `set_speed` 设为 0 或 −100。只走实时 API | 已验证 | 通过（#10）：倒放从源出点往回放；定格停在条目源区间的末尾（不是入点） |
+| 照片（live_api） | 不放原生静图（见常见坑第 27 条）。先用 ffmpeg 把照片做成短片：时间线帧率、等比缩放进时间线尺寸（不裁切，留黑边）、显式标 bt709，再按帧 append。HEIC 先用 `sips` 转 jpg，不动原图。缩小放在黑底上用 `set_transform` | 已验证 | 通过（#14）：短片按帧放，75 帧和 240 帧读回都对；ZoomX/Y 0.8 生效，画面 770×576；和原生静图的平均色差 0.81（0–255） |
 | 变速曲线（manual） | 在 Resolve 里手动拉变速曲线，打标记写进手动收尾清单 | 手动 | 离线 `.drt` 本机否掉（#10）：速度全错，见 learnings.md 2026-11-02 |
 | 静态推镜（live_api） | `set_transform` 设置 ZoomX/ZoomY。4K 素材放在 4K 时间线上，推镜就是放大，会损失清晰度 | 已验证 | 通过（#5）：1.3 倍，静帧比对误差最小 |
 | 动态推拉、Ken Burns（fusion） | 每个条目一个最小 `.comp` 模板（MediaIn → Transform → MediaOut，只在 Size 上打关键帧，不写素材路径），填好起止缩放和末帧，用 `timeline_item_fusion import_comp` 挂上。不要用 Dynamic Zoom，它的属性名在 API 定义和 MCP 里对不上 | 已验证 | 通过（#6）：静帧和渲染都是 1.00 / 1.15 / 1.30。实时 `fusion_comp` 搭节点也能渲染，见常见坑第 4 条 |
 | 持续抖动（offline_drx） | 把 ResolveFX Camera Shake 节点用 `drx merge` 并进 look DRX | 已验证 | 通过（#9）：节点读回「OFX: 摄影机晃动」，静帧有约 1.05 倍放大和漂移 |
 | 遮幅（live_api） | `set_output_blanking` | 已验证 | 未探针（贡献者在 21.1 上验证过） |
 | 地点标题、章节卡（live_api） | 每条文字单独建一个时间线，在里面 `insert_fusion_title`，再用 `fusion_comp bulk_set_inputs` 写 Template 节点的 StyledText、Font、Style、Size；两种字体就再加一个 Text+ 和 Merge。把这个时间线当片段放到 V3。同一个标题时间线放多次时文字是共用的，所以每条不同的文字各建一个。标题之间不能重叠 | 已验证 | 通过（#7），换了写字路线：`set_title_text` 只是猜着用 SetProperty 写文字，也不管字体。append 时 end 给大一些就能超过 5 秒 |
-| 字幕（live_api） | 导入 .srt，先放到空时间线上，再 `set_subtitle_preset` 设字体、字号、位置。导出时 `ExportSubtitle:true` + `SubtitleFormat:"BurnIn"` 烧录 | 已验证 | 通过（#8）：烧录渲染出来了，不写旁挂文件。带位置参数 append .srt 会让 Resolve 崩溃，见常见坑第 21 条 |
+| 字幕（live_api） | 导入 .srt，先用只传 `clip_ids` 的旧式 append 放到空时间线上，再放视频。.srt 的时间是从时间线起点算的秒数，Resolve 按「秒 × 时间线帧率」取整成帧。`set_subtitle_preset` 要给预设名（`Simple White` 最接近 Links 的白字），会新建一个时间线修订，之后的步骤都在新的那条上做。导出时 `ExportSubtitle:true` + `SubtitleFormat:"BurnIn"` 烧录 | 已验证 | 通过（#8、#15）：烧录渲染出来了，不写旁挂文件；第 1 秒的字幕落在第 30 帧，第 300 秒的落在第 8991 帧，没有累积漂移。字号、位置和描边见常见坑第 28 条，带位置参数 append .srt 会让 Resolve 崩溃，见第 21 条 |
 | 调色（offline_drx） | 中性 `drx generate` 打底，`drx merge` 加 [CDL, 颗粒] 两个节点，`safe_apply_drx` 每段套一次，再用 `graph set_lut` 把 LUT 套到节点 1。LUT 先用 `lut install` 装进 MCP 子目录并 `refresh_luts`。套用 DRX 会替换整个节点图，所以只能套一次。SetCDL 写进去读不回来，只能导出静帧核对。颗粒可调的参数：GrainStrength、GrainMean、GrainSkew、Opacity | 已验证 | 通过（#9），换了路线：`drx lut_apply` 会丢掉一级调色，`drx merge` 的底图里放真实节点会被有损重写 |
 | 光晕、漏光（fusion） | 光晕用 Fusion Glow。漏光素材由用户提供，叠在 V2，`set_composite` 的 CompositeMode 传 5（滤色） | 滤色已验证；Glow 待探针 | 滤色通过（#11）：读回 5，静帧和滤色混合对上。Glow 未探针 |
+| 人声分离（live_api） | `timeline set_voice_isolation_state {track_index, state:{isEnabled, amount}}`，按轨生效。默认关，只给风噪重的对白轨开 | 已验证 | 通过（#13）：读回 on、100；渲染里非人声的合成提示音从约 −10 dBFS 降到 −57 至 −75 dBFS |
 | 音乐压低（offline_ffmpeg） | 用 `duck.py` 渲染一条只有音乐的压低版音乐床，放在 A2；原始音乐放在一条静音的 A3 上，方便手动重混 | 离线可用（测试实测 −12 dB ±0.5） | 不涉及 Resolve |
 | 片段音量（live_api） | `timeline_item set_property {key:"AudioVolume", value:<dB>}`，范围 −100 到 30。不要用 `set_audio Volume` | 已验证 | 通过（#12）：读回 −12，渲染实测稳态 −12.00 dB |
 | 淡入淡出（live_api） | `set_fades {options:{FadeIn, FadeOut}}`，整数帧。片尾淡出也用它，不用转场：最后一个片段后面没有片段，单边转场会出错。片头淡入也可以在第一个片段上加 Cross Dissolve，`position:start`、`alignment:right` | 已验证 | 音频通过（#12）：渲染里淡入 1 秒、淡出 2 秒都在。视频 set_fades 本机没单独测；片头 Cross Dissolve 淡入通过（#4） |
@@ -70,7 +72,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 
 ## 探针清单
 
-2026-11-02 已在本机跑完一轮，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
+#1–#12 于 2026-11-02、#13–#15 于 2026-11-07 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
 
 1. **连通性。** 在偏好设置 System > General 里，「External scripting using」要设为 Local。MCP 要能列出工程。Resolve 没开时 MCP 会自己启动它。
 2. **帧号。** 读回时间线起始帧，29.97 应为 108000，24 应为 86400。核对 `GetEnd` 是否不含该帧，也就是 end − start = duration。
@@ -84,6 +86,9 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 10. **变速。** `set_speed` 设为 50、0、−100，`set_retime` 设为 optical_flow；advanced server 生成的 `.drt` 能否导入、导入后速度对不对。
 11. **合成模式。** 滤色要传的数值，导出静帧和混合公式比对。
 12. **音频。** AudioVolume 和音频淡入淡出能否写入、能否读回，渲染一条只有音频的文件测电平。
+13. **只放音频。** `media_type 2` 把声音单独放到 A1，源区间比画面提前 2 秒，渲染核对声画偏移。同时试 59.94 素材放 29.97 时间线、非零起始时间码（`ffmpeg -timecode`）、单声道素材放立体声轨，以及 `set_voice_isolation_state` 在渲染里是否生效。
+14. **静图。** 导入 jpg、png、heic，按帧放短于和长于 5 秒的两段，`set_transform` 缩小放在黑底上；再和 ffmpeg 做成的照片短片比长度、缩放和颜色。
+15. **.srt 落位。** 第一条字幕写在第 1 秒，第 300 秒再放一条（29.97 下真实时间和非丢帧时间码在这里差约 9 帧），烧录渲染一小段核对。在带 V1、V2、A1 的小时间线上 `set_subtitle_preset` 前后各读回一次，看条目、音量、缩放、调色有没有丢；再调字号和位置，用 `vision_ocr` 量框高和中心。
 
 结论写回上面的表，并在 `learnings.md` 记一条，写明日期和本机版本。
 
@@ -97,7 +102,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
    - `GetStart` / `GetEnd`
    - `Timeline.GetStartFrame`
 
-   而 `Timeline.AddMarker` 用的是相对时间线起点的偏移，clipInfos 的 `startFrame` / `endFrame` 用的是源素材帧号，从 0 开始。cut_plan 里的 `rec_in` 从 0 开始，搭建时要加上读回的起始帧。
+   而 `Timeline.AddMarker` 用的是相对时间线起点的偏移，clipInfos 的 `startFrame` / `endFrame` 用的是源素材帧号，从 0 开始，和素材的起始时间码无关（#13 用起始时间码 04:18:37:25 的素材实测）。cut_plan 里的 `rec_in` 从 0 开始，搭建时要加上读回的起始帧。
 3. **append。**
    - 只作用于当前时间线。
    - `trackIndex` 超出现有轨道数时不会报错，片段会落到别的轨道上，所以要先建好轨道。
@@ -116,6 +121,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
    - 时间线名里有 `/` 或 `:` 会导致渲染失败，要传 `CustomName`。
    - 写渲染设置之前先保存工程。
    - 本机 21.1.1.10 上 `render get_settings` 报错（「GetRenderSettings requires DaVinci Resolve unknown+」），不要靠它读回，直接 `verify_output` 查输出文件。
+   - `render prepare_render_job` 默认要求 `target_dir` 在系统临时目录下，渲染到项目的 `qa/` 要传 `require_temp_target:false`。
    - 只出音频：`load_preset "Audio Only"`，再 `set_settings {ExportVideo:false, ExportAudio:true, AudioFormat:"wav", AudioCodec:"lpcm", SelectAllFrames:true, TargetDir, CustomName}`。编码名用 `get_audio_codecs {format:"wav"}` 查（Linear PCM 是 `lpcm`）。加载这个预设后 `get_format_and_codec` 读回是空的，正常。
 8. **共享当前状态。** 当前工程、当前时间线、当前文件夹、播放头这些状态都是和用户的界面共用的。建工程、切工程由脚本自动完成（见「自动建工程」），但切走之前必须先保存当前工程，也不在用户正在剪的工程上试验。
 9. **弹窗会卡住。** Resolve 里有菜单或对话框开着时，脚本调用会一直卡住，不报错。遇到这种情况就请用户去关掉，不要循环重试。
@@ -134,13 +140,19 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
    - 用 ffmpeg 解合成素材或无色彩标签的素材做比对时，要指定 bt709 矩阵；默认按 bt601 解，颜色对不上。
    - 静帧里不显示字幕，字幕要渲染一小段看。
 19. **调色 DRX 的坑。** `drx lut_apply` 会把一级调色节点丢掉；`drx merge` 会把底图里的节点有损重写，所以底图只用 `drx generate` 出的中性图，真实节点全放 newNodes；LUT 最后用 `graph set_lut` 单独套。
-20. **混帧率素材的源出点。** `project_manager snapshot` 给的 `source_end` 对 59.94 素材差一帧（299 对 300），以 `timeline_item get_source_end_frame` 为准。
-21. **.srt 导入会让 Resolve 崩溃。** 用 clip_infos（带位置参数）append .srt，Resolve 直接崩溃。要先用只传 `clip_ids` 的旧式 append 把 .srt 放到一条空时间线上，字幕按 .srt 里的时间落位，再放视频。崩溃后重开 Resolve、`project_manager load` 不弹窗，但没保存的改动会丢，所以每一步做完都 `save`。
+20. **混帧率素材的源出点。** `project_manager snapshot` 给的 `source_end` 对 59.94 素材差一帧（299 对 300），以 `timeline_item get_source_end_frame` 为准。`timeline clip_where` 也一样：59.94 素材请求 600–1200 读回 `source_end` 1199，29.97 素材请求 300–600 读回 600。读回核对源出点时留 1 个源帧的容差。
+21. **.srt 导入会让 Resolve 崩溃。** 用 clip_infos（带位置参数）append .srt，Resolve 直接崩溃。要先用只传 `clip_ids` 的旧式 append 把 .srt 放到一条空时间线上，字幕按 .srt 里的时间落位（从时间线起点算的秒数 × 时间线帧率，取整，#15），再放视频。崩溃后重开 Resolve、`project_manager load` 不弹窗，但没保存的改动会丢，所以每一步做完都 `save`。
 22. **音量的键名。** 21.1 的条目属性是 `AudioVolume`（dB）、`AudioPan` 等。MCP 的 `set_audio Volume` 写的是旧键，返回 `Volume:false` 加一条 known_limitation，实际什么都没改；用 `set_property {key:"AudioVolume"}`。音频条目上不带 key 的 `get_property` 返回 false，要逐个键读。
 23. **合成模式要传数字。** 取 Resolve 的 `COMPOSITE_*` 常量：NORMAL 0、ADD 1、MULTIPLY 4、SCREEN 5、OVERLAY 6、SOFTLIGHT 8、LIGHTEN 10、LINEAR_DODGE 19、INVERTED_LUM 31。`set_composite` 返回的 `CompositeMode:true` 不是读回值，要再 `get_composite`。
-24. **标题时间线的媒体池条目。** 把标题时间线当片段 append 要它的媒体池条目 id，MCP 没有直接给。本机是用只读的 Python 脚本在媒体池里按时间线名找到的。
+24. **标题时间线的媒体池条目（2026-11-07 起过时）。** 之前以为 MCP 不给时间线的媒体池条目 id，要用只读脚本去找。实测 `folder get_clips` 会列出时间线条目的名字和 id，`media_pool_item get_timeline {clip_id}` 能确认它是哪条时间线（`is_timeline:true`），直接用这两个调用，不用另写脚本。
 25. **advanced server 的坑。**
    - `fusion generate` 写出的关键帧格式不对；`.comp` 用手写的最小模板。
    - `drx parse` 会把 server 弄崩。
    - server 断开时，可以用 node 直接 import 它的 tool 模块调 handler，参数和 MCP 调用一样。
 26. **MCP 的时间码换算。** MCP 按名义 30 fps、从 0 帧起算把帧号换成时间码。正常的 108000 起点时间线没问题；起始帧和显示时间码对不上的时间线（比如离线 `.drt` 导入的那条），按 MCP 的时间码 seek 会落到片段外，导出全黑静帧。
+27. **原生静图不认 `start_frame`/`end_frame`。** jpg、png、heic 都能导入（读回 FPS 24、Frames 1），但 append 时不管传多长，都放成 150 帧，也就是偏好设置里默认的静图时长 5 秒。不改偏好设置，照片一律先做成短片（见路线表「照片」）。
+28. **字幕预设。**
+   - 不给 `preset` 直接拒绝；没缓存的预设不能 dry run，只能在一次性工程里真跑。
+   - 它导出 DRT 再导入，生成一个新时间线（名字取 `revision_name`），原时间线留着。之后放标题、调色、读回都要先 `timeline set_current` 到新的那条。#15 前后读回：V1、V2、A1、字幕的位置和源帧、AudioVolume、缩放都没变，渲染里 CDL 还在。markers、V3 标题等其他 Fusion 合成没验证，所以搭建时先套字幕预设再放标题，或者套完再读回一次。
+   - 可编辑项只有 font、fontStyle、size、position、文字颜色和 textFillMode，没有描边。要描边就换带描边的预设（未探针），或者写进手动收尾清单。
+   - 风格包里的字高是 `vision_ocr` 的框高，不是笔画高度，量的时候要用同一种方法。PingFang SC Regular 实测：`size 0.040` + `position [0.5, 0.032]` 框高 4.44%、中心 y 0.9555；`size 0.037` + `position [0.5, 0.023]` 框高 4.03%、中心 y 0.965；`size 0.053` 框高 6.1%。估算用「框高 ≈ 1.1 × size」「中心 y ≈ 0.9875 − position y」，套完渲一小段量一次。

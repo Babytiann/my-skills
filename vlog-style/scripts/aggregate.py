@@ -64,7 +64,7 @@ ROUTES = {  # element -> (label, route, status, how); statuses from the Resolve 
     "letterbox": ("遮幅", "live_api", "verified", "set_output_blanking"),
     "title": ("地点标题/章节卡", "live_api", "verified",
               "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"),
-    "subtitle": ("字幕", "live_api", "verified", "导入 .srt 到空时间线 + set_subtitle_preset；导出时 ExportSubtitle + BurnIn 烧录"),
+    "subtitle": ("字幕", "live_api", "verified", "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"),
     "grade": ("调色", "offline_drx", "verified", "中性 DRX + drx merge [CDL, 颗粒] 每段套一次，再 graph set_lut 套到节点 1"),
     "duck": ("音乐压低", "offline_ffmpeg", "verified", "duck.py 渲染压低版音乐床放 A2"),
     "fades": ("淡入淡出", "live_api", "verified", "set_fades，片尾淡出也用它"),
