@@ -114,12 +114,12 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 详细步骤见 [apply.md](references/apply.md)。
 
 1. `paths.py init --project <项目>`，用户把素材放进 `footage/`。
-2. `prep.py footage` 检查帧率、可变帧率、传输特性，生成代理。
+2. `prep.py footage` 检查帧率、可变帧率、传输特性，生成代理；照片读拍摄时间和时区，生成预览。
 3. 逐片段 `measure_video.py --skip strips` 和 `measure_audio.py --sentences --language auto`；agent 看总览图写 `index/tags.json`（景别、标签、光线、哪些风景可移动）；`aggregate.py footage` 生成 `index/footage.json`。先让用户看一眼 `prep.py footage` 列出的各设备时间范围，时钟不对就在 brief 里写偏移。
 4. 音乐：`measure_audio.py --music <曲子> --out index/beats.json`。
 5. 和用户一起写 `plan/brief.json`：时长、章节和标签、地点标题、音乐、不用和优先用的片段。有对话时先 `story.py dump` 读转写，章节按真实发生的事分，agent 起草纸面剪辑 `plan/story.json`，**用户确认后**才往下走。
 6. `plan_cut.py --style <名字> --project <项目> --explain`，有人声时再跑 `duck.py`。有 story 时 agent 先用 `story.py review` 的拼图自查时间、对话和画面、重复、跳接四项。把计划表和拼图给用户看，确认后用 `subs.py` 出字幕给用户校对。**两样都确认后才进 Resolve**。
-7. 用户同意后，用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。
+7. 用户同意后，有照片时先 `photo_clips.py` 做照片短片，再用 MCP 按 apply.md 的顺序搭时间线，每一步检查返回值，每次 append 之后读回。
 8. 验收：`compare.py readback`、导出静帧跑 `compare.py look`、拼图和参考逐格对照、过 qa.md 的复刻清单。
 9. 交付时间线，向用户说明手动收尾清单（标记在时间线开头，第一条是手动设置播放帧率）。
 

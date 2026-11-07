@@ -25,7 +25,7 @@
 | 划像（live_api） | `add_transition`，具体名字没试过 | 待探针 | 未探针 |
 | 恒定慢动作（live_api） | `set_speed {options:{Percentage}}`，传百分数（50 就是 50%）。60p 素材放在 30p 或 24p 时间线上，50% 或 40% 的慢动作最干净。60p 时间线还要 `set_retime` 设为 `optical_flow` | 已验证 | 通过（#10）：条目时长不变，从源入点起按新速度播，静帧逐帧对上。`optical_flow` 读回 process 3 |
 | 定格、倒放（live_api） | `set_speed` 设为 0 或 −100。只走实时 API | 已验证 | 通过（#10）：倒放从源出点往回放；定格停在条目源区间的末尾（不是入点） |
-| 照片（live_api） | 不放原生静图（见常见坑第 27 条）。先用 ffmpeg 把照片做成短片：时间线帧率、等比缩放进时间线尺寸（不裁切，留黑边）、显式标 bt709，再按帧 append。HEIC 先用 `sips` 转 jpg，不动原图。缩小放在黑底上用 `set_transform` | 已验证 | 通过（#14）：短片按帧放，75 帧和 240 帧读回都对；ZoomX/Y 0.8 生效，画面 770×576；和原生静图的平均色差 0.81（0–255） |
+| 照片（live_api） | 不放原生静图（见常见坑第 27 条）。`photo_clips.py` 按 cut_plan 先把照片做成短片：时间线帧率、等比缩放进时间线尺寸（不裁切，留黑边）、显式标 bt709，再按帧 append。HEIC 先用 `sips` 转 jpg，不动原图。缩小放在黑底上用 `set_transform` | 已验证 | 通过（#14）：短片按帧放，75 帧和 240 帧读回都对；ZoomX/Y 0.8 生效，画面 770×576；和原生静图的平均色差 0.81（0–255） |
 | 变速曲线（manual） | 在 Resolve 里手动拉变速曲线，打标记写进手动收尾清单 | 手动 | 离线 `.drt` 本机否掉（#10）：速度全错，见 learnings.md 2026-11-02 |
 | 静态推镜（live_api） | `set_transform` 设置 ZoomX/ZoomY。4K 素材放在 4K 时间线上，推镜就是放大，会损失清晰度 | 已验证 | 通过（#5）：1.3 倍，静帧比对误差最小 |
 | 动态推拉、Ken Burns（fusion） | 每个条目一个最小 `.comp` 模板（MediaIn → Transform → MediaOut，只在 Size 上打关键帧，不写素材路径），填好起止缩放和末帧，用 `timeline_item_fusion import_comp` 挂上。不要用 Dynamic Zoom，它的属性名在 API 定义和 MCP 里对不上 | 已验证 | 通过（#6）：静帧和渲染都是 1.00 / 1.15 / 1.30。实时 `fusion_comp` 搭节点也能渲染，见常见坑第 4 条 |

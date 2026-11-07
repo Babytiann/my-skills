@@ -335,6 +335,9 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("give DIR or --music FILE")
     d = args.dir.expanduser().resolve()
     prep = json.loads((d / "prep.json").read_text(encoding="utf-8"))
+    if prep.get("kind") == "photo":  # its preview.jpg is the sheet; aggregate.py footage indexes it as it is
+        log(f"{d.name}: a photo, nothing to measure")
+        return 0
     audio = (prep.get("proxy") or {}).get("audio")
     if not audio:
         res = {"schema": "measure_audio/1", "skipped": "no audio stream"}

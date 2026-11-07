@@ -164,6 +164,7 @@ whisper 的时间比实际声音早。用 `say` 合成的干净人声测，句�
 | 人名条 | 4 处 | 无 | 无 | **单一来源** |
 
 - 复刻时按用户素材选一两种信息手法，不必都上。手写字形和署名属于原作者，不照抄，用户要用就换成自己的。
+- **照片插入（`photo`，2026-11-07 手填）。** 孤岛第 169 镜实测：3:2 照片居中放在纯黑底上，是铺满画面时的 0.552 倍，停 4.17 s。另两条记的是每张约 1.5–4 s，片尾连放约 2 s 一张。`dur_s 2.5`、`scale 0.55`、`background black`，两个数都**存疑**：缩放只量了一张，雪山的「黑底或深蓝底」没量。照片怎么放由 brief 的 `photos` 定（apply.md 第 5 节），签名和张数计数不加。
 
 ## 9. 调色
 
@@ -253,7 +254,7 @@ whisper 的时间比实际声音早。用 `say` 合成的干净人声测，句�
 手动收尾（标在时间线开头）：
 1. 设置播放帧率。
 2. 地点标题的字体按素材选。
-3. 地图、照片插入、时间戳、海拔角标这类信息手法，需要时手动做，素材和内容由用户提供。
+3. 地图、时间戳、海拔角标这类信息手法，需要时手动做，素材和内容由用户提供。照片插入和片尾连放已经自动：brief 写 `photos`，`photo_clips.py` 做短片（第 8 节）。
 
 不用的路线：动态推拉（Fusion Transform）、甩镜、急推、闪白、变速曲线、抖动 DRX。这个风格用不到。
 
@@ -273,4 +274,4 @@ whisper 的时间比实际声音早。用 `say` 合成的干净人声测，句�
   - L99、标题的字高、颜色和字体是 2026-11-06 评审后补改的，同时把 `offset_s` 的说明改成如实写取舍。
 - `rhythm`、`selection.shot_types` 没有改，是所有镜头放在一起算的；比较风格时看第 3、4 节的逐条数字。
 - 这一层没有 stills/，验收对照用子包的。
-- 2026-11-07 为对话素材手填了三项，都不来自 draft：`structure.order: chronological`、`aroll`（见第 4 节，除 `speech_share` 外都存疑），以及 `resolve` 里的「对白（A1）」。写了 `chronological` 之后，`--style links` 要求索引里有拍摄时间（重跑一次 `aggregate.py footage` 就有），无 story 的输出也和之前不同。回归基线用的是改之前的副本 `scripts/fixtures/baseline/links-style.json`。字幕换算同一天改成探针 #15 的实测值（第 12 节）。
+- 2026-11-07 为对话素材手填了三项，都不来自 draft：`structure.order: chronological`、`aroll`（见第 4 节，除 `speech_share` 外都存疑），以及 `resolve` 里的「对白（A1）」。写了 `chronological` 之后，`--style links` 要求索引里有拍摄时间（重跑一次 `aggregate.py footage` 就有），无 story 的输出也和之前不同。回归基线用的是改之前的副本 `scripts/fixtures/baseline/links-style.json`。同一天又加了 `photo`（第 8 节），brief 不写 `photos` 时不起作用。字幕换算同一天改成探针 #15 的实测值（第 12 节）。

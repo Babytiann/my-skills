@@ -12,6 +12,12 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-07 照片的拍摄时间不能用 sips 和 Spotlight 读
+- 场景：阶段 2 照片，macOS 自带的 sips 和 mdls
+- 做法：打算用 `sips -g creation` 或 `mdls kMDItemContentCreationDate` 拿拍摄时间，免得自己解析 EXIF
+- 问题：sips 的 `creation` 只读 TIFF 的 DateTime，相机写的 DateTimeOriginal 读回 `<nil>`；mdls 给的是这份文件的创建时间，复制一次就变成复制的时刻。EXIF 的时间本身不带时区，要另读 OffsetTimeOriginal。用户发来的一张实拍（经聊天转发）只剩 OffsetTimeOriginal、镜头和亚秒，拍摄时间和机型都被去掉了
+- 修法：sips 生成预览时会保留 EXIF，`prep.py` 用标准库从 preview.jpg 读 DateTimeOriginal 和 OffsetTimeOriginal，HEIC 也一样。没有时区的按本机时区读，设备名加「(no time zone)」，好单独设时钟偏移；没有拍摄时间的照片会提醒换原片或在 tags.json 写 `shot_at`。方向用 EXIF Orientation，ffmpeg 9 解 JPEG 时自己转正，sips 转 HEIC 也保留这个标签
+
 ## 2026-11-07 整条片一次转写，prompt 只管得到第一个窗口
 - 场景：测试 A，孤岛（BV1uparzhEjs，29 分钟），mlx-whisper large-v3-turbo，`measure_audio.whisper()` 原来的写法
 - 做法：整条声音一次 `transcribe`，`initial_prompt` 写简体和标点，`condition_on_previous_text=False`，把 whisper 的 segment 当句子用

@@ -775,5 +775,110 @@ class FootageFactsTest(unittest.TestCase):
         self.assertTrue(any("gap/overlap" in p for p in res["problems"]), res["problems"])
 
 
+
+def snap(pid, at, tags=("town",), order=50, day=1, **extra):
+    """One photo of the test trip, as aggregate.py footage indexes it."""
+    return {"id": pid, "kind": "photo", "source": f"projects/t/footage/{pid}.HEIC", "width": 4032, "height": 3024,
+            "preview": f"projects/t/proxies/{pid}/preview.jpg", "shot_at": at,
+            "shot_at_source": "exif.DateTimeOriginal" if at else None, "device": "phone", "order": order,
+            "day": day if at else None, "shot_type": "detail", "tags": list(tags), **extra}
+
+
+def trip_with_photos():
+    index = trip()
+    index["photos"] = [snap("P1", "2026-02-11T09:10:30+00:00", order=12),
+                       snap("P2", "2026-02-11T09:30:00+00:00", order=13),
+                       snap("P3", "2026-02-13T09:40:00+00:00", tags=("mountain",), order=120, day=3),
+                       snap("P9", None, order=200)]
+    return index
+
+
+class PhotoPlanTest(unittest.TestCase):
+    def setUp(self):
+        self.style = load("style.json")
+
+    def build(self, photos, story=True, style=None):
+        return plan_cut.build(style or self.style, trip_with_photos(), plan_brief(photos=photos), None, None,
+                              plan_story() if story else None)
+
+    def test_photos_in_the_index_change_nothing_until_the_brief_uses_them(self):
+        for story in (plan_story(), None):
+            with self.subTest(story=story is not None):
+                a = plan_cut.build(self.style, trip(), plan_brief(), None, None, story)
+                b = plan_cut.build(self.style, trip_with_photos(), plan_brief(), None, None, story)
+                self.assertEqual(json.dumps(a, ensure_ascii=False), json.dumps(b, ensure_ascii=False))
+
+    def test_a_photo_after_a_line_and_a_closing_run(self):
+        plan = self.build({"chapters": {"小镇": [{"clip": "P1", "after": 2}]}, "ending": ["P3", "P2"]})
+        self.assertTrue(plan["checks"]["ok"], plan["checks"]["problems"])
+        v1 = [v for v in plan["video"] if v["track"] == 1]
+        k = [v["clip"] for v in v1].index("P1")
+        self.assertEqual((v1[k - 1]["role"], v1[k - 1]["clip"], v1[k]["section"]), ("aroll", "TALK1", "小镇"))
+        self.assertEqual([v["clip"] for v in v1[-2:]], ["P3", "P2"])
+        self.assertEqual(v1[-1]["rec_out"], plan["timeline"]["duration_frames"])
+        self.assertTrue(all(v.get("recap") for v in v1[-2:]))
+        p, fps = v1[k], plan["timeline"]["fps"]
+        self.assertEqual((p["source"], p["photo"], p["src_in"], p["src_out"], p["source_fps"], p["audio"], p["role"],
+                          p["scale"], p["transition_out"]),
+                         ("projects/t/proxies/P1/photo.mp4", "projects/t/footage/P1.HEIC", 0, p["rec_out"] - p["rec_in"],
+                          fps, "mute", "photo", 1.0, None))
+        self.assertGreaterEqual(p["rec_out"] - p["rec_in"], round(3.0 * fps))
+        self.assertIn("t_src", p)
+        text = plan_cut.explain(plan)
+        self.assertIn("片尾回顾", text)
+        self.assertEqual([d["sentences"] for d in plan["dialogue"]], [d["sentences"] for d in self.build({})["dialogue"]])
+
+    def test_a_photo_against_the_clock_is_refused(self):
+        with self.assertRaisesRegex(plan_cut.PlanError, r"TALK1 was shot at .*before the item above it \(P1"):
+            self.build({"chapters": {"小镇": [{"clip": "P1", "after": 1}]}})
+        with self.assertRaisesRegex(plan_cut.PlanError, r"photos\.chapters\['小镇'\]\[0\]: P3 was shot at .*outside"):
+            self.build({"chapters": {"小镇": [{"clip": "P3", "at": "end"}]}})
+        plan = self.build({"chapters": {"小镇": [{"clip": "P3", "at": "end", "out_of_order": "回头看这座山"}]}})
+        self.assertTrue(plan["checks"]["ok"], plan["checks"]["problems"])
+        self.assertIn("顺序例外：回头看这座山", plan_cut.explain(plan))
+
+    def test_photo_lists_that_cannot_be_placed_name_the_item(self):
+        cases = [({"chapters": {"小镇": ["TALK1"]}}, True, r"photos\.chapters\['小镇'\]\[0\]: 'TALK1' is not a photo.*video clip"),
+                 ({"ending": ["P2", "P2"]}, True, r"photos\.ending\[1\]: P2 is used twice"),
+                 ({"chapters": {"小镇": [{"clip": "P1", "after": 5}]}}, True, r"after 5, but 小镇 has 2 line"),
+                 ({"chapters": {"小镇": [{"clip": "P1", "after": 1}]}}, False, r"without a story use at: start or at: end"),
+                 ({"chapters": {"小镇": [{"clip": "P1", "at": "middle"}]}}, False, r"at is start or end"),
+                 ({"chapters": {"海边": ["P1"]}}, False, r"'海边' is not a chapter")]
+        for photos, story, pattern in cases:
+            with self.subTest(pattern=pattern), self.assertRaisesRegex(plan_cut.PlanError, pattern):
+                self.build(photos, story=story)
+
+    def test_without_a_story_photos_open_and_close_a_chapter(self):
+        plan = self.build({"chapters": {"小镇": [{"clip": "P1", "at": "start"}, {"clip": "P2", "at": "end"}]}}, story=False)
+        self.assertTrue(plan["checks"]["ok"], plan["checks"]["problems"])
+        town = [v for v in plan["video"] if v["section"] == "小镇"]
+        self.assertEqual((town[0]["clip"], town[-1]["clip"]), ("P1", "P2"))
+        self.assertGreater(len(town), 2, "footage between the two photos")
+        self.assertNotIn("role", town[0])
+        self.assertIn("P1（照片）", plan_cut.explain(plan))
+        self.assertFalse(any(a <= town[0]["rec_in"] < b for a, b in plan["speech"]))
+
+    def test_a_photo_with_no_time_is_placed_and_said_so(self):
+        plan = self.build({"chapters": {"小镇": [{"clip": "P9", "at": "end"}]}})
+        self.assertTrue(plan["checks"]["ok"], plan["checks"]["problems"])
+        self.assertTrue(any("P9 has no shooting time" in w for w in plan["warnings"]), plan["warnings"])
+        p9 = next(v for v in plan["video"] if v["clip"] == "P9")
+        self.assertNotIn("t_src", p9)
+        self.assertNotIn("P9", plan["order"]["untimed"])
+
+    def test_the_style_sets_photo_length_and_scale(self):
+        style = copy.deepcopy(self.style)
+        style["photo"] = {"dur_s": 2.5, "scale": 0.55}
+        plan = self.build({"ending": ["P2"]}, style=style)
+        self.assertTrue(plan["checks"]["ok"], plan["checks"]["problems"])
+        p = next(v for v in plan["video"] if v.get("kind") == "photo")
+        self.assertEqual(p["scale"], 0.55)
+        self.assertGreaterEqual(p["rec_out"] - p["rec_in"], round(2.5 * plan["timeline"]["fps"]))
+
+    def test_review_shows_a_photo_from_its_preview(self):
+        plan = self.build({"ending": ["P2"]})
+        cell = next(c for c in story.cells(plan, trip_with_photos()) if c["clip"] == "P2")
+        self.assertEqual((cell["photo"], cell["src_s"], cell["role"], cell["marks"]), (True, 0.0, "照片", "片尾回顾"))
+
 if __name__ == "__main__":
     unittest.main()

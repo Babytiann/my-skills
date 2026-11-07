@@ -10,7 +10,7 @@ HEVC/H.264 included); without it ffmpeg falls back to libx264.
 Usage:
   python3 -I -B prep.py probe FILE
   python3 -I -B prep.py ref BV_OR_URL_OR_FILE --id ID [--quality 1080p]
-  python3 -I -B prep.py footage --project NAME
+  python3 -I -B prep.py footage --project NAME     # videos and photos (jpg, jpeg, heic, heif, png)
   python3 -I -B prep.py proxy SRC --out DIR
 
 `ref` downloads Bilibili videos with `opencli bilibili download` (logged-in
@@ -38,6 +38,8 @@ import paths as vpaths  # noqa: E402
 
 PROXY_HEIGHT = 540
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".m4v", ".mts", ".mxf", ".avi", ".webm", ".flv"}
+IMAGE_EXT = {".jpg", ".jpeg", ".heic", ".heif", ".png"}
+RAW_EXT = {".dng", ".cr2", ".cr3", ".nef", ".arw", ".raf", ".orf", ".rw2"}  # listed for the user, not used yet
 GENERIC_BRANDS = {"isom", "iso2", "iso4", "iso5", "iso6", "mp41", "mp42", "qt", "m4v", "avc1", "dash"}
 BV_RE = re.compile(r"(BV[0-9A-Za-z]{10})")
 DOWNLOAD_TIMEOUT_S = 3600
@@ -233,10 +235,10 @@ def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tup
     return files[0], extra
 
 
-def footage_files(footage: Path) -> list[Path]:
+def footage_files(footage: Path, exts: set[str] = VIDEO_EXT | IMAGE_EXT) -> list[Path]:
     """Footage under footage/, minus anything hidden: exFAT cards put ._C0001.MP4 beside every clip."""
     return sorted(p for p in footage.rglob("*")
-                  if p.suffix.lower() in VIDEO_EXT and p.is_file()
+                  if p.suffix.lower() in exts and p.is_file()
                   and not any(part.startswith(".") for part in p.relative_to(footage).parts))
 
 
@@ -270,7 +272,8 @@ def assign_ids(files: list[str], cached: dict[str, str]) -> dict[str, str]:
         twins = [r for r in rivals if r != p and r.parent == p.parent]
         base = f"{clean_id(p.stem)}_{p.suffix[1:].lower()}" if twins else clean_id(p.stem)
         folders = [clean_id(d) for d in p.parent.parts]
-        names = [base] if len(rivals) == 1 or not folders else []
+        alone = all(r.parent == p.parent for r in rivals)  # only twins here, and the extension tells them apart
+        names = [base] if alone or not folders else []
         names += ["_".join(folders[-k:] + [base]) for k in range(1, len(folders) + 1)]
         tries = chain(names, (f"{names[-1]}_{i}" for i in count(2)))
         ids[f] = next(n for n in tries if n.casefold() not in taken)
@@ -278,8 +281,118 @@ def assign_ids(files: list[str], cached: dict[str, str]) -> dict[str, str]:
     return ids
 
 
+# ---------------------------------------------------------------- photos
+
+def exif_fields(jpeg: bytes) -> dict:
+    """The few EXIF tags a photo needs, from a JPEG's APP1 segment: stdlib only.
+
+    sips reports `creation` from the TIFF DateTime tag only, and mdls gives the
+    file's own creation time (a copy resets it), so neither knows when the
+    picture was taken. sips does keep the EXIF when it writes the preview, so
+    the preview is read here for every format.
+    """
+    want = {0x010F: "Make", 0x0110: "Model", 0x0112: "Orientation", 0x0132: "DateTime",
+            0x9003: "DateTimeOriginal", 0x9011: "OffsetTimeOriginal"}
+    i = 2
+    while i + 4 <= len(jpeg) and jpeg[i] == 0xFF:
+        marker, size = jpeg[i + 1], int.from_bytes(jpeg[i + 2:i + 4], "big")
+        if marker == 0xE1 and jpeg[i + 4:i + 10] == b"Exif\0\0":
+            tiff = jpeg[i + 10:i + 2 + size]
+            break
+        if marker in (0xDA, 0xD9):
+            return {}
+        i += 2 + size
+    else:
+        return {}
+    order = "big" if tiff[:2] == b"MM" else "little"
+    num = lambda at, n: int.from_bytes(tiff[at:at + n], order)  # noqa: E731
+    out: dict = {}
+
+    def walk(at: int) -> int | None:
+        sub = None
+        for k in range(num(at, 2) if at + 2 <= len(tiff) else 0):
+            e = at + 2 + 12 * k
+            tag, typ, cnt = num(e, 2), num(e + 2, 2), num(e + 4, 4)
+            if tag == 0x8769:
+                sub = num(e + 8, 4)
+            elif tag in want and typ == 2:
+                at_v = e + 8 if cnt <= 4 else num(e + 8, 4)
+                out[want[tag]] = tiff[at_v:at_v + cnt].split(b"\0")[0].decode("ascii", "replace").strip()
+            elif tag in want and typ == 3:
+                out[want[tag]] = num(e + 8, 2)
+        return sub
+
+    sub = walk(num(4, 4))
+    if sub:
+        walk(sub)
+    return out
+
+
+def photo_time(fields: dict) -> tuple[str | None, str | None]:
+    """When a photo was taken, as UTC ISO text, and how sure that is.
+
+    EXIF keeps the camera's local wall time; OffsetTimeOriginal says which zone.
+    Without it the time is read as this Mac's local time ("exif.no_zone"), which
+    is wrong by the zone difference when the trip was abroad: prep lists such
+    photos as their own device so one clock offset can put them right.
+    """
+    raw = fields.get("DateTimeOriginal") or fields.get("DateTime")
+    try:
+        t = dt.datetime.strptime(raw or "", "%Y:%m:%d %H:%M:%S")
+    except ValueError:
+        return None, None
+    if t.year < 2000:
+        return None, None
+    m = re.fullmatch(r"([+-])(\d\d):(\d\d)", fields.get("OffsetTimeOriginal") or "")
+    if m:
+        sign = 1 if m.group(1) == "+" else -1
+        t = t.replace(tzinfo=dt.timezone(sign * dt.timedelta(hours=int(m.group(2)), minutes=int(m.group(3)))))
+        source = "exif.DateTimeOriginal" if fields.get("DateTimeOriginal") else "exif.DateTime"
+    else:
+        t = t.astimezone()
+        source = "exif.no_zone"
+    return t.astimezone(dt.timezone.utc).isoformat(), source
+
+
+def sips_props(path: Path, *keys: str) -> dict:
+    r = run(["sips", *[x for k in keys for x in ("-g", k)], str(path)])
+    if r.returncode:
+        raise SystemExit(f"sips failed on {path.name}: {r.stderr.strip()[:300]}")
+    props = {}
+    for line in r.stdout.splitlines()[1:]:
+        k, _, v = line.strip().partition(": ")
+        if v and v != "<nil>":
+            props[k] = v
+    return props
+
+
+def prep_photo(P: vpaths.Paths, src: Path, out_dir: Path, rel: str) -> dict:
+    """A photo's prep.json: size, shooting time, camera, and a 640 px preview for tagging and review."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    props = sips_props(src, "pixelWidth", "pixelHeight", "make", "model")
+    r = run(["sips", "-Z", "640", "-s", "format", "jpeg", str(src), "--out", str(out_dir / "preview.jpg")])
+    if r.returncode:
+        raise SystemExit(f"sips could not make a preview of {src.name}: {r.stderr.strip()[:300]}")
+    fields = exif_fields((out_dir / "preview.jpg").read_bytes())
+    shot_at, source = photo_time(fields)
+    w, h = int(props.get("pixelWidth", 0)), int(props.get("pixelHeight", 0))
+    if fields.get("Orientation") in (5, 6, 7, 8):  # stored sideways; ffmpeg turns it upright on decode
+        w, h = h, w
+    camera = f"{props.get('make', '')} {props.get('model', '')}".strip() or None
+    base = camera or (rel.split("/")[0] if "/" in rel else "unknown")
+    report = {"kind": "photo", "source": describe_source(P, src), "preview": "preview.jpg",
+              "probe": {"format": src.suffix[1:].lower(), "width": w, "height": h,
+                        "orientation": fields.get("Orientation"), "shot_at": shot_at, "shot_at_source": source,
+                        "device": camera},
+              "device": f"{base} (no time zone)" if source == "exif.no_zone" else base}
+    (out_dir / "prep.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+    return report
+
+
 def refresh_prep(one: dict, src: Path, out: Path, rel: str) -> None:
     """Bring a prep.json from an older run up to date without redoing its proxy."""
+    if one.get("kind") == "photo":
+        return
     changed = False
     if "shot_at" not in one["probe"]:
         fresh = probe(src)
@@ -309,7 +422,7 @@ def prep_footage(P: vpaths.Paths, project: str) -> dict:
     footage, proxies = proj / "footage", proj / "proxies"
     files = footage_files(footage)
     if not files:
-        raise SystemExit(f"no video files under {P.rel(footage)}")
+        raise SystemExit(f"no video or photo files under {P.rel(footage)}")
     rel_of = {c: c.relative_to(footage).as_posix() for c in files}
     prefix = PurePosixPath(P.rel(footage))
     cached = {}
@@ -325,10 +438,18 @@ def prep_footage(P: vpaths.Paths, project: str) -> dict:
     for c in files:
         rel_id = vpaths.check_name(ids[rel_of[c]])
         out = proxies / rel_id
+        photo = c.suffix.lower() in IMAGE_EXT
         if (out / "prep.json").exists():
             one = json.loads((out / "prep.json").read_text(encoding="utf-8"))
         else:
-            one = prep_one(P, c, out)
+            one = prep_photo(P, c, out, rel_of[c]) if photo else prep_one(P, c, out)
+        if photo:
+            rep["clips"].append({"id": rel_id, "kind": "photo", "source": one["source"]["path"], "proxy": P.rel(out),
+                                 "device": one["device"], "shot_at": one["probe"]["shot_at"],
+                                 "shot_at_source": one["probe"]["shot_at_source"]})
+            print(f"{rel_id}: photo {one['probe']['width']}x{one['probe']['height']} "
+                  f"{one['probe']['shot_at_source'] or 'no time'}", file=sys.stderr)
+            continue
         refresh_prep(one, c, out, rel_of[c])
         rep["clips"].append({"id": rel_id, "source": one["source"]["path"], "proxy": P.rel(out),
                              "fps": one["probe"]["fps"], "hdr": one["probe"]["hdr"],
@@ -336,6 +457,24 @@ def prep_footage(P: vpaths.Paths, project: str) -> dict:
                              "shot_at": one["probe"]["shot_at"], "shot_at_source": one["probe"]["shot_at_source"]})
         print(f"{rel_id}: {one['probe']['width']}x{one['probe']['height']} @ {one['probe']['fps']} "
               f"{one['probe']['color_transfer']}", file=sys.stderr)
+    zoneless = [c["id"] for c in rep["clips"] if c["shot_at_source"] == "exif.no_zone"]
+    if zoneless:
+        here = dt.datetime.now().astimezone().strftime("%z")
+        print(f"warn {len(zoneless)} photo(s) carry no time zone and were read as this Mac's local time "
+              f"(UTC{here[:3]}:{here[3:]}). If the trip was in another zone, compare their device range "
+              "with the videos below and set clock_offsets_s for the '(no time zone)' device in the brief",
+              file=sys.stderr)
+    untimed = [c["id"] for c in rep["clips"] if c.get("kind") == "photo" and not c["shot_at"]]
+    if untimed:
+        print(f"warn {len(untimed)} photo(s) carry no shooting time in their EXIF, which happens when a photo is "
+              "exported or sent through a chat app: use the camera original, or write shot_at for it in "
+              "tags.json. Until then nothing can check where it belongs: " + ", ".join(untimed[:5])
+              + (" ..." if len(untimed) > 5 else ""), file=sys.stderr)
+    raw = footage_files(footage, RAW_EXT)
+    if raw:
+        rep["raw_skipped"] = [f.relative_to(footage).as_posix() for f in raw]
+        print(f"warn {len(raw)} RAW photo(s) skipped (not supported yet); export them as jpg or heic: "
+              + ", ".join(rep["raw_skipped"][:5]) + (" ..." if len(raw) > 5 else ""), file=sys.stderr)
     rep["devices"] = device_ranges(rep["clips"])
     for d in rep["devices"]:
         print(f"device {d['device']}: {d['clips']} clip(s), {d['first']} .. {d['last']}, "
