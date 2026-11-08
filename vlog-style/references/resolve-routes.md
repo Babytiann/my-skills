@@ -73,7 +73,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 
 ## 探针清单
 
-#1–#12 于 2026-11-02、#13–#16 于 2026-11-07 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
+#1–#12 于 2026-11-02、#13–#17 于 2026-11-07 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
 
 1. **连通性。** 在偏好设置 System > General 里，「External scripting using」要设为 Local。MCP 要能列出工程。Resolve 没开时 MCP 会自己启动它。
 2. **帧号。** 读回时间线起始帧，29.97 应为 108000，24 应为 86400。核对 `GetEnd` 是否不含该帧，也就是 end − start = duration。
