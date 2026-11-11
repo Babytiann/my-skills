@@ -360,6 +360,41 @@ class LumaEventTest(unittest.TestCase):
         self.assertEqual(self.ev(Y, 60, 61, 12)["flash"]["frames"], 6)
 
 
+class FrameBarsTest(unittest.TestCase):
+    """Bars that only some shots carry: found on one keyframe, and dark shots are not taken for bars."""
+
+    def setUp(self):
+        import measure_video
+        self.bars = measure_video.frame_bars
+        self.rng = np.random.default_rng(3)
+
+    def picture(self, lo=40, hi=200):
+        return self.rng.integers(lo, hi, (180, 320)).astype(np.uint8)
+
+    def test_a_scope_crop_on_one_shot(self):
+        g = self.picture()
+        g[:22] = self.rng.integers(0, 3, (22, 320))  # 2.35:1 inside 16:9 at 320 px: 22 rows each side
+        g[-22:] = self.rng.integers(0, 3, (22, 320))
+        self.assertEqual(self.bars(g), (22, 22, 0, 0))
+        g[166:172, 100:220] = 230  # a subtitle line set in the bottom bar
+        self.assertEqual(self.bars(g), (22, 22, 0, 0))
+
+    def test_a_photo_on_black_has_bars_on_all_sides(self):
+        g = np.zeros((180, 320), np.uint8)
+        g[9:171, 40:280] = self.picture()[9:171, 40:280]
+        self.assertEqual(self.bars(g), (9, 9, 40, 40))
+
+    def test_dark_shots_are_not_bars(self):
+        night = self.rng.integers(0, 12, (180, 320)).astype(np.uint8)  # dark all over
+        self.assertEqual(self.bars(night), (0, 0, 0, 0))
+        sky = self.picture()
+        sky[:40] = self.rng.integers(0, 8, (40, 320))  # black sky at the top only
+        self.assertEqual(self.bars(sky), (0, 0, 0, 0))
+        thin = self.picture()
+        thin[:3] = thin[-3:] = 0  # a few black rows from scaling, under 3%
+        self.assertEqual(self.bars(thin), (0, 0, 0, 0))
+
+
 
 @unittest.skipUnless(os.environ.get("ASR"), "set ASR=1 to run whisper (needs the 1.6 GB model)")
 class AsrSentencesTest(unittest.TestCase):

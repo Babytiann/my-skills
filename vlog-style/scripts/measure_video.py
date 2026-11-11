@@ -597,6 +597,40 @@ def look_of(rgb: np.ndarray, mask: np.ndarray) -> dict | None:
     return {k: (v if isinstance(v, list) else rnd(v, 3)) for k, v in out.items()}
 
 
+BAR_MAX = 12  # a bar row or column: 99% of its pixels at or below this (bars decode to 0-3)
+
+
+def _bar_pair(lines: np.ndarray) -> tuple[int, int]:
+    """Bars at both ends of one axis; lines is (n, k), one row or column per entry. (0, 0) when none.
+
+    Only a symmetric pair of pure black bands with picture right inside counts, so a night
+    shot whose sky or ground is dark at one end, or dark all over, is not taken for bars.
+    """
+    n = len(lines)
+    # mostly black with a black median: subtitles are often set in the bottom bar and must not end it there
+    black = ((lines <= BAR_MAX).mean(axis=1) >= 0.6) & (np.median(lines, axis=1) <= 3)
+    pure = np.percentile(lines, 99, axis=1) <= BAR_MAX
+    a = next((i for i in range(n) if not black[i]), n)
+    b = next((i for i in range(n) if not black[n - 1 - i]), n)
+    if not (0.03 * n <= a <= 0.35 * n and 0.03 * n <= b <= 0.35 * n) or abs(a - b) > max(2, 0.03 * n):
+        return 0, 0
+    if pure[:a].mean() < 0.5 or pure[n - b:].mean() < 0.5:  # a bar is plain black for most of its rows
+        return 0, 0
+    inside = np.percentile(lines[[a, n - 1 - b]], 90, axis=1)
+    return (a, b) if (inside > BAR_MAX + 10).any() else (0, 0)
+
+
+def frame_bars(gray: np.ndarray) -> tuple[int, int, int, int]:
+    """Pixel sizes (top, bottom, left, right) of black bars baked into one frame.
+
+    The film-wide letterbox comes from the scan; this catches bars that only some shots
+    carry (a 2.35:1 crop on the scenery shots, a 4:3 clip, a photo on black).
+    """
+    top, bottom = _bar_pair(gray)
+    left, right = _bar_pair(gray.T)
+    return top, bottom, left, right
+
+
 def stage_look(d: Path, fps: float, scan: dict, text: dict) -> dict:
     lb = scan["letterbox"]
     band = (text or {}).get("subtitle_band")
@@ -617,8 +651,19 @@ def stage_look(d: Path, fps: float, scan: dict, text: dict) -> dict:
             mask[max(0, int((y - 0.25 * bh) * h)):int((y + 1.25 * bh) * h),
                  max(0, int((x - 0.1 * bw) * w)):int((x + 1.1 * bw) * w)] = False
         stats_ = look_of(rgb, mask)
-        if stats_ and (stats_["L50"] or 0) > 3:  # skip black frames (dips, fades)
-            per_shot.append({"shot": sh["i"], "frame": k["frame"], **stats_})
+        if not stats_ or (stats_["L50"] or 0) <= 3:  # skip black frames (dips, fades, black text cards)
+            continue
+        # judged on the frame as a whole: with its bars out, a black card would read as its text alone
+        bars = frame_bars(cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY))
+        if any(bars):
+            t, b, l, r = bars
+            mask[:t] = mask[h - b:] = False
+            mask[:, :l] = mask[:, w - r:] = False
+            stats_ = look_of(rgb, mask)
+        if stats_:
+            per_shot.append({"shot": sh["i"], "frame": k["frame"], **stats_,
+                             **({"bars": [rnd(bars[0] / h, 3), rnd(bars[1] / h, 3), rnd(bars[2] / w, 3),
+                                          rnd(bars[3] / w, 3)]} if any(bars) else {})})
     keys_ = ["L01", "L50", "L99", "Lstd", "shadow", "chroma", "sh_a", "sh_b", "mid_a", "mid_b",
              "hi_a", "hi_b", "vignette"]
     summary = {k: med_mad([p[k] for p in per_shot if p.get(k) is not None]) for k in keys_}
@@ -626,7 +671,8 @@ def stage_look(d: Path, fps: float, scan: dict, text: dict) -> dict:
     return {"shots_used": len(per_shot), "summary": summary,
             "hue_hist": None if hue is None else [rnd(v) for v in (hue / max(hue.sum(), 1e-9))],
             "per_shot": per_shot,
-            "note": "Lab from 320 px keyframes; letterbox, caption band and OCR boxes masked. "
+            "shots_with_bars": sum(1 for p in per_shot if p.get("bars")),
+            "note": "Lab from 320 px keyframes; letterbox (film-wide and per shot), caption band and OCR boxes masked. "
                     "Grain is not measurable after platform re-encoding; judge it from stills."}
 
 

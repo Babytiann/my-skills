@@ -7,6 +7,10 @@ location is written relative to it, so moving the library to a NAS means
 editing one line. VLOG_STYLE_ROOT overrides `root` for a single run (tests, a
 trial mount) without touching the file.
 
+A root under /Volumes/<name>/ sits on an external or network disk. While that
+disk is not mounted, every command that would read or write under root stops
+and says so; `show` and `check` still run.
+
 Rules enforced here:
 - files under root are referred to by relative POSIX paths ("projects/x/a.mp4");
 - an absolute path is built only at the moment a tool needs it and is never
@@ -34,6 +38,7 @@ from pathlib import Path, PurePosixPath
 SKILL_DIR = Path(__file__).resolve().parent.parent
 CONFIG = SKILL_DIR / "paths.toml"
 ENV_ROOT = "VLOG_STYLE_ROOT"
+VOLUMES = Path("/Volumes")  # where macOS mounts external and network disks
 
 STYLE_SUBDIRS = ("stills", "luts", "drx", "fusion")
 PROJECT_SUBDIRS = ("footage", "proxies", "index", "plan", "qa")
@@ -125,7 +130,26 @@ def style_file(name: str, base: Path | None = None) -> Path:
     raise ValueError(f"no style pack {name!r}; existing: {', '.join(packs) or 'none'}")
 
 
-def load(config: Path = CONFIG) -> Paths:
+def volume_of(root: Path) -> Path | None:
+    """Mount point of a root on an external or network disk; None for a root anywhere else."""
+    try:
+        parts = root.relative_to(VOLUMES).parts
+    except ValueError:
+        return None
+    return VOLUMES / parts[0] if parts else None
+
+
+def volume_mounted(root: Path) -> bool | None:
+    """Whether the disk under root is mounted; None when root is not on such a disk."""
+    vol = volume_of(root)
+    if vol is None:
+        return None
+    # realpath: the startup disk appears under /Volumes as a symlink to /, which ismount alone calls unmounted
+    return os.path.ismount(os.path.realpath(vol))
+
+
+def load(config: Path = CONFIG, need_volume: bool = True) -> Paths:
+    """Read the path table. need_volume=False skips the mounted-disk check, for commands that never touch root."""
     with open(config, "rb") as fh:
         data = tomllib.load(fh)
     root = os.environ.get(ENV_ROOT) or data.get("root")
@@ -137,7 +161,12 @@ def load(config: Path = CONFIG) -> Paths:
     for key, value in dirs.items():
         if value.startswith(("/", "~")) or ".." in PurePosixPath(value).parts:
             raise SystemExit(f"{config}: dirs.{key} must be relative to root, got {value!r}")
-    return Paths(Path(root).expanduser(), dirs)
+    paths = Paths(Path(root).expanduser(), dirs)
+    if need_volume and volume_mounted(paths.root) is False:
+        # Caught here, because later it only shows as a PermissionError from mkdir or as an empty library.
+        raise SystemExit(f"{paths.root}: the disk {volume_of(paths.root).name!r} is not mounted. "
+                         f"Plug it in, or set {ENV_ROOT} to use another root for this run.")
+    return paths
 
 
 def init(paths: Paths, style: str | None = None, project: str | None = None) -> list[Path]:
@@ -222,12 +251,13 @@ def main(argv: list[str] | None = None) -> int:
     p_chk.add_argument("targets", nargs="+", type=Path)
     args = ap.parse_args(argv)
 
-    paths = load()
+    paths = load(need_volume=args.cmd in ("init", "resolve"))  # show only reports, check only reads its arguments
     if args.cmd == "show":
         print(json.dumps({
             "root": str(paths.root),
             "root_source": ENV_ROOT if os.environ.get(ENV_ROOT) else "paths.toml",
             "root_exists": paths.root.exists(),
+            "volume_mounted": volume_mounted(paths.root),  # null: root is not on an external disk
             "dirs": paths.dirs,
         }, ensure_ascii=False, indent=2))
     elif args.cmd == "init":

@@ -293,8 +293,13 @@ def classify_text(tracks: list[dict], speech=None, band_min: int = 5) -> dict:
             if tr["center"][1] > 0.7 and abs(tr["center"][0] - 0.5) < 0.2 and tr["drift"] < 0.03]
     band = None
     if cand:
-        ys = [tr["center"][1] for tr in cand]
-        y0 = median(ys)
+        # Anchor on the densest row, not on the median of every candidate: much scene text low in
+        # the frame (signs, a web page on screen) pulled the median off the caption line in one
+        # film (Svalbard, BV1H5xie8EJZ) and its captions were sorted as titles.
+        ys = sorted(tr["center"][1] for tr in cand)
+        dense = max(range(len(ys)), key=lambda i: bisect.bisect_right(ys, ys[i] + 0.02)
+                    - bisect.bisect_left(ys, ys[i] - 0.02))
+        y0 = median([y for y in ys if abs(y - ys[dense]) <= 0.02])
         in_band = [tr for tr in cand if abs(tr["center"][1] - y0) <= 0.05]
         h0 = median([tr["height"] for tr in in_band])
         in_band = [tr for tr in in_band if 0.6 * h0 <= tr["height"] <= 1.6 * h0]
