@@ -1,26 +1,34 @@
 {
  "schema_version": 1,
  "name": "links/polar-night",
- "summary": "纪录片式旅行 vlog：旁白和底部字幕带着走，4–5 秒一刀、97% 硬切；镜头的运动来自无人机、车和步行，不靠后期推拉；冷蓝暗调跟着光走；左侧时间戳和黑底叙事卡交代时间地点",
+ "summary": "极夜纪录片式旅行 vlog（同一系列的两集）：旁白和对镜头讲话带着走，底部烧录字幕贯穿全片；约 4.7 秒一刀，98% 是硬切，黑场和叠化用在冷开场进铺垫、时间跳跃、生成画面和片尾；远景和中景为主，航拍和细节交代环境，镜头的运动来自拍摄时的机位，后期不加推拉；极夜冷蓝暗调跟着光走，灯、烛光和炉火保留暖橙；左侧中部淡入淡出的衬线时间戳交代几点钟",
  "sources": [
   {
    "id": "BV1sHqPBLExZ",
    "url": "https://www.bilibili.com/video/BV1sHqPBLExZ",
-   "measured": "2026-11-01",
-   "title": "当太阳不再升起，我们的世界会变成什么样？（第 1 集「0.9 度的太阳」，Linksphotograph）"
+   "title": "当太阳不再升起，我们的世界会变成什么样？",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  },
+  {
+   "id": "BV1HrrjB9EUj",
+   "url": "https://www.bilibili.com/video/BV1HrrjB9EUj",
+   "title": "Links｜我来到了一个24小时都是黑夜的地方",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
   }
  ],
- "basis": "single_reference_chapters",
+ "basis": "multi_reference",
  "deliverable": {
   "fps": 29.97,
   "width": 3840,
   "height": 2160,
   "duration_s": {
-   "median": 1786.4,
-   "mad": 0.0,
-   "p10": 1786.4,
-   "p90": 1786.4,
-   "n": 1
+   "median": 1805.9,
+   "mad": 19.5,
+   "p10": 1790.3,
+   "p90": 1821.5,
+   "n": 2
   },
   "letterbox": null
  },
@@ -28,95 +36,94 @@
   "sections": [
    {
     "role": "hook",
-    "share": 0.0256,
+    "share": 0.0207,
     "shot_len_s": {
-     "median": 4.688,
-     "mad": 1.051,
-     "p10": 2.265,
-     "p90": 6.463,
-     "n": 10
+     "median": 3.253,
+     "mad": 1.068,
+     "p10": 1.925,
+     "p90": 5.586,
+     "n": 20
     },
-    "notes": "冷开场：旁白发问，配人物剪影和冷蓝远景，第一个时间戳在 8 s 左右出现"
+    "notes": "冷开场 29–46 s：主持人对镜头发问，接目的地的风景，左侧叠时间戳（第 2 集连着 5 个，约 3 s 一个）；最后淡到黑进铺垫"
    },
    {
     "role": "intro",
-    "share": 0.049,
+    "share": 0.0392,
     "shot_len_s": {
-     "median": 5.255,
-     "mad": 1.185,
-     "p10": 3.603,
-     "p90": 10.407,
-     "n": 14
+     "median": 3.737,
+     "mad": 1.518,
+     "p10": 1.689,
+     "p90": 9.866,
+     "n": 30
     },
     "transition_in": "dip_to_black",
-    "notes": "从黑场进入；交代背景和行程，可以对镜头讲；末尾接黑底叙事卡和集标题卡"
+    "notes": "从黑场进入（两集都是）；交代怎么来的：第 1 集地球 CG 讲极夜成因、飞到罗瓦涅米，末尾接黑底叙事卡和集标题卡；第 2 集接上一集的预告（飞机上打字、舷窗上叠片名），落地特罗姆瑟"
    },
    {
     "role": "chapter",
-    "share": 0.8869,
+    "share": 0.8837,
     "shot_len_s": {
-     "median": 4.805,
-     "mad": 1.935,
-     "p10": 2.169,
-     "p90": 11.221,
-     "n": 270
+     "median": 4.838,
+     "mad": 1.968,
+     "p10": 2.115,
+     "p90": 10.944,
+     "n": 545
     },
-    "notes": "一章一个地点或一个时段，章首 4 s 左右出左侧时间戳；章节之间直接硬切"
+    "notes": "一章一个地点或时段，按时间走；章首常叠左侧时间戳（15 章里 8 章有），章节之间直接硬切"
    },
    {
     "role": "interlude",
-    "share": 0.0276,
+    "share": 0.0164,
     "shot_len_s": {
-     "median": 3.203,
-     "mad": 0.534,
-     "p10": 2.302,
-     "p90": 4.538,
-     "n": 11
+     "median": 3.069,
+     "mad": 0.651,
+     "p10": 2.452,
+     "p90": 4.418,
+     "n": 14
     },
-    "notes": "参考里是赞助口播；brief 里给 interlude_tags 才剪，否则跳过"
+    "notes": "只在第 1 集：帐篷里的赞助口播（49 s）和片尾的赞助致谢（10 s）；brief 给 interlude_tags 才剪，否则跳过"
    },
    {
     "role": "ending",
-    "share": 0.0109,
+    "share": 0.04,
     "shot_len_s": {
-     "median": 2.502,
-     "mad": 2.136,
-     "p10": 0.234,
-     "p90": 6.99,
-     "n": 6
+     "median": 3.503,
+     "mad": 1.101,
+     "p10": 1.979,
+     "p90": 10.241,
+     "n": 28
     },
-    "transition_in": "dip_to_black",
-    "notes": "淡出进黑底叙事卡，再接下集预告和系列名，全部淡入淡出"
+    "notes": "从收束旁白开始，接无字幕的夜景段落，淡到黑出字距很宽的片尾标识；第 1 集还有黑底叙事卡、下集预告和下一集片名，第 2 集没有"
    }
   ]
  },
  "selection": {
-  "max_shake": 0.932,
+  "max_shake": 0.935,
   "shot_types": {
-   "wide": 0.402,
-   "medium": 0.214,
-   "aerial": 0.157,
-   "selfie": 0.142,
-   "detail": 0.075,
-   "close": 0.011
+   "wide": 0.379,
+   "medium": 0.26,
+   "aerial": 0.148,
+   "detail": 0.122,
+   "selfie": 0.088,
+   "close": 0.002
   },
-  "opening": "冷开场：旁白发问，配目的地的人物剪影和冷蓝远景，左侧叠时间戳",
+  "opening": "冷开场 29–46 s：主持人对镜头发问，接目的地的风景（第 1 集是夜里的特罗姆瑟、两人背影看峡湾、Senja 的雪山和蓝调木屋；第 2 集是 Segla 的日落航拍，再连着 5 个各带一个时间戳的 Senja 风景，约 3 s 一个），左侧叠时间戳，最后淡到黑进铺垫",
   "reject": []
  },
  "rhythm": {
   "shot_len_s": {
-   "median": 4.705,
-   "mad": 1.835,
+   "median": 4.688,
+   "mad": 1.802,
    "p10": 2.169,
-   "p90": 11.078,
-   "n": 311
+   "p90": 11.164,
+   "n": 618
   },
-  "cuts_per_min": 10.41,
-  "min_shot_s": 1.55
+  "cuts_per_min": 10.23,
+  "min_shot_s": 1.7
  },
  "beat": {
-  "hit_rate": 0.2917,
-  "baseline": 0.0631,
+  "hit_rate": 0.2548,
+  "baseline": 0.0682,
   "offset_frames": 0,
   "use_downbeats": true,
   "confidence": "ok"
@@ -124,18 +131,18 @@
  "transitions": [
   {
    "type": "hard_cut",
-   "share": 0.971
-  },
-  {
-   "type": "dip_to_black",
-   "share": 0.0161,
-   "frames": 8,
-   "where": "any"
+   "share": 0.9812
   },
   {
    "type": "dissolve",
-   "share": 0.0129,
-   "frames": 27,
+   "share": 0.0094,
+   "frames": 20,
+   "where": "any"
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0094,
+   "frames": 8,
    "where": "any"
   }
  ],
@@ -147,8 +154,8 @@
    "share": 0.0
   },
   "shake": {
-   "share": 0.0557,
-   "amplitude_px": 2.9
+   "share": 0.0718,
+   "amplitude_px": 3.5
   },
   "ramp": {
    "share": 0.0
@@ -156,104 +163,170 @@
  },
  "effects": [
   {
-   "type": "photo_insert",
-   "shot": 74,
-   "note": "竖拍/3:2 照片加黑边居中，1–4 s 一张，连成小相册（还有 142–145、154–157、241–243）"
+   "type": "time_stamp",
+   "shot": 1,
+   "note": "左侧中部叠时间戳：大号细衬线时间，am/pm 小一号，上或下一行小黑体写地名或「DayN 地名」，淡入淡出 3–6.5 s。5 次：1（特罗姆瑟）、9（Senja）、16（Day1 Rovaniemi）、25（Day2 Lapland）、119（Day2 Lapland 下午）；冷开场 2 次、铺垫 1 次、章节里 2 次。另有一次时间写在 Rovaniemi 黑底卡里（247）",
+   "ref": "BV1sHqPBLExZ"
   },
   {
-   "type": "split_screen",
-   "shot": 276,
-   "note": "左右对比 2018 / 2025，下方标年份"
+   "type": "photo_insert",
+   "shot": 74,
+   "note": "照片放在黑底上居中（竖拍或 3:2），1.2–4 s 一张，常连成三四张的小相册：74；142–145（扎营的蓝调和帐篷）；154–156（极光）；242–244（雾凇）。184 是一张议会大楼的铅笔画，同样放在黑底上。276 是一张满幅的 8 年前合影，静帧上有慢推（缩放 1.048）",
+   "ref": "BV1sHqPBLExZ"
   },
   {
    "type": "picture_in_picture",
-   "shot": 282,
-   "note": "左上角小窗"
+   "shot": 283,
+   "note": "左上角小窗放 8 年前在同一处火堆边拍的视频，底下是现在的画面。31 是另一种：自拍画面左下角叠一张带浅色边框的日落照片",
+   "ref": "BV1sHqPBLExZ"
   },
   {
-   "type": "glitch_bars",
+   "type": "split_compare",
+   "shot": 277,
+   "note": "左右两张和圣诞老人的合影对比，下方标年份 2018 / 2025，2.2 s 静帧",
+   "ref": "BV1sHqPBLExZ"
+  },
+  {
+   "type": "colour_bars",
    "shot": 101,
-   "note": "0.7 s 彩条，单次"
+   "note": "0.7 s 彩条，全片一次，夹在国家公园徒步段里",
+   "ref": "BV1sHqPBLExZ"
   },
   {
    "type": "cg_insert",
    "shot": 10,
-   "note": "地球 CG，配科普旁白"
+   "note": "地球自转的 CG，配极夜成因的科普旁白；来源不明，不算博主的拍法",
+   "ref": "BV1sHqPBLExZ"
   },
   {
    "type": "ai_generated_insert",
    "shot": 176,
-   "note": "176–181 有 Veo 水印：生成的木屋/桑拿画面配历史旁白。内容素材，不复刻"
+   "note": "176–181 右下角有 Veo 水印：生成的古代木屋和桑拿画面，配桑拿历史旁白，之间两次叠化（e132、e133）。内容素材，不复刻",
+   "ref": "BV1sHqPBLExZ"
+  },
+  {
+   "type": "end_card",
+   "shot": 311,
+   "note": "片尾：飞机舷窗画面（310）上淡入下一集片名「坠入极夜」，画面淡出到黑后片名留着，字距很宽的 LINKSPHOTOGRAPH 在它两侧淡入，2.6 s",
+   "ref": "BV1sHqPBLExZ"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 2,
+   "note": "左侧中部叠时间戳：大号细衬线时间，am/pm 小一号，淡入淡出，2.5–4.3 s。13 次：冷开场连着 5 个（2、3、4、5、6，一个镜头一个，约 3 s 一个），特罗姆瑟 15，开车 36、40，到小屋 44，第二天 77，午后 117，夜里 170，登山 258。冷开场 5 个和 15 下面多一行小字「挪威 - 地名」（Segla、Husøy、Finnsæter、Tromsø），到 Senja 以后只写时间",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 12,
+   "note": "飞机舷窗外的航拍上居中两行小字：上「下集」、下片名「坠入极夜」，约 2.2 s。前面的手机打字（10–11）和第 1 集片尾预告是同一组画面，等于把上一集的预告接上来当本集片名；没有黑底片名卡",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "map_insert",
+   "shot": 27,
+   "note": "Google Earth 卫星地图，亮线标出开往 Senja 的路线，4.9 s，镜头内缓慢推进；前面硬切自车载导航屏（26），后面叠化进暗的车内（e027）",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "lyric_caption",
+   "shot": 123,
+   "note": "新类型：英文歌词字幕放在画面顶部居中，白色小号无衬线，一句一条，698.5–748 s，镜头 123–133（写留言册的段落，没有旁白，底部中文字幕带空着）。全片只此一段",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 143,
+   "note": "0.7 s 彩条，全片一次，夹在驯鹿（142）和海边篝火（144）之间。第 1 集也有一次（101）",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "ai_generated_insert",
+   "shot": 168,
+   "note": "右下角 Veo 水印、画面偏软：在真实极光夜景（167、169 同一构图）上生成一只巨型蜘蛛剪影，6 s；从 167 硬切进，叠化回真实画面 169（e202）。内容素材，不复刻",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "callout",
+   "shot": 228,
+   "note": "房东讲话时，画面中部偏左、字幕上方一行白色解释字（补充他说的话），4 s，全片一次",
+   "ref": "BV1HrrjB9EUj"
+  },
+  {
+   "type": "end_card",
+   "shot": 324,
+   "note": "最后一个镜头（夜里头灯登山的航拍）淡到黑，黑底上居中字距很宽的 LINKSPHOTOGRAPH，约 2.5 s 到片尾。和第 1 集不同：没有下一集片名，没有下集预告卡。片尾淡出不在测到的事件里",
+   "ref": "BV1HrrjB9EUj"
   }
  ],
  "grade": {
-  "summary": "极夜冷蓝暗调：暗部和中间调偏蓝，暗部占比高，对比偏低；日出日落、室内灯光保留暖色，不往冷色拉",
+  "summary": "极夜冷蓝暗调，跟着光走：户外的蓝调白昼和雪偏蓝（中间调 b 最低到 −21.3 / −24.4），晴天的雪地和登山最亮；屋里只靠灯、烛光和炉火，保留暖橙（中间调 b +12.7 到 +24.5）；开车、夜里和屋里说话的段落几乎全黑；黑位压到底，高光收着。第 2 集比第 1 集更暗、更蓝",
   "look": {
    "L01": {
-    "median": 1.227,
-    "mad": 0.97
+    "median": 1.056,
+    "mad": 0.784
    },
    "L50": {
-    "median": 26.63,
-    "mad": 12.414
+    "median": 22.3,
+    "mad": 10.665
    },
    "L99": {
-    "median": 63.446,
-    "mad": 7.434
+    "median": 57.852,
+    "mad": 7.51
    },
    "Lstd": {
-    "median": 15.185,
-    "mad": 3.487
+    "median": 14.188,
+    "mad": 3.242
    },
    "shadow": {
-    "median": 0.393,
-    "mad": 0.238
+    "median": 0.466,
+    "mad": 0.214
    },
    "chroma": {
-    "median": 15.16,
-    "mad": 5.369
+    "median": 15.532,
+    "mad": 5.534
    },
    "sh_a": {
-    "median": 2.719,
-    "mad": 2.281
+    "median": 2.023,
+    "mad": 1.797
    },
    "sh_b": {
-    "median": -5.594,
-    "mad": 8.883
+    "median": -6.578,
+    "mad": 9.008
    },
    "mid_a": {
-    "median": 2.336,
-    "mad": 3.391
+    "median": 1.023,
+    "mad": 3.04
    },
    "mid_b": {
-    "median": -6.821,
-    "mad": 13.031
+    "median": -10.878,
+    "mad": 12.587
    },
    "hi_a": {
-    "median": 0.016,
-    "mad": 2.016
+    "median": 0.008,
+    "mad": 1.856
    },
    "hi_b": {
-    "median": -1.906,
-    "mad": 5.946
+    "median": 2.229,
+    "mad": 6.33
    },
    "vignette": {
-    "median": 0.895,
-    "mad": 0.367
+    "median": 0.879,
+    "mad": 0.355
    },
    "hue_hist": [
-    0.0186,
-    0.0642,
-    0.0255,
-    0.0016,
+    0.0113,
+    0.0385,
+    0.0146,
+    0.0008,
     0.0,
     0.0,
     0.0,
     0.0,
-    0.0387,
-    0.8382,
-    0.0098,
-    0.0035
+    0.2615,
+    0.6666,
+    0.0052,
+    0.0018
    ]
   },
   "lut": null,
@@ -262,29 +335,30 @@
  },
  "text": {
   "title": {
-   "font_class": "宋体",
+   "font_class": "黑体",
    "fallback_fonts": [
-    "Songti SC",
-    "STSong"
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
    ],
-   "height_frac": 0.0689,
+   "height_frac": 0.0564,
    "position": [
-    0.101,
-    0.512
+    0.501,
+    0.487
    ],
    "color": [
-    0.855,
+    0.843,
     0.863,
-    0.867
+    0.882
    ],
    "stroke": false,
    "plate": false,
    "in": "fade",
-   "out": "fade",
+   "out": "cut",
    "duration_s": 3.75,
-   "offset_s": 4.07,
+   "offset_s": 3.57,
    "template": "Text+",
-   "per": "chapter"
+   "per": "location"
   },
   "chapter_card": {
    "font_class": "黑体",
@@ -293,10 +367,10 @@
     "Hiragino Sans GB",
     "STHeiti"
    ],
-   "height_frac": 0.0607,
+   "height_frac": 0.0605,
    "position": [
     0.501,
-    0.487
+    0.489
    ],
    "color": [
     0.859,
@@ -307,16 +381,16 @@
    "plate": false,
    "in": "fade",
    "out": "fade",
-   "duration_s": 2.0,
+   "duration_s": 1.99,
    "offset_s": 0.1,
    "template": "Text+",
    "per": "location"
   },
   "subtitle": {
-   "height_frac": 0.0418,
+   "height_frac": 0.0422,
    "position": [
     0.5,
-    0.952
+    0.954
    ],
    "font_class": "黑体",
    "fallback_fonts": [
@@ -329,17 +403,17 @@
  },
  "audio": {
   "bpm": {
-   "median": 80.0,
-   "mad": 0.0,
-   "p10": 80.0,
-   "p90": 80.0,
-   "n": 1
+   "median": 101.8,
+   "mad": 21.7,
+   "p10": 84.4,
+   "p90": 119.2,
+   "n": 2
   },
-  "mood": "旁白主导（人声 65%），音乐低速铺底；判读不听声音，只按测量推断",
-  "lufs": -15.9,
-  "duck_db": 0.4,
+  "mood": "旁白和对镜头讲话主导（按字幕算人声占比 0.646 / 0.596），音乐低调铺底；20 s 以上没有字幕的段落都是配乐的风景、航拍或照片，第 2 集写留言册那段是一首带英文歌词的歌（歌词叠在画面顶部）；判读不听声音，只按测量和字幕推断",
+  "lufs": -15.8,
+  "duck_db": 0.3,
   "sfx": [],
-  "music_changes": "约每章 21.8 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+  "music_changes": "约每章 18.0 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
  "resolve": [
   {
@@ -398,108 +472,67 @@
   }
  ],
  "evidence": {
-  "basis_groups": "chapters of one reference",
+  "basis_groups": "references",
   "consistency": {
    "shot_len_s": {
-    "verdict": "varies",
+    "verdict": "consistent",
     "medians": {
-     "Day2 拉普兰的早晨@133": 5.1715,
-     "里斯山国家公园徒步@272": 4.972,
-     "日落、扎营、极光@686": 5.205,
-     "风暴、小木屋、桑拿@1005": 4.905,
-     "回到市区 Rovaniemi@1432": 3.67
+     "BV1sHqPBLExZ": 4.705,
+     "BV1HrrjB9EUj": 4.505
     },
-    "spread": 0.3087
+    "spread": 0.0434
    },
    "transitions": {
-    "冷开场：假如太阳不再升起@0": {
-     "hard_cut": 8,
-     "dissolve": 1
+    "BV1sHqPBLExZ": {
+     "hard_cut": 302,
+     "dissolve": 4,
+     "dip_to_black": 5
     },
-    "极夜科普 + 前往拉普兰@46": {
-     "dip_to_black": 1,
-     "hard_cut": 13
-    },
-    "Day2 拉普兰的早晨@133": {
-     "hard_cut": 22
-    },
-    "里斯山国家公园徒步@272": {
-     "hard_cut": 73
-    },
-    "日落、扎营、极光@686": {
-     "hard_cut": 39
-    },
-    "帐篷里的赞助口播@956": {
-     "hard_cut": 11
-    },
-    "风暴、小木屋、桑拿@1005": {
-     "hard_cut": 74,
+    "BV1HrrjB9EUj": {
+     "hard_cut": 321,
      "dip_to_black": 1,
      "dissolve": 2
-    },
-    "回到市区 Rovaniemi@1432": {
-     "hard_cut": 58,
-     "dissolve": 1
-    },
-    "结尾叙事卡 + 下集预告@1767": {
-     "dip_to_black": 3,
-     "hard_cut": 3
     }
    },
    "measured_push_in_share": {
-    "verdict": "varies",
+    "verdict": "consistent",
     "medians": {
-     "Day2 拉普兰的早晨@133": 0.3182,
-     "里斯山国家公园徒步@272": 0.2192,
-     "日落、扎营、极光@686": 0.1282,
-     "风暴、小木屋、桑拿@1005": 0.2338,
-     "回到市区 Rovaniemi@1432": 0.1864
+     "BV1sHqPBLExZ": 0.2115,
+     "BV1HrrjB9EUj": 0.1723
     },
-    "spread": 0.8668
+    "spread": 0.2044
    },
    "look.L50": {
     "verdict": "varies",
     "medians": {
-     "Day2 拉普兰的早晨@133": 32.898,
-     "里斯山国家公园徒步@272": 43.9515,
-     "日落、扎营、极光@686": 14.294,
-     "风暴、小木屋、桑拿@1005": 17.827,
-     "回到市区 Rovaniemi@1432": 19.063
+     "BV1sHqPBLExZ": 26.636,
+     "BV1HrrjB9EUj": 17.963
     },
-    "spread": 1.5558
+    "spread": 0.3889
    },
    "look.Lstd": {
-    "verdict": "varies",
+    "verdict": "consistent",
     "medians": {
-     "Day2 拉普兰的早晨@133": 13.726,
-     "里斯山国家公园徒步@272": 18.3285,
-     "日落、扎营、极光@686": 12.125,
-     "风暴、小木屋、桑拿@1005": 13.0315,
-     "回到市区 Rovaniemi@1432": 16.332
+     "BV1sHqPBLExZ": 15.2235,
+     "BV1HrrjB9EUj": 13.152
     },
-    "spread": 0.452
+    "spread": 0.146
    },
    "look.mid_b": {
     "verdict": "varies",
     "medians": {
-     "Day2 拉普兰的早晨@133": -21.297,
-     "里斯山国家公园徒步@272": -17.4375,
-     "日落、扎营、极光@686": -9.2035,
-     "风暴、小木屋、桑拿@1005": 3.984,
-     "回到市区 Rovaniemi@1432": 12.484
+     "BV1sHqPBLExZ": -6.484,
+     "BV1HrrjB9EUj": -15.2735
     },
-    "spread": 3.6705
+    "spread": 0.808
    },
    "look.chroma": {
-    "verdict": "varies",
+    "verdict": "consistent",
     "medians": {
-     "Day2 拉普兰的早晨@133": 20.225,
-     "里斯山国家公园徒步@272": 16.469,
-     "日落、扎营、极光@686": 13.518,
-     "风暴、小木屋、桑拿@1005": 15.05,
-     "回到市区 Rovaniemi@1432": 14.1395
+     "BV1sHqPBLExZ": 15.4375,
+     "BV1HrrjB9EUj": 15.626
     },
-    "spread": 0.4456
+    "spread": 0.0121
    }
   },
   "beat": [
@@ -514,24 +547,41 @@
     "lift": 4.626,
     "downbeat_hit_rate": 0.2361,
     "verdict": "not_on_beat"
+   },
+   {
+    "ref": "BV1HrrjB9EUj",
+    "n_cuts": 78,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.58,
+    "bpm": 103.45,
+    "hit_rate": 0.2179,
+    "baseline": 0.0732,
+    "lift": 2.977,
+    "downbeat_hit_rate": 0.2051,
+    "verdict": "not_on_beat"
    }
   ],
   "moves": {
    "push_in": {
-    "measured": 63,
-    "judged": 14,
+    "measured": 122,
+    "judged": 33,
     "digital": 0
    },
    "pull_out": {
-    "measured": 30,
-    "judged": 10,
+    "measured": 49,
+    "judged": 15,
     "digital": 0
    }
   },
-  "ramp_candidates": 39,
-  "onsets_per_min": 167.0,
+  "ramp_candidates": 82,
+  "onsets_per_min": 159.25,
   "unverified": [],
   "rejected_labels": [],
   "single_source": []
+ },
+ "photo": {
+  "dur_s": 2.6,
+  "scale": 0.9,
+  "background": "black"
  }
 }

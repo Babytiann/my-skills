@@ -1,0 +1,521 @@
+{
+ "schema_version": 1,
+ "name": "links/hokkaido-dream",
+ "summary": "北海道冬天的公路 vlog：旁白和对话带着走，底部烧录字幕贯穿全片；约 3.7 秒一刀，除两次黑场外全是硬切；中景和远景为主，细节特写很多（拍照的相机屏幕、陷车的车轮、年夜饭）；机位运动来自拍摄，后期不加推拉；灰底照片插入和拍照过程交替出现；调色跟着光走，雪地冷而素，室内和火光暖；2:1 画幅；全片没有地点标题",
+ "sources": [
+  {
+   "id": "BV1xF4m1L7Q2",
+   "url": "https://www.bilibili.com/video/BV1xF4m1L7Q2",
+   "title": "Vlog｜在北海道做了一场不愿醒来的梦｜4K杜比视界",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1469.0,
+   "mad": 0.0,
+   "p10": 1469.0,
+   "p90": 1469.0,
+   "n": 1
+  },
+  "letterbox": 2.0
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0259,
+    "shot_len_s": {
+     "median": 4.872,
+     "mad": 1.067,
+     "p10": 2.723,
+     "p90": 5.459,
+     "n": 9
+    },
+    "notes": "约 38 s 无字幕的开场混剪：海边公路、日出、雪中车站、夜里的街、黎明的海、小镇航拍"
+   },
+   {
+    "role": "intro",
+    "share": 0.0532,
+    "shot_len_s": {
+     "median": 2.703,
+     "mad": 0.801,
+     "p10": 2.102,
+     "p90": 4.872,
+     "n": 21
+    },
+    "notes": "清晨的冰海边，主持人对镜头交代这一天，接拍照过程和灰底照片交替"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8909,
+    "shot_len_s": {
+     "median": 3.704,
+     "mad": 1.418,
+     "p10": 1.735,
+     "p90": 10.744,
+     "n": 246
+    },
+    "notes": "一章一件事，按时间走：废屋、陷车、拖车、咖啡店、听音室、蓝调拍照、秘境小屋、年夜饭；只有「第二天」用黑底卡开段，蓝调一章从黑场进入"
+   },
+   {
+    "role": "ending",
+    "share": 0.03,
+    "shot_len_s": {
+     "median": 5.339,
+     "mad": 0.433,
+     "p10": 2.256,
+     "p90": 10.83,
+     "n": 7
+    },
+    "notes": "泡澡、夜里的树、清晨的小屋，片尾字叠在最后一镜上，整片淡出"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.63,
+  "shot_types": {
+   "medium": 0.368,
+   "wide": 0.328,
+   "detail": 0.224,
+   "selfie": 0.044,
+   "aerial": 0.036
+  },
+  "opening": "约 38 s 无字幕的开场混剪：海边公路上的车、日出、雪中车站、夜里的街、黎明的海、小镇航拍，接主持人在冰海边对镜头",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 3.67,
+   "mad": 1.368,
+   "p10": 1.768,
+   "p90": 10.297,
+   "n": 283
+  },
+  "cuts_per_min": 11.52,
+  "min_shot_s": 1.34
+ },
+ "beat": {
+  "hit_rate": 0.0789,
+  "baseline": 0.1091,
+  "offset_frames": -3,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9929
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0071,
+   "frames": 15,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0978,
+   "amplitude_px": 6.2
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "photo_insert",
+   "shot": 13,
+   "note": "照片缩小居中放在浅灰底上，每张约 1.6–3.8 s，前面多是拍摄过程或相机屏幕：清晨 13、16、19、23、24、26、28、29，废屋 40、41、42、45、49、50、51、52，咖啡店 141、142。39、43 是照片消失后只剩灰底的 0.1–0.2 s 碎片"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 217,
+   "note": "蓝调时分给店主拍的照片放在深灰底上（217、223、226、227、228、229），和拍摄过程交替出现"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 130,
+   "note": "0.5 s 彩条插入，接在第三次陷车之后、咖啡店一章之前，作笑点"
+  },
+  {
+   "type": "callout",
+   "shot": 98,
+   "note": "拖车一段的轮次计数：黑底卡 Round 1（96）之后，Round 2–10 叠在画面左右边缘（98、100–105，跳过 7、9），随镜头硬切出现"
+  },
+  {
+   "type": "end_card",
+   "shot": 281,
+   "note": "片尾「2024 / 北海道vlog」两行白字叠在最后一个镜头中间，淡入，约 3 s，随后整片淡出"
+  }
+ ],
+ "grade": {
+  "summary": "跟着光走，冷暖两极：白天雪景低饱和、接近中性；清晨和蓝调明显偏蓝；室内、篝火和年夜饭很暖；黑位压得低，高光收着",
+  "look": {
+   "L01": {
+    "median": 3.467,
+    "mad": 2.957
+   },
+   "L50": {
+    "median": 38.049,
+    "mad": 15.176
+   },
+   "L99": {
+    "median": 69.025,
+    "mad": 8.319
+   },
+   "Lstd": {
+    "median": 16.119,
+    "mad": 3.134
+   },
+   "shadow": {
+    "median": 0.178,
+    "mad": 0.154
+   },
+   "chroma": {
+    "median": 8.595,
+    "mad": 4.816
+   },
+   "sh_a": {
+    "median": 2.282,
+    "mad": 2.712
+   },
+   "sh_b": {
+    "median": 1.546,
+    "mad": 5.038
+   },
+   "mid_a": {
+    "median": -0.141,
+    "mad": 2.515
+   },
+   "mid_b": {
+    "median": -0.766,
+    "mad": 8.265
+   },
+   "hi_a": {
+    "median": -2.75,
+    "mad": 1.515
+   },
+   "hi_b": {
+    "median": -3.242,
+    "mad": 1.617
+   },
+   "vignette": {
+    "median": 1.003,
+    "mad": 0.287
+   },
+   "hue_hist": [
+    0.025,
+    0.5992,
+    0.3495,
+    0.0069,
+    0.0,
+    0.0,
+    0.0,
+    0.0014,
+    0.0069,
+    0.0097,
+    0.0,
+    0.0014
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0744,
+   "position": [
+    0.501,
+    0.481
+   ],
+   "color": [
+    0.894,
+    0.894,
+    0.894
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 0.75,
+   "offset_s": 0.04,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0444,
+   "position": [
+    0.5,
+    0.912
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 129.6,
+   "mad": 0.0,
+   "p10": 129.6,
+   "p90": 129.6,
+   "n": 1
+  },
+  "mood": "旁白和对话主导（人声 59%），音乐铺底；判读不听声音，只按测量推断",
+  "lufs": -13.5,
+  "duck_db": 0.4,
+  "sfx": [],
+  "music_changes": "约每章 12.8 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "遮幅",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_output_blanking"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "暴风雪里拍废墟@116": 3.136,
+     "陷车自救和白毛风@207": 3.587,
+     "拖车救援@371": 3.504,
+     "圣诞树和第三次陷车@506": 3.437,
+     "森林里的红房子咖啡店@581": 4.238,
+     "第二天的听音室@791": 3.6705,
+     "蓝调时分给店主拍照@1016": 3.67,
+     "秘境小屋：航拍、篝火和饮料@1123": 5.405,
+     "年夜饭：火锅和草莓@1320": 3.1035
+    },
+    "spread": 0.6416
+   },
+   "transitions": {
+    "开场混剪@0": {
+     "hard_cut": 8
+    },
+    "除夕清晨的雪原和拍照混剪@38": {
+     "hard_cut": 21
+    },
+    "暴风雪里拍废墟@116": {
+     "hard_cut": 23
+    },
+    "陷车自救和白毛风@207": {
+     "hard_cut": 32
+    },
+    "拖车救援@371": {
+     "hard_cut": 29
+    },
+    "圣诞树和第三次陷车@506": {
+     "hard_cut": 17
+    },
+    "森林里的红房子咖啡店@581": {
+     "hard_cut": 41
+    },
+    "第二天的听音室@791": {
+     "hard_cut": 38
+    },
+    "蓝调时分给店主拍照@1016": {
+     "dip_to_black": 1,
+     "hard_cut": 20
+    },
+    "秘境小屋：航拍、篝火和饮料@1123": {
+     "hard_cut": 25
+    },
+    "年夜饭：火锅和草莓@1320": {
+     "hard_cut": 20
+    },
+    "泡澡和新年祝福@1425": {
+     "hard_cut": 6,
+     "dip_to_black": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "暴风雪里拍废墟@116": 0.087,
+     "陷车自救和白毛风@207": 0.1562,
+     "拖车救援@371": 0.0,
+     "圣诞树和第三次陷车@506": 0.1176,
+     "森林里的红房子咖啡店@581": 0.0976,
+     "第二天的听音室@791": 0.1842,
+     "蓝调时分给店主拍照@1016": 0.0,
+     "秘境小屋：航拍、篝火和饮料@1123": 0.24,
+     "年夜饭：火锅和草莓@1320": 0.1
+    },
+    "spread": 2.4
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "暴风雪里拍废墟@116": 55.304,
+     "陷车自救和白毛风@207": 38.6065,
+     "拖车救援@371": 58.632,
+     "圣诞树和第三次陷车@506": 39.148,
+     "森林里的红房子咖啡店@581": 51.123,
+     "第二天的听音室@791": 25.3495,
+     "蓝调时分给店主拍照@1016": 27.264,
+     "秘境小屋：航拍、篝火和饮料@1123": 14.789,
+     "年夜饭：火锅和草莓@1320": 26.8905
+    },
+    "spread": 1.1356
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "暴风雪里拍废墟@116": 15.953,
+     "陷车自救和白毛风@207": 20.046,
+     "拖车救援@371": 18.2815,
+     "圣诞树和第三次陷车@506": 20.744,
+     "森林里的红房子咖啡店@581": 17.676,
+     "第二天的听音室@791": 13.429,
+     "蓝调时分给店主拍照@1016": 13.808,
+     "秘境小屋：航拍、篝火和饮料@1123": 14.741,
+     "年夜饭：火锅和草莓@1320": 16.4285
+    },
+    "spread": 0.4453
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "暴风雪里拍废墟@116": -6.1405,
+     "陷车自救和白毛风@207": -2.1485,
+     "拖车救援@371": -4.2425,
+     "圣诞树和第三次陷车@506": -4.328,
+     "森林里的红房子咖啡店@581": 5.453,
+     "第二天的听音室@791": 29.1015,
+     "蓝调时分给店主拍照@1016": -18.688,
+     "秘境小屋：航拍、篝火和饮料@1123": 30.562,
+     "年夜饭：火锅和草莓@1320": 29.961
+    },
+    "spread": 22.923
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "暴风雪里拍废墟@116": 4.035,
+     "陷车自救和白毛风@207": 7.311,
+     "拖车救援@371": 4.664,
+     "圣诞树和第三次陷车@506": 7.052,
+     "森林里的红房子咖啡店@581": 5.723,
+     "第二天的听音室@791": 22.3515,
+     "蓝调时分给店主拍照@1016": 16.518,
+     "秘境小屋：航拍、篝火和饮料@1123": 16.044,
+     "年夜饭：火锅和草莓@1320": 22.715
+    },
+    "spread": 2.5551
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1xF4m1L7Q2",
+    "n_cuts": 76,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.48,
+    "bpm": 125.0,
+    "hit_rate": 0.0789,
+    "baseline": 0.1091,
+    "lift": 0.723,
+    "downbeat_hit_rate": 0.0526,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 34,
+    "judged": 17,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 13,
+    "judged": 7,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 53,
+  "onsets_per_min": 154.8,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 2.8,
+  "scale": 0.8,
+  "background": "black"
+ }
+}

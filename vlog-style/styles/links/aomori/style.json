@@ -1,0 +1,527 @@
+{
+ "schema_version": 1,
+ "name": "links/aomori",
+ "summary": "日本冬天的雪国 vlog：旁白带着走，底部烧录字幕贯穿全片；约 4.2 秒一刀，除了两次黑场和片尾淡出全是硬切；远景占一半，细节多是胶片相机取景和拍摄的过程；机位运动来自拍摄，后期不加推拉；每到一个地方在画面左侧叠地名和降雪数据；胶片和数码照片放在黑底上插进来；调色跟着光走，白天的雪很素，蓝调又蓝又浓，屋里暖",
+ "sources": [
+  {
+   "id": "BV1HvQ3YgE4F",
+   "url": "https://www.bilibili.com/video/BV1HvQ3YgE4F",
+   "title": "我来到了世界降雪量第一的城市--日本青森",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1176.3,
+   "mad": 0.0,
+   "p10": 1176.3,
+   "p90": 1176.3,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0181,
+    "shot_len_s": {
+     "median": 5.706,
+     "mad": 2.703,
+     "p10": 3.544,
+     "p90": 11.178,
+     "n": 3
+    },
+    "notes": "主持人站在比人高的雪墙前对镜头说一句"
+   },
+   {
+    "role": "intro",
+    "share": 0.0471,
+    "shot_len_s": {
+     "median": 3.737,
+     "mad": 1.802,
+     "p10": 1.902,
+     "p90": 11.111,
+     "n": 11
+    },
+    "notes": "降雪量对比：阿勒泰、青森、禾木的航拍和夜里暴雪的街，每个地方叠地名和降雪数据，接酸ケ湯温泉的电视新闻"
+   },
+   {
+    "role": "chapter",
+    "share": 0.9132,
+    "shot_len_s": {
+     "median": 4.271,
+     "mad": 1.568,
+     "p10": 2.035,
+     "p90": 10.11,
+     "n": 201
+    },
+    "notes": "一章一个地方，按时间走：进山、温泉旅馆、第二天早晨泡汤、去分校、木造分校、十和田湖、十和田神社、弘前、傍晚独自拍雪；进新地方时在画面左侧叠地名和降雪数据；进山那章从黑场进入"
+   },
+   {
+    "role": "ending",
+    "share": 0.0216,
+    "shot_len_s": {
+     "median": 3.237,
+     "mad": 1.385,
+     "p10": 1.348,
+     "p90": 5.145,
+     "n": 8
+    },
+    "notes": "第二天早晨的咖啡店，窗外下着雪，整片淡出"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 0.762,
+  "shot_types": {
+   "wide": 0.503,
+   "medium": 0.213,
+   "detail": 0.188,
+   "aerial": 0.051,
+   "selfie": 0.03,
+   "close": 0.015
+  },
+  "opening": "冷开场：主持人站在比人高的雪墙前对镜头说一句，接降雪量对比的航拍和夜里暴雪的街",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 4.238,
+   "mad": 1.569,
+   "p10": 1.976,
+   "p90": 10.244,
+   "n": 223
+  },
+  "cuts_per_min": 11.32,
+  "min_shot_s": 1.6
+ },
+ "beat": {
+  "hit_rate": 0.1786,
+  "baseline": 0.042,
+  "offset_frames": 1,
+  "use_downbeats": false,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9865
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0135,
+   "frames": 8,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0498,
+   "amplitude_px": 2.8
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "location_stamp",
+   "shot": 3,
+   "note": "地名加降雪数据的叠字，放在画面左侧：一行白色地名，一行小字「年平均降雪量」或「积雪」，数字是橙色；淡入淡出，约 2–4 s。开头的降雪量对比（阿勒泰市、青森市、禾木村、酸ケ湯温泉，3–13），之后到秋田（20）、十和田湖（116）、弘前（169）各出一次"
+  },
+  {
+   "type": "archive_clips",
+   "shot": 3,
+   "note": "以前旅行的画面：开头对比降雪量时用了新疆阿勒泰（3）和禾木村（11）的航拍；傍晚独自出门那段配旁白回顾去过的地方，接 3 个别处的画面（184–186，秋天的山路、湖边的人、海边悬崖）"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 13,
+   "note": "借来的电视画面：日本新闻里的酸ケ湯温泉（13），上面加了红圈和「17 米」；讲雪怎么形成时用了两张电视天气图（166、167）"
+  },
+  {
+   "type": "film_photo_insert",
+   "shot": 24,
+   "note": "胶片照片放在黑底上，右侧一列小字写胶片、相机和翻拍用的机身：24、71、99、128、151、157，每张 1.4–4.0 s；前面都是用中画幅胶片相机取景、拍摄的过程"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 101,
+   "note": "数码照片放在黑底上，下面一行小字写机身和镜头：分校里一组 101–106 连放（每张 1.0–2.7 s），另有 45、88、89，傍晚出门拍的一组 211–214"
+  },
+  {
+   "type": "gear_caption",
+   "shot": 51,
+   "note": "实拍画面角落叠器材小字（机身、镜头、拍摄格式）：51、59、60、146 等，白色细字，放在画面边上"
+  },
+  {
+   "type": "map_insert",
+   "shot": 111,
+   "note": "路线地图（111、112），从分校开到十和田湖，3.8 s 和 2.0 s"
+  }
+ ],
+ "grade": {
+  "summary": "跟着光走，冷暖分得很开：白天雪景很素、接近中性；早晨和傍晚的蓝调又蓝又浓；温泉旅馆屋里和晚饭暖；整体对比低，黑位不压死",
+  "look": {
+   "L01": {
+    "median": 3.58,
+    "mad": 2.515
+   },
+   "L50": {
+    "median": 32.551,
+    "mad": 11.648
+   },
+   "L99": {
+    "median": 66.257,
+    "mad": 8.55
+   },
+   "Lstd": {
+    "median": 15.779,
+    "mad": 3.327
+   },
+   "shadow": {
+    "median": 0.269,
+    "mad": 0.184
+   },
+   "chroma": {
+    "median": 8.067,
+    "mad": 4.574
+   },
+   "sh_a": {
+    "median": 2.25,
+    "mad": 2.188
+   },
+   "sh_b": {
+    "median": -1.219,
+    "mad": 4.047
+   },
+   "mid_a": {
+    "median": 0.914,
+    "mad": 2.117
+   },
+   "mid_b": {
+    "median": -3.149,
+    "mad": 9.274
+   },
+   "hi_a": {
+    "median": 0.031,
+    "mad": 0.86
+   },
+   "hi_b": {
+    "median": -5.078,
+    "mad": 2.922
+   },
+   "vignette": {
+    "median": 0.986,
+    "mad": 0.309
+   },
+   "hue_hist": [
+    0.0192,
+    0.0931,
+    0.0679,
+    0.0024,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.1004,
+    0.7037,
+    0.0108,
+    0.0024
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0622,
+   "position": [
+    0.101,
+    0.527
+   ],
+   "color": [
+    0.961,
+    0.949,
+    0.949
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 3.49,
+   "offset_s": 0.77,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.042,
+   "position": [
+    0.5,
+    0.952
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 125.3,
+   "mad": 0.0,
+   "p10": 125.3,
+   "p90": 125.3,
+   "n": 1
+  },
+  "mood": "旁白主导（人声 57%），音乐铺底；判读不听声音，只按测量推断",
+  "lufs": -14.8,
+  "duck_db": 0.3,
+  "sfx": [],
+  "music_changes": "约每章 9.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "开车进山：雪林、溪流和胶片相机@77": 4.0705,
+     "雪里的温泉旅馆：晚饭和夜里泡汤@149": 4.7715,
+     "第二天早晨蓝调里泡汤@276": 4.5045,
+     "去分校的雪路@347": 3.9375,
+     "废弃的木造分校@408": 3.637,
+     "十和田湖@588": 5.072,
+     "十和田神社@727": 5.873,
+     "为什么青森雪多，弘前白天的雪街@923": 3.303,
+     "傍晚独自出门拍雪@1017": 3.804
+    },
+    "spread": 0.6314
+   },
+   "transitions": {
+    "冷开场：雪墙前对镜头@0": {
+     "hard_cut": 2
+    },
+    "降雪量对比：阿勒泰、青森、禾木、酸汤温泉@21": {
+     "hard_cut": 11
+    },
+    "开车进山：雪林、溪流和胶片相机@77": {
+     "hard_cut": 13,
+     "dip_to_black": 1
+    },
+    "雪里的温泉旅馆：晚饭和夜里泡汤@149": {
+     "hard_cut": 22
+    },
+    "第二天早晨蓝调里泡汤@276": {
+     "hard_cut": 12
+    },
+    "去分校的雪路@347": {
+     "hard_cut": 12
+    },
+    "废弃的木造分校@408": {
+     "hard_cut": 36,
+     "dip_to_black": 1
+    },
+    "十和田湖@588": {
+     "hard_cut": 25
+    },
+    "十和田神社@727": {
+     "hard_cut": 29
+    },
+    "为什么青森雪多，弘前白天的雪街@923": {
+     "hard_cut": 19
+    },
+    "傍晚独自出门拍雪@1017": {
+     "hard_cut": 31
+    },
+    "第二天早晨的咖啡店@1151": {
+     "hard_cut": 7,
+     "dip_to_black": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "开车进山：雪林、溪流和胶片相机@77": 0.2857,
+     "雪里的温泉旅馆：晚饭和夜里泡汤@149": 0.4091,
+     "第二天早晨蓝调里泡汤@276": 0.0833,
+     "去分校的雪路@347": 0.5,
+     "废弃的木造分校@408": 0.2162,
+     "十和田湖@588": 0.48,
+     "十和田神社@727": 0.3103,
+     "为什么青森雪多，弘前白天的雪街@923": 0.3684,
+     "傍晚独自出门拍雪@1017": 0.129
+    },
+    "spread": 1.3426
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "开车进山：雪林、溪流和胶片相机@77": 62.314,
+     "雪里的温泉旅馆：晚饭和夜里泡汤@149": 23.172,
+     "第二天早晨蓝调里泡汤@276": 20.941,
+     "去分校的雪路@347": 39.4105,
+     "废弃的木造分校@408": 23.48,
+     "十和田湖@588": 40.295,
+     "十和田神社@727": 38.043,
+     "为什么青森雪多，弘前白天的雪街@923": 46.417,
+     "傍晚独自出门拍雪@1017": 26.086
+    },
+    "spread": 1.0875
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "开车进山：雪林、溪流和胶片相机@77": 18.1295,
+     "雪里的温泉旅馆：晚饭和夜里泡汤@149": 13.813,
+     "第二天早晨蓝调里泡汤@276": 14.3975,
+     "去分校的雪路@347": 19.5495,
+     "废弃的木造分校@408": 19.044,
+     "十和田湖@588": 13.162,
+     "十和田神社@727": 18.365,
+     "为什么青森雪多，弘前白天的雪街@923": 15.5,
+     "傍晚独自出门拍雪@1017": 12.555
+    },
+    "spread": 0.4513
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "开车进山：雪林、溪流和胶片相机@77": -1.2345,
+     "雪里的温泉旅馆：晚饭和夜里泡汤@149": 11.133,
+     "第二天早晨蓝调里泡汤@276": -29.3245,
+     "去分校的雪路@347": -3.1405,
+     "废弃的木造分校@408": 5.414,
+     "十和田湖@588": -21.469,
+     "十和田神社@727": 0.0,
+     "为什么青森雪多，弘前白天的雪街@923": -9.203,
+     "傍晚独自出门拍雪@1017": -16.484
+    },
+    "spread": 12.8825
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "开车进山：雪林、溪流和胶片相机@77": 4.1975,
+     "雪里的温泉旅馆：晚饭和夜里泡汤@149": 13.541,
+     "第二天早晨蓝调里泡汤@276": 28.739,
+     "去分校的雪路@347": 4.2875,
+     "废弃的木造分校@408": 7.321,
+     "十和田湖@588": 20.98,
+     "十和田神社@727": 5.108,
+     "为什么青森雪多，弘前白天的雪街@923": 10.731,
+     "傍晚独自出门拍雪@1017": 12.95
+    },
+    "spread": 2.287
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1HvQ3YgE4F",
+    "n_cuts": 56,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.58,
+    "bpm": 103.45,
+    "hit_rate": 0.1786,
+    "baseline": 0.042,
+    "lift": 4.255,
+    "downbeat_hit_rate": 0.0714,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 69,
+    "judged": 22,
+    "digital": 1
+   },
+   "pull_out": {
+    "measured": 5,
+    "judged": 2,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 30,
+  "onsets_per_min": 165.1,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 2.6,
+  "scale": 0.9,
+  "background": "black"
+ }
+}

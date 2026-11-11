@@ -1,0 +1,583 @@
+{
+ "schema_version": 1,
+ "name": "links/oki-islands",
+ "summary": "日本离岛的风光 vlog：旁白带着走，底部字幕贯穿全片；约 3.9 秒一刀，除片尾淡出外全是硬切；远景占六成，人物做事的中景少；风景和情绪段落上下加 2.35:1 黑边，说话段是 16:9；纯音乐段的剪辑点明显跟拍点；地点标题是左侧的大号白色粗黑体，上面先出一行小字再淡入；调色饱和度偏高，跟着光走；片尾用展览引文的双语字幕收束",
+ "sources": [
+  {
+   "id": "BV1ydjizBE1o",
+   "url": "https://www.bilibili.com/video/BV1ydjizBE1o",
+   "title": "Links｜隐藏着600万年的地球记忆！探索日本最神秘的离岛群--隐岐诸岛 ｜SONY FX2",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1479.5,
+   "mad": 0.0,
+   "p10": 1479.5,
+   "p90": 1479.5,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.017,
+    "shot_len_s": {
+     "median": 4.971,
+     "mad": 0.15,
+     "p10": 2.486,
+     "p90": 5.122,
+     "n": 6
+    },
+    "notes": "主持人对着相机说一句，接 5 个带遮幅的风景"
+   },
+   {
+    "role": "intro",
+    "share": 0.052,
+    "shot_len_s": {
+     "median": 2.936,
+     "mad": 0.734,
+     "p10": 1.722,
+     "p90": 4.444,
+     "n": 25
+    },
+    "notes": "片名「隠岐諸島」硬切进来，旁白讲岛和时间，接相机、开车和地图"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8343,
+    "shot_len_s": {
+     "median": 4.071,
+     "mad": 1.335,
+     "p10": 2.135,
+     "p90": 8.642,
+     "n": 231
+    },
+    "notes": "一章一个地方，按时间走：摩天崖、草场的马和日落、加油站、午饭、神社、登山、御神木、酒店、知夫里赤壁；进新地点时出地点标题"
+   },
+   {
+    "role": "interlude",
+    "share": 0.0396,
+    "shot_len_s": {
+     "median": 2.686,
+     "mad": 1.218,
+     "p10": 1.014,
+     "p90": 5.803,
+     "n": 14
+    },
+    "notes": "两段讲相机功能的口播（反挤压显示、EI 模式），带菜单屏幕录像和取景器角标"
+   },
+   {
+    "role": "ending",
+    "share": 0.0571,
+    "shot_len_s": {
+     "median": 5.239,
+     "mad": 2.435,
+     "p10": 1.375,
+     "p90": 8.042,
+     "n": 17
+    },
+    "notes": "展览、引文双语字幕配带遮幅的风景混剪，片尾字「隠岐諸島之旅 / 完」，整片淡出"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 0.499,
+  "shot_types": {
+   "wide": 0.589,
+   "detail": 0.152,
+   "medium": 0.122,
+   "aerial": 0.078,
+   "selfie": 0.059
+  },
+  "opening": "冷开场：主持人在草地上对着相机说一句，接 5 个带遮幅的风景（暮色岛影、雾中悬崖、森林里的人、日落的马、看海的两人），再接片名「隠岐諸島」",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 3.937,
+   "mad": 1.335,
+   "p10": 1.976,
+   "p90": 8.222,
+   "n": 293
+  },
+  "cuts_per_min": 11.84,
+  "min_shot_s": 1.49
+ },
+ "beat": {
+  "hit_rate": 0.2742,
+  "baseline": 0.0515,
+  "offset_frames": 1,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9966
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0034,
+   "frames": 30,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0111,
+   "scale_end": {
+    "median": 1.711,
+    "mad": 0.0,
+    "p10": 1.711,
+    "p90": 1.711,
+    "n": 1
+   }
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.045,
+   "amplitude_px": 1.6
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "letterbox_crop",
+   "shot": 1,
+   "note": "部分镜头上下烧进约 12.2% 的黑边（2.35:1），共 90 个镜头、约 421 s，用在冷开场、片名段、日落、林间、酒店和片尾这些风景和情绪段落：1–6、16–19、22–23、46–47、50–52、54–55、64、70、76–79、81–86、154、156、158、187–196、211、214–216、218、230、239–241、243–258、272–292；说话和做事的段落是 16:9"
+  },
+  {
+   "type": "map_insert",
+   "shot": 27,
+   "note": "地图动画：从整个海域推到隐岐诸岛，4.5 s"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 33,
+   "note": "航拍公路上叠一个小画面（车内镜头），1.5 s"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 68,
+   "note": "照片放在黑底上，3:2 横图约占画面高 90%（68、186、219），竖图一张（222），小图一张（127），每张 1.2–4.1 s，中位数 2.5 s，前后多是拍这张照片的过程"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 107,
+   "note": "0.6 s 彩条插入作笑点，在烤肉午饭里"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 40,
+   "note": "相机菜单的屏幕录像（40–42），在赞助段里"
+  },
+  {
+   "type": "callout",
+   "shot": 90,
+   "note": "白色细黑体的旁白式强调字：加油站一段画面上方一句（90），神社旁一句居中（133）"
+  },
+  {
+   "type": "quote_overlay",
+   "shot": 280,
+   "note": "片尾约 23:27–24:14，展览里的一段话，日文原文和中文译文两行，放在画面下部（中心 y 0.82 和 0.86），每句 3–6 s，画面是带遮幅的风景混剪，没有旁白"
+  },
+  {
+   "type": "end_card",
+   "shot": 290,
+   "note": "片尾「隠岐諸島之旅 / 完」两行居中淡入，随后叠化成英文署名，整片淡出"
+  }
+ ],
+ "grade": {
+  "summary": "跟着光走，饱和度比第一批高、整体偏绿：草场和海冷而清，林间、神社和御神木暖而偏黄绿，日落的高光很暖；部分风景段上下加 2.35:1 黑边",
+  "look": {
+   "L01": {
+    "median": 3.211,
+    "mad": 2.195
+   },
+   "L50": {
+    "median": 38.167,
+    "mad": 9.288
+   },
+   "L99": {
+    "median": 70.682,
+    "mad": 5.048
+   },
+   "Lstd": {
+    "median": 16.643,
+    "mad": 3.14
+   },
+   "shadow": {
+    "median": 0.186,
+    "mad": 0.117
+   },
+   "chroma": {
+    "median": 17.227,
+    "mad": 6.401
+   },
+   "sh_a": {
+    "median": -3.383,
+    "mad": 4.602
+   },
+   "sh_b": {
+    "median": 8.695,
+    "mad": 9.117
+   },
+   "mid_a": {
+    "median": -7.242,
+    "mad": 5.351
+   },
+   "mid_b": {
+    "median": 7.289,
+    "mad": 17.375
+   },
+   "hi_a": {
+    "median": -4.312,
+    "mad": 2.343
+   },
+   "hi_b": {
+    "median": -2.679,
+    "mad": 6.5
+   },
+   "vignette": {
+    "median": 0.921,
+    "mad": 0.269
+   },
+   "hue_hist": [
+    0.0004,
+    0.0123,
+    0.0577,
+    0.2393,
+    0.5986,
+    0.0183,
+    0.0079,
+    0.0155,
+    0.0431,
+    0.0069,
+    0.0,
+    0.0
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.1305,
+   "position": [
+    0.157,
+    0.526
+   ],
+   "color": [
+    0.898,
+    0.898,
+    0.898
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 3.25,
+   "offset_s": 1.45,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0417,
+   "position": [
+    0.5,
+    0.956
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 72.0,
+   "mad": 0.0,
+   "p10": 72.0,
+   "p90": 72.0,
+   "n": 1
+  },
+  "mood": "旁白主导（人声 62%），音乐铺底，片尾 72 s 只有引文和音乐；判读不听声音，只按测量推断",
+  "lufs": -16.4,
+  "duck_db": 0.2,
+  "sfx": [],
+  "music_changes": "约每章 8.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "动态推拉",
+   "route": "fusion",
+   "status": "verified",
+   "how": "最小 .comp 模板（MediaIn→Transform→MediaOut，Size 关键帧，末帧=时长−1）+ timeline_item_fusion import_comp"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "去摩天崖@102": 7.0735,
+     "草场的马和悬崖@178": 3.6875,
+     "草场日落@323": 4.204,
+     "加油站洗车@371": 3.7375,
+     "烤肉午饭@456": 3.887,
+     "村子和高田神社@487": 3.871,
+     "登高田山@664": 3.704,
+     "山顶俯瞰和下山@863": 4.104,
+     "御神木@942": 4.137,
+     "海边的酒店@1072": 5.3385,
+     "知夫里赤壁@1327": 5.806
+    },
+    "spread": 0.825
+   },
+   "transitions": {
+    "冷开场：对镜头一句和岛上的风景@0": {
+     "hard_cut": 5
+    },
+    "片名、旁白和出发@25": {
+     "hard_cut": 25
+    },
+    "去摩天崖@102": {
+     "hard_cut": 6
+    },
+    "赞助：FX2 的反挤压显示@158": {
+     "hard_cut": 9
+    },
+    "草场的马和悬崖@178": {
+     "hard_cut": 32
+    },
+    "草场日落@323": {
+     "hard_cut": 9
+    },
+    "加油站洗车@371": {
+     "hard_cut": 16
+    },
+    "烤肉午饭@456": {
+     "hard_cut": 8
+    },
+    "村子和高田神社@487": {
+     "hard_cut": 29
+    },
+    "登高田山@664": {
+     "hard_cut": 39
+    },
+    "山顶俯瞰和下山@863": {
+     "hard_cut": 19
+    },
+    "御神木@942": {
+     "hard_cut": 25
+    },
+    "海边的酒店@1072": {
+     "hard_cut": 36
+    },
+    "赞助：FX2 的 EI 模式@1288": {
+     "hard_cut": 5
+    },
+    "知夫里赤壁@1327": {
+     "hard_cut": 12
+    },
+    "展览、引文和片尾字@1395": {
+     "hard_cut": 16,
+     "dip_to_black": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "去摩天崖@102": 0.6667,
+     "草场的马和悬崖@178": 0.1875,
+     "草场日落@323": 0.0,
+     "加油站洗车@371": 0.125,
+     "烤肉午饭@456": 0.0,
+     "村子和高田神社@487": 0.3793,
+     "登高田山@664": 0.3333,
+     "山顶俯瞰和下山@863": 0.0526,
+     "御神木@942": 0.2,
+     "海边的酒店@1072": 0.1667,
+     "知夫里赤壁@1327": 0.5833
+    },
+    "spread": 3.5556
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "去摩天崖@102": 40.4325,
+     "草场的马和悬崖@178": 49.5,
+     "草场日落@323": 35.699,
+     "加油站洗车@371": 47.122,
+     "烤肉午饭@456": 38.586,
+     "村子和高田神社@487": 39.841,
+     "登高田山@664": 33.197,
+     "山顶俯瞰和下山@863": 32.605,
+     "御神木@942": 30.9205,
+     "海边的酒店@1072": 41.0525,
+     "知夫里赤壁@1327": 39.1465
+    },
+    "spread": 0.4746
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "去摩天崖@102": 21.04,
+     "草场的马和悬崖@178": 14.555,
+     "草场日落@323": 23.648,
+     "加油站洗车@371": 18.4945,
+     "烤肉午饭@456": 18.8705,
+     "村子和高田神社@487": 16.0075,
+     "登高田山@664": 15.477,
+     "山顶俯瞰和下山@863": 16.161,
+     "御神木@942": 13.5185,
+     "海边的酒店@1072": 19.333,
+     "知夫里赤壁@1327": 16.868
+    },
+    "spread": 0.6005
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "去摩天崖@102": -20.336,
+     "草场的马和悬崖@178": -13.719,
+     "草场日落@323": 6.609,
+     "加油站洗车@371": 2.531,
+     "烤肉午饭@456": 16.172,
+     "村子和高田神社@487": 16.1835,
+     "登高田山@664": 23.578,
+     "山顶俯瞰和下山@863": 8.203,
+     "御神木@942": 35.469,
+     "海边的酒店@1072": 7.93,
+     "知夫里赤壁@1327": -3.469
+    },
+    "spread": 7.0372
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "去摩天崖@102": 16.988,
+     "草场的马和悬崖@178": 23.657,
+     "草场日落@323": 16.423,
+     "加油站洗车@371": 5.993,
+     "烤肉午饭@456": 16.111,
+     "村子和高田神社@487": 15.7205,
+     "登高田山@664": 20.68,
+     "山顶俯瞰和下山@863": 16.96,
+     "御神木@942": 30.6615,
+     "海边的酒店@1072": 14.6145,
+     "知夫里赤壁@1327": 10.5605
+    },
+    "spread": 1.5021
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1ydjizBE1o",
+    "n_cuts": 62,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.62,
+    "bpm": 96.77,
+    "hit_rate": 0.2742,
+    "baseline": 0.0515,
+    "lift": 5.329,
+    "downbeat_hit_rate": 0.2581,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 65,
+    "judged": 21,
+    "digital": 2
+   },
+   "pull_out": {
+    "measured": 19,
+    "judged": 3,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 33,
+  "onsets_per_min": 155.9,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 2.5,
+  "scale": 0.9,
+  "background": "black"
+ }
+}
