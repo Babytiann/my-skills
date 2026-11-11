@@ -1,639 +1,1348 @@
 {
- "schema_version": 1,
- "name": "links",
- "summary": "同行纪实旅行 vlog：旁白和对话带着走，底部烧录字幕贯穿全片；约 3.5–4 秒一刀，96.5–98.6% 是硬切；中景为主，远景和航拍交代环境，镜头的运动来自拍摄时的机位，后期不加数字推拉；调色自然，跟着光走，不套统一的 LUT",
- "sources": [
-  {
-   "id": "BV1SSQLBREVV",
-   "url": "https://www.bilibili.com/video/BV1SSQLBREVV",
-   "title": "和李现，攀登人生第一座雪山",
-   "measured": "2026-11-06",
-   "author": "Linksphotograph"
-  },
-  {
-   "id": "BV1jy2CBNEDL",
-   "url": "https://www.bilibili.com/video/BV1jy2CBNEDL",
-   "title": "和李现，徒步在西藏库拉岗日",
-   "measured": "2026-11-05",
-   "author": "Linksphotograph"
-  },
-  {
-   "id": "BV1uparzhEjs",
-   "url": "https://www.bilibili.com/video/BV1uparzhEjs",
-   "title": "我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！",
-   "measured": "2026-11-05",
-   "author": "Linksphotograph"
-  }
- ],
- "basis": "multi_reference",
- "deliverable": {
-  "fps": 29.97,
-  "width": 3840,
-  "height": 2160,
-  "duration_s": {
-   "median": 2252.8,
-   "mad": 491.2,
-   "p10": 1859.8,
-   "p90": 3099.4,
-   "n": 3
-  },
-  "letterbox": null
- },
- "structure": {
-  "sections": [
-   {
-    "role": "hook",
-    "share": 0.0261,
-    "shot_len_s": {
-     "median": 3.571,
-     "mad": 1.135,
-     "p10": 2.025,
-     "p90": 6.25,
-     "n": 48
-    }
-   },
-   {
-    "role": "intro",
-    "share": 0.0475,
-    "shot_len_s": {
-     "median": 3.888,
-     "mad": 1.969,
-     "p10": 1.328,
-     "p90": 10.627,
-     "n": 68
+  "schema_version": 1,
+  "name": "links",
+  "summary": "同行纪实旅行 vlog：旁白和对话带着走，底部烧录字幕贯穿全片；每条的镜头中位数 3.5–5.1 秒，95–99.7% 是硬切，黑场用在时间跳跃；远景和中景为主，航拍和细节交代环境，镜头的运动来自拍摄时的机位，后期几乎不加数字推拉；调色自然，跟着地方和光走，不套统一的 LUT",
+  "sources": [
+    {
+      "id": "BV16w4m1C7uN",
+      "url": "https://www.bilibili.com/video/BV16w4m1C7uN",
+      "title": "我看到了中国没有的地貌，峡湾地貌！挪威罗弗敦群岛",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
     },
-    "transition_in": "dip_to_black"
-   },
-   {
-    "role": "chapter",
-    "share": 0.8997,
-    "shot_len_s": {
-     "median": 3.904,
-     "mad": 1.635,
-     "p10": 1.602,
-     "p90": 9.696,
-     "n": 1305
+    {
+      "id": "BV1H5xie8EJZ",
+      "url": "https://www.bilibili.com/video/BV1H5xie8EJZ",
+      "title": "我来到了世界上最北的城市，一个永久免签的地方｜Links的北极Vlog 上集",
+      "measured": "2026-11-11",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1HrrjB9EUj",
+      "url": "https://www.bilibili.com/video/BV1HrrjB9EUj",
+      "title": "Links｜我来到了一个24小时都是黑夜的地方",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1HvQ3YgE4F",
+      "url": "https://www.bilibili.com/video/BV1HvQ3YgE4F",
+      "title": "我来到了世界降雪量第一的城市--日本青森",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1SSQLBREVV",
+      "url": "https://www.bilibili.com/video/BV1SSQLBREVV",
+      "title": "和李现，攀登人生第一座雪山",
+      "measured": "2026-11-06",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1fwEwzeEPp",
+      "url": "https://www.bilibili.com/video/BV1fwEwzeEPp",
+      "title": "【Links】飞跃13000公里，我们抵达了北极的心脏！格陵兰乌玛那刻｜4K杜比视界",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1jy2CBNEDL",
+      "url": "https://www.bilibili.com/video/BV1jy2CBNEDL",
+      "title": "和李现，徒步在西藏库拉岗日",
+      "measured": "2026-11-05",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1sHqPBLExZ",
+      "url": "https://www.bilibili.com/video/BV1sHqPBLExZ",
+      "title": "当太阳不再升起，我们的世界会变成什么样？",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1uparzhEjs",
+      "url": "https://www.bilibili.com/video/BV1uparzhEjs",
+      "title": "我是第一个上岛的中国人？在世界上最孤独的房子里过一夜！",
+      "measured": "2026-11-05",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1xF4m1L7Q2",
+      "url": "https://www.bilibili.com/video/BV1xF4m1L7Q2",
+      "title": "Vlog｜在北海道做了一场不愿醒来的梦｜4K杜比视界",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1ydjizBE1o",
+      "url": "https://www.bilibili.com/video/BV1ydjizBE1o",
+      "title": "Links｜隐藏着600万年的地球记忆！探索日本最神秘的离岛群--隐岐诸岛 ｜SONY FX2",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
+    },
+    {
+      "id": "BV1ym42137vx",
+      "url": "https://www.bilibili.com/video/BV1ym42137vx",
+      "title": "我们在京都，找到了异世界的入口！",
+      "measured": "2026-11-10",
+      "author": "Linksphotograph"
     }
-   },
-   {
-    "role": "interlude",
-    "share": 0.0082,
-    "shot_len_s": {
-     "median": 2.72,
-     "mad": 1.568,
-     "p10": 1.135,
-     "p90": 7.207,
-     "n": 16
-    }
-   },
-   {
-    "role": "ending",
-    "share": 0.0185,
-    "shot_len_s": {
-     "median": 2.486,
-     "mad": 0.668,
-     "p10": 2.002,
-     "p90": 8.736,
-     "n": 32
-    }
-   }
   ],
-  "order": "chronological"
- },
- "selection": {
-  "max_shake": 1.048,
-  "shot_types": {
-   "medium": 0.442,
-   "wide": 0.309,
-   "selfie": 0.101,
-   "detail": 0.093,
-   "aerial": 0.053,
-   "close": 0.003
-  },
-  "opening": "冷开场：对镜头的话点题，交代人物和要去的地方，接航拍或远景；两条李现的片子明确取自后面的段落。进铺垫时 2 条淡出到黑，1 条硬切",
-  "reject": []
- },
- "rhythm": {
-  "shot_len_s": {
-   "median": 3.837,
-   "mad": 1.635,
-   "p10": 1.568,
-   "p90": 9.676,
-   "n": 1469
-  },
-  "cuts_per_min": 12.01,
-  "min_shot_s": 1.18
- },
- "beat": {
-  "hit_rate": 0.3077,
-  "baseline": 0.0683,
-  "offset_frames": 1,
-  "use_downbeats": true,
-  "confidence": "ok"
- },
- "transitions": [
-  {
-   "type": "hard_cut",
-   "share": 0.9762
-  },
-  {
-   "type": "dip_to_black",
-   "share": 0.0136,
-   "frames": 10,
-   "where": "any"
-  },
-  {
-   "type": "dissolve",
-   "share": 0.0095,
-   "frames": 16,
-   "where": "any"
-  }
- ],
- "motion": {
-  "push_in": {
-   "share": 0.0
-  },
-  "pull_out": {
-   "share": 0.0
-  },
-  "shake": {
-   "share": 0.0814,
-   "amplitude_px": 5.1
-  },
-  "ramp": {
-   "share": 0.0
-  }
- },
- "effects": [
-  {
-   "type": "time_stamp",
-   "shot": 28,
-   "note": "画面左侧中部叠大号细黑体时间（7:00 am、13:30 pm、16:10 pm、6:20 am、8:00 am：28、57、79、170、463），am/pm 小一号，约 2–3 s，只在一天开始或换时段时出现；第二天那次下面加一行 Day 2",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "location_pin",
-   "shot": 20,
-   "note": "中文地名前加一个定位图标，放在画面左侧（20 北京·首都机场、25 德国·慕尼黑），只用在出发和转机",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "series_title_overlay",
-   "shot": 570,
-   "note": "手写系列标题和拉丁字母署名叠在山顶日落的两人剪影上方，约 4.5 s，淡入淡出；放在第 49 分钟的高潮，不在冷开场",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "photo_insert",
-   "shot": 104,
-   "note": "照片缩小放在黑底或深蓝底上，右侧带手写小签名，每张约 1.5–4 s（104、151、152、165、202、212、221、235、254、263、284、296、297、363、365、409、410、569）；片尾 614–617 连放收束",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "panel_title",
-   "shot": 29,
-   "note": "竖拍画面放在中间，两侧深蓝底，左侧竖排标题「旅行计划」，共约 36 s（29–32、34–35；33 是全屏的路线拼图）",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "map_insert",
-   "shot": 27,
-   "note": "三维地图飞行交代路线（26、27、36、203、204、286、429、450、492）；26、27、36、286、429 用 14–20 帧叠化接下一个镜头，其余没有标叠化",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "colour_bars",
-   "shot": 56,
-   "note": "彩条测试卡约 0.9 s，硬切进出，当作喜剧停顿",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "split_compare",
-   "shot": 160,
-   "note": "同机位白天和夜景用斜向分屏对照，只在城市灯火段落出现一次",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "stock_footage",
-   "shot": 618,
-   "note": "片尾太空画面（618–620 右上角标着 From NASA；227 的地球晨昏线画面没有标注，来源不明）和特罗姆瑟城区航拍（简介写明买自版权网站）都不是博主自己拍的，不算博主的拍法",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "long_take",
-   "shot": 452,
-   "note": "海边木屋夜谈用沙发固定机位长镜头（449 24 s、451 69 s、452 111 s），全片最长",
-   "ref": "BV1SSQLBREVV"
-  },
-  {
-   "type": "film_photo_insert",
-   "shot": 50,
-   "note": "胶片照片居中放在黑底上，左侧带张数计数（1/12 到 4/12：50、188、311、312），每张约 1.5–3.5 s",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "film_photo_insert",
-   "shot": 72,
-   "note": "同样的黑底照片，右侧带一个手写小签名（70、72、85、93、99、227、358、410）",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "photo_montage",
-   "shot": 99,
-   "note": "人像照片连放（99–109），接在拍照的段落后面；片尾还有一组（481–494，每张约 2 s）",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "altitude_stamp",
-   "shot": 55,
-   "note": "画面左侧叠海拔和氧气浓度，约 5–6 s（55、149、215、228、233），只在换海拔时出现",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "series_title_overlay",
-   "shot": 18,
-   "note": "手写系列标题叠在人物远景上方，约 4 s，放在冷开场结尾，随后淡出到黑",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "end_card",
-   "shot": 495,
-   "note": "黑底手写标识加拉丁字母署名，约 4 s，后面还有一段彩蛋（496–498）",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "screen_capture",
-   "shot": 37,
-   "note": "路线规划画板的屏幕录像，带缩放",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "map_insert",
-   "shot": 142,
-   "note": "三维路线图交代徒步路线；121 是手机地图",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "callout",
-   "shot": 36,
-   "note": "两人头顶叠性格类型标签，约 12 s",
-   "ref": "BV1jy2CBNEDL"
-  },
-  {
-   "type": "map_insert",
-   "shot": 11,
-   "note": "卫星地图，交代地理位置，1.2 s",
-   "ref": "BV1uparzhEjs"
-  },
-  {
-   "type": "screen_capture",
-   "shot": 47,
-   "note": "网上视频的屏幕录像，连同播放器界面一起放进来（47、48）",
-   "ref": "BV1uparzhEjs"
-  },
-  {
-   "type": "map_annotation",
-   "shot": 54,
-   "note": "航拍画面上叠箭头和地点说明，标出两个上岛点",
-   "ref": "BV1uparzhEjs"
-  },
-  {
-   "type": "photo_insert",
-   "shot": 169,
-   "note": "照片加黑底居中，4.2 s",
-   "ref": "BV1uparzhEjs"
-  }
- ],
- "grade": {
-  "summary": "自然色，跟着光走：三条的亮度、对比、饱和度接近，黑位都压得低，高光都略偏蓝；中间调冷暖差很多（b 从 −1.3 到 −10.7），取决于画面里雪和蓝调的多少，所以这里不给冷暖目标，调色核对用子包",
-  "look": {
-   "L01": {
-    "median": 2.035,
-    "mad": 1.626
-   },
-   "L50": {
-    "median": 45.447,
-    "mad": 11.086
-   },
-   "L99": {
-    "median": 78.305,
-    "mad": 7.7
-   },
-   "Lstd": {
-    "median": 20.805,
-    "mad": 3.755
-   },
-   "shadow": {
-    "median": 0.211,
-    "mad": 0.127
-   },
-   "chroma": {
-    "median": 12.585,
-    "mad": 4.571
-   },
-   "sh_a": {
-    "median": 0.508,
-    "mad": 1.234
-   },
-   "vignette": {
-    "median": 1.026,
-    "mad": 0.273
-   }
-  },
-  "lut": null,
-  "drx": null,
-  "grain": null
- },
- "text": {
-  "title": {
-   "font_class": "黑体",
-   "fallback_fonts": [
-    "PingFang SC",
-    "Hiragino Sans GB",
-    "STHeiti"
-   ],
-   "height_frac": 0.0627,
-   "position": [
-    0.501,
-    0.391
-   ],
-   "color": [
-    0.918,
-    0.922,
-    0.965
-   ],
-   "stroke": false,
-   "plate": false,
-   "in": "fade",
-   "out": "fade",
-   "duration_s": 1.75,
-   "offset_s": 7.47,
-   "template": "Text+",
-   "per": "location"
-  },
-  "chapter_card": {
-   "font_class": "黑体",
-   "fallback_fonts": [
-    "PingFang SC",
-    "Hiragino Sans GB",
-    "STHeiti"
-   ],
-   "height_frac": 0.0633,
-   "position": [
-    0.501,
-    0.481
-   ],
-   "color": [
-    0.855,
-    0.855,
-    0.855
-   ],
-   "stroke": false,
-   "plate": false,
-   "in": "cut",
-   "out": "cut",
-   "duration_s": 0.98,
-   "offset_s": 0.2,
-   "template": "Text+",
-   "per": "location"
-  },
-  "subtitle": {
-   "height_frac": 0.0444,
-   "position": [
-    0.5,
-    0.955
-   ],
-   "font_class": "黑体",
-   "fallback_fonts": [
-    "PingFang SC",
-    "Hiragino Sans GB",
-    "STHeiti"
-   ],
-   "stroke": true
-  }
- },
- "audio": {
-  "bpm": {
-   "median": 115.4,
-   "mad": 4.2,
-   "p10": 112.0,
-   "p90": 120.3,
-   "n": 3
-  },
-  "mood": "旁白和对话主导（人声 57–65%），音乐铺底；纯风景和航拍段落只有音乐；判读不听声音，只按测量推断",
-  "lufs": -14.4,
-  "duck_db": 0.5,
-  "sfx": [],
-  "music_changes": "约每章 14.9 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
- },
- "aroll": {
-  "speech_share": 0.593,
-  "pad_s": 0.2,
-  "pad_out_s": 0.45,
-  "cutaway_after_s": 6.0,
-  "cutaway_share": 0.4,
-  "cutaway_lead_s": 1.5,
-  "cutaway_tail_s": 1.0,
-  "j_s": 0.0,
-  "l_s": 0.0
- },
- "photo": {
-  "dur_s": 2.5,
-  "scale": 0.55,
-  "background": "black"
- },
- "resolve": [
-  {
-   "element": "剪辑点",
-   "route": "live_api",
-   "status": "verified",
-   "how": "append_to_timeline clipInfos，逐条读回"
-  },
-  {
-   "element": "叠化",
-   "route": "live_api",
-   "status": "verified",
-   "how": "add_transition Cross Dissolve，从后往前加"
-  },
-  {
-   "element": "黑场过渡",
-   "route": "live_api",
-   "status": "verified",
-   "how": "add_transition Dip To Color Dissolve，从后往前加"
-  },
-  {
-   "element": "地点标题/章节卡",
-   "route": "live_api",
-   "status": "verified",
-   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
-  },
-  {
-   "element": "对白（A1）",
-   "route": "live_api",
-   "status": "verified",
-   "how": "画面和声音分开 append：V1/V2 传 media_type 1，A1 传 media_type 2，源区间可以不同（J/L cut）"
-  },
-  {
-   "element": "字幕",
-   "route": "live_api",
-   "status": "verified",
-   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
-  },
-  {
-   "element": "调色",
-   "route": "live_api",
-   "status": "verified",
-   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
-  },
-  {
-   "element": "音乐压低",
-   "route": "offline_ffmpeg",
-   "status": "verified",
-   "how": "duck.py 渲染压低版音乐床放 A2"
-  },
-  {
-   "element": "淡入淡出",
-   "route": "live_api",
-   "status": "verified",
-   "how": "set_fades，片尾淡出也用它"
-  },
-  {
-   "element": "播放帧率",
-   "route": "manual",
-   "status": "manual",
-   "how": "工程设置里手动设，API 改不了"
-  }
- ],
- "evidence": {
-  "basis_groups": "references",
-  "consistency": {
-   "shot_len_s": {
-    "verdict": "consistent",
-    "medians": {
-     "BV1SSQLBREVV": 3.971,
-     "BV1jy2CBNEDL": 3.537,
-     "BV1uparzhEjs": 4.037
+  "basis": "multi_reference",
+  "deliverable": {
+    "fps": 29.97,
+    "width": 3840,
+    "height": 2160,
+    "duration_s": {
+      "median": 1694.5,
+      "mad": 194.5,
+      "p10": 1394.8,
+      "p90": 2210.0,
+      "n": 12
     },
-    "spread": 0.1259
-   },
-   "transitions": {
-    "BV1SSQLBREVV": {
-     "hard_cut": 601,
-     "dip_to_black": 10,
-     "other": 1,
-     "dissolve": 11
+    "letterbox": null
+  },
+  "structure": {
+    "sections": [
+      {
+        "role": "hook",
+        "share": 0.0332,
+        "shot_len_s": {
+          "median": 3.704,
+          "mad": 1.301,
+          "p10": 1.902,
+          "p90": 7.427,
+          "n": 165
+        }
+      },
+      {
+        "role": "intro",
+        "share": 0.0412,
+        "shot_len_s": {
+          "median": 3.27,
+          "mad": 1.201,
+          "p10": 1.568,
+          "p90": 8.522,
+          "n": 207
+        }
+      },
+      {
+        "role": "chapter",
+        "share": 0.886,
+        "shot_len_s": {
+          "median": 4.137,
+          "mad": 1.702,
+          "p10": 1.802,
+          "p90": 10.14,
+          "n": 3542
+        }
+      },
+      {
+        "role": "interlude",
+        "share": 0.0083,
+        "shot_len_s": {
+          "median": 2.886,
+          "mad": 1.218,
+          "p10": 1.265,
+          "p90": 5.913,
+          "n": 44
+        }
+      },
+      {
+        "role": "ending",
+        "share": 0.0313,
+        "shot_len_s": {
+          "median": 3.604,
+          "mad": 1.635,
+          "p10": 1.768,
+          "p90": 9.316,
+          "n": 143
+        }
+      }
+    ],
+    "order": "chronological"
+  },
+  "selection": {
+    "max_shake": 1.094,
+    "shot_types": {
+      "wide": 0.369,
+      "medium": 0.343,
+      "detail": 0.125,
+      "aerial": 0.083,
+      "selfie": 0.075,
+      "close": 0.005
     },
-    "BV1jy2CBNEDL": {
-     "hard_cut": 491,
-     "dip_to_black": 7,
-     "dissolve": 1
+    "opening": "冷开场（12 条都有，占全片 1.6–6.7%）：常见的是主持人对镜头说一句或发问（6 条），接目的地的航拍和风景；两条李现的片子先放后面段落的片段，乌玛纳克和罗弗敦先放到达后的画面再倒回去讲怎么来；北海道、京都、斯瓦尔巴是风景混剪配音乐或旁白。进铺垫 7 条硬切，5 条淡出到黑",
+    "reject": []
+  },
+  "rhythm": {
+    "shot_len_s": {
+      "median": 4.071,
+      "mad": 1.669,
+      "p10": 1.802,
+      "p90": 9.977,
+      "n": 4073
     },
-    "BV1uparzhEjs": {
-     "hard_cut": 339,
-     "dip_to_black": 3,
-     "dissolve": 2
+    "cuts_per_min": 11.41,
+    "min_shot_s": 1.33
+  },
+  "beat": {
+    "hit_rate": 0.203,
+    "baseline": 0.0678,
+    "offset_frames": 0,
+    "use_downbeats": true,
+    "confidence": "ok"
+  },
+  "transitions": [
+    {
+      "type": "hard_cut",
+      "share": 0.9831
+    },
+    {
+      "type": "dip_to_black",
+      "share": 0.012,
+      "frames": 10,
+      "where": "any"
+    },
+    {
+      "type": "dissolve",
+      "share": 0.0049,
+      "frames": 16,
+      "where": "any"
     }
-   },
-   "measured_push_in_share": {
-    "verdict": "consistent",
-    "medians": {
-     "BV1SSQLBREVV": 0.1875,
-     "BV1jy2CBNEDL": 0.162,
-     "BV1uparzhEjs": 0.1623
-    },
-    "spread": 0.1571
-   },
-   "look.L50": {
-    "verdict": "consistent",
-    "medians": {
-     "BV1SSQLBREVV": 46.0205,
-     "BV1jy2CBNEDL": 45.447,
-     "BV1uparzhEjs": 40.86
-    },
-    "spread": 0.1135
-   },
-   "look.Lstd": {
-    "verdict": "consistent",
-    "medians": {
-     "BV1SSQLBREVV": 20.8045,
-     "BV1jy2CBNEDL": 23.1435,
-     "BV1uparzhEjs": 18.821
-    },
-    "spread": 0.2078
-   },
-   "look.mid_b": {
-    "verdict": "varies",
-    "medians": {
-     "BV1SSQLBREVV": -10.656,
-     "BV1jy2CBNEDL": -7.375,
-     "BV1uparzhEjs": -1.3045
-    },
-    "spread": 1.268
-   },
-   "look.chroma": {
-    "verdict": "consistent",
-    "medians": {
-     "BV1SSQLBREVV": 9.576,
-     "BV1jy2CBNEDL": 12.5855,
-     "BV1uparzhEjs": 13.0465
-    },
-    "spread": 0.2758
-   }
-  },
-  "beat": [
-   {
-    "ref": "BV1SSQLBREVV",
-    "n_cuts": 131,
-    "tol_s": 0.033366700033366704,
-    "ibi_s": 0.68,
-    "bpm": 88.24,
-    "hit_rate": 0.3511,
-    "baseline": 0.0683,
-    "lift": 5.14,
-    "downbeat_hit_rate": 0.313,
-    "verdict": "on_beat"
-   },
-   {
-    "ref": "BV1jy2CBNEDL",
-    "n_cuts": 104,
-    "tol_s": 0.033366700033366704,
-    "ibi_s": 0.66,
-    "bpm": 90.91,
-    "hit_rate": 0.3077,
-    "baseline": 0.0792,
-    "lift": 3.883,
-    "downbeat_hit_rate": 0.2788,
-    "verdict": "on_beat"
-   },
-   {
-    "ref": "BV1uparzhEjs",
-    "n_cuts": 66,
-    "tol_s": 0.033366700033366704,
-    "ibi_s": 0.66,
-    "bpm": 90.91,
-    "hit_rate": 0.197,
-    "baseline": 0.0607,
-    "lift": 3.246,
-    "downbeat_hit_rate": 0.1818,
-    "verdict": "not_on_beat"
-   }
   ],
-  "moves": {
-   "push_in": {
-    "measured": 254,
-    "judged": 44,
-    "digital": 0
-   },
-   "pull_out": {
-    "measured": 92,
-    "judged": 28,
-    "digital": 0
-   }
+  "motion": {
+    "push_in": {
+      "share": 0.0028,
+      "scale_end": {
+        "median": 1.176,
+        "mad": 0.049,
+        "p10": 1.137,
+        "p90": 1.604,
+        "n": 3
+      }
+    },
+    "pull_out": {
+      "share": 0.0
+    },
+    "shake": {
+      "share": 0.0796,
+      "amplitude_px": 4.8
+    },
+    "ramp": {
+      "share": 0.0
+    }
   },
-  "ramp_candidates": 213,
-  "onsets_per_min": 162.8,
-  "unverified": [],
-  "rejected_labels": [],
-  "single_source": []
- }
+  "effects": [
+    {
+      "type": "map_annotation",
+      "shot": 29,
+      "note": "渡轮上蓝调和日落的画面上叠两个红点、一条连线和地名小字，标出从博得到罗弗敦的航线（29、30、31），约 10 s",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 81,
+      "note": "照片居中放在黑底上，高度是 2:1 画面高的 90%，每张 1.7–2.7 s：27（竖幅，飞机上拿手机拍窗外）、81、82、83（傍晚的红房子和海）、90、91（晾鱼架和亮灯的房子）",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 70,
+      "note": "做饭和吃饭之间插 0.6 s 彩条，硬切进出",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 75,
+      "note": "头显里看到的系统界面叠在房间画面上，2.8 s",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 122,
+      "note": "手机游戏的屏幕录像放在黑底一侧（122–125，约 26 s），另一侧用白字分行写出旁白内容，和底部字幕重复；OCR 把这些白字分成了标题，记 subtitle_misread",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "callout",
+      "shot": 64,
+      "note": "超市里商品前叠折合人民币的价格大字，居中、白色细黑体、淡入淡出（64、65）",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "long_take",
+      "shot": 208,
+      "note": "登山时的长镜头：208（爬雪坡，52.7 s）、226（山脊，45.1 s）、228（登顶，39.0 s），镜头跟着人走或停在原地拍人",
+      "ref": "BV16w4m1C7uN"
+    },
+    {
+      "type": "map_insert",
+      "shot": 2,
+      "note": "Google Earth 画面：冷开场里一个（2），讲历史时连着三个（79–81），从群岛拉远到地球再看格陵兰",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "series_title_overlay",
+      "shot": 21,
+      "note": "疏排的大写署名 LINKSPHOTOGRAPH：片头叠在冰川航拍中间（21），片尾叠在最后一张照片上方（277），再留在「下集预告」卡上（278）",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "vertical_clip",
+      "shot": 30,
+      "note": "竖拍画面放在横屏中间，两侧黑边（30、31、221、225、257），每段 2–9 s；多是手机拍的过程镜头",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "cg_insert",
+      "shot": 40,
+      "note": "末日种子库的三维剖面示意图，2.2 s，黑底；来源不明",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "callout",
+      "shot": 43,
+      "note": "叠在画面上的说明字：气温（6）、打车和酒店的价格（43、47、55，挪威克朗折人民币）、无人机那段交代时间（241）",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 44,
+      "note": "照片放在黑底上（44、45、92、93、168–170、189–191、238、266–268），每张 2.1–7.2 s；168–170 旁边叠相机型号小字",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "picture_in_picture",
+      "shot": 83,
+      "note": "一幅老的航海画作缩小叠在雪山空镜上，1.8 s，讲 1596 年发现群岛",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "place_title",
+      "shot": 84,
+      "note": "衬线体 Svalbard 一行叠在冰川航拍上，下面是宋体小字地名（T1358）；Svalbard 这行没有单独的标题轨",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "stock_footage",
+      "shot": 87,
+      "note": "借来的电视新闻画面（87、88，带台标、字幕条和滚动字），讲黄河站时用；片段自带的叠化（e052）不算博主的转场",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 102,
+      "note": "别人拍的太阳节视频连同播放器界面一起录屏（102–107，29.7 s），前面用一张黑底字卡交代来源",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 113,
+      "note": "screen_recording：订出海团的网页录屏（行程名、挪威克朗价格），9.7 s，配旁白讲怎么订",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "gear_caption",
+      "shot": 168,
+      "note": "黑底照片右侧叠相机型号小字（168–170）",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "side_mask",
+      "shot": 226,
+      "note": "登上海冰那段，画面两侧压暗成柔边的竖条，中间留出竖幅的亮区，场景在暗区里照样连着（226、227、231、232、236）；全片只有这一段",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "photo_montage",
+      "shot": 271,
+      "note": "片尾照片连放：黑底字卡之后 7 张照片（271–277，270 是淡入的碎片），每张约 1.8–4.8 s，最后一张上叠 LINKSPHOTOGRAPH",
+      "ref": "BV1H5xie8EJZ"
+    },
+    {
+      "type": "time_stamp",
+      "shot": 2,
+      "note": "左侧中部叠时间戳：大号细衬线时间，am/pm 小一号，淡入淡出，2.5–4.3 s。13 次：冷开场连着 5 个（2、3、4、5、6，一个镜头一个，约 3 s 一个），特罗姆瑟 15，开车 36、40，到小屋 44，第二天 77，午后 117，夜里 170，登山 258。冷开场 5 个和 15 下面多一行小字「挪威 - 地名」（Segla、Husøy、Finnsæter、Tromsø），到 Senja 以后只写时间",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "series_title_overlay",
+      "shot": 12,
+      "note": "飞机舷窗外的航拍上居中两行小字：上「下集」、下片名「坠入极夜」，约 2.2 s。前面的手机打字（10–11）和第 1 集片尾预告是同一组画面，等于把上一集的预告接上来当本集片名；没有黑底片名卡",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "map_insert",
+      "shot": 27,
+      "note": "Google Earth 卫星地图，亮线标出开往 Senja 的路线，4.9 s，镜头内缓慢推进；前面硬切自车载导航屏（26），后面叠化进暗的车内（e027）",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "lyric_caption",
+      "shot": 123,
+      "note": "新类型：英文歌词字幕放在画面顶部居中，白色小号无衬线，一句一条，698.5–748 s，镜头 123–133（写留言册的段落，没有旁白，底部中文字幕带空着）。全片只此一段",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 143,
+      "note": "0.7 s 彩条，全片一次，夹在驯鹿（142）和海边篝火（144）之间。第 1 集也有一次（101）",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "ai_generated_insert",
+      "shot": 168,
+      "note": "右下角 Veo 水印、画面偏软：在真实极光夜景（167、169 同一构图）上生成一只巨型蜘蛛剪影，6 s；从 167 硬切进，叠化回真实画面 169（e202）。内容素材，不复刻",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "callout",
+      "shot": 228,
+      "note": "房东讲话时，画面中部偏左、字幕上方一行白色解释字（补充他说的话），4 s，全片一次",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "end_card",
+      "shot": 324,
+      "note": "最后一个镜头（夜里头灯登山的航拍）淡到黑，黑底上居中字距很宽的 LINKSPHOTOGRAPH，约 2.5 s 到片尾。和第 1 集不同：没有下一集片名，没有下集预告卡。片尾淡出不在测到的事件里",
+      "ref": "BV1HrrjB9EUj"
+    },
+    {
+      "type": "location_stamp",
+      "shot": 3,
+      "note": "地名加降雪数据的叠字，放在画面左侧：一行白色地名，一行小字「年平均降雪量」或「积雪」，数字是橙色；淡入淡出，约 2–4 s。开头的降雪量对比（阿勒泰市、青森市、禾木村、酸ケ湯温泉，3–13），之后到秋田（20）、十和田湖（116）、弘前（169）各出一次",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "archive_clips",
+      "shot": 3,
+      "note": "以前旅行的画面：开头对比降雪量时用了新疆阿勒泰（3）和禾木村（11）的航拍；傍晚独自出门那段配旁白回顾去过的地方，接 3 个别处的画面（184–186，秋天的山路、湖边的人、海边悬崖）",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "stock_footage",
+      "shot": 13,
+      "note": "借来的电视画面：日本新闻里的酸ケ湯温泉（13），上面加了红圈和「17 米」；讲雪怎么形成时用了两张电视天气图（166、167）",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "film_photo_insert",
+      "shot": 24,
+      "note": "胶片照片放在黑底上，右侧一列小字写胶片、相机和翻拍用的机身：24、71、99、128、151、157，每张 1.4–4.0 s；前面都是用中画幅胶片相机取景、拍摄的过程",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 101,
+      "note": "数码照片放在黑底上，下面一行小字写机身和镜头：分校里一组 101–106 连放（每张 1.0–2.7 s），另有 45、88、89，傍晚出门拍的一组 211–214",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "gear_caption",
+      "shot": 51,
+      "note": "实拍画面角落叠器材小字（机身、镜头、拍摄格式）：51、59、60、146 等，白色细字，放在画面边上",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "map_insert",
+      "shot": 111,
+      "note": "路线地图（111、112），从分校开到十和田湖，3.8 s 和 2.0 s",
+      "ref": "BV1HvQ3YgE4F"
+    },
+    {
+      "type": "time_stamp",
+      "shot": 28,
+      "note": "画面左侧中部叠大号细黑体时间（7:00 am、13:30 pm、16:10 pm、6:20 am、8:00 am：28、57、79、170、463），am/pm 小一号，约 2–3 s，只在一天开始或换时段时出现；第二天那次下面加一行 Day 2",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "location_pin",
+      "shot": 20,
+      "note": "中文地名前加一个定位图标，放在画面左侧（20 北京·首都机场、25 德国·慕尼黑），只用在出发和转机",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "series_title_overlay",
+      "shot": 570,
+      "note": "手写系列标题和拉丁字母署名叠在山顶日落的两人剪影上方，约 4.5 s，淡入淡出；放在第 49 分钟的高潮，不在冷开场",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 104,
+      "note": "照片缩小放在黑底或深蓝底上，右侧带手写小签名，每张约 1.5–4 s（104、151、152、165、202、212、221、235、254、263、284、296、297、363、365、409、410、569）；片尾 614–617 连放收束",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "panel_title",
+      "shot": 29,
+      "note": "竖拍画面放在中间，两侧深蓝底，左侧竖排标题「旅行计划」，共约 36 s（29–32、34–35；33 是全屏的路线拼图）",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "map_insert",
+      "shot": 27,
+      "note": "三维地图飞行交代路线（26、27、36、203、204、286、429、450、492）；26、27、36、286、429 用 14–20 帧叠化接下一个镜头，其余没有标叠化",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 56,
+      "note": "彩条测试卡约 0.9 s，硬切进出，当作喜剧停顿",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "split_compare",
+      "shot": 160,
+      "note": "同机位白天和夜景用斜向分屏对照，只在城市灯火段落出现一次",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "stock_footage",
+      "shot": 618,
+      "note": "片尾太空画面（618–620 右上角标着 From NASA；227 的地球晨昏线画面没有标注，来源不明）和特罗姆瑟城区航拍（简介写明买自版权网站）都不是博主自己拍的，不算博主的拍法",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "long_take",
+      "shot": 452,
+      "note": "海边木屋夜谈用沙发固定机位长镜头（449 24 s、451 69 s、452 111 s），全片最长",
+      "ref": "BV1SSQLBREVV"
+    },
+    {
+      "type": "map_insert",
+      "shot": 24,
+      "note": "地图和路线：Google Earth 从高空推到格陵兰（24、36、75），一张航线图（25），一张在航拍上逐行列出东京、北京、哥本哈根、努克、伊卢利萨特、Qaarsut、乌玛纳克停机坪和每段飞行时长的路线清单（26）",
+      "ref": "BV1fwEwzeEPp"
+    },
+    {
+      "type": "place_title",
+      "shot": 19,
+      "note": "地名「乌玛纳克 / Uummannaq」中文一行、拉丁字母一行，小字居中叠在岛的航拍上，约 1.5 s；全片只出现这一次，测量把它分进了普通文字，没有进标题轨",
+      "ref": "BV1fwEwzeEPp"
+    },
+    {
+      "type": "callout",
+      "shot": 127,
+      "note": "叠在画面上的说明字：无人机在晃动的船上降落那段，暗的海面上居中三句（127、129、132）；超市里商品旁边写折合人民币的价格（195–199、224）；「不新鲜的土豆」大字（227）",
+      "ref": "BV1fwEwzeEPp"
+    },
+    {
+      "type": "gear_caption",
+      "shot": 106,
+      "note": "航拍画面左下角叠器材小字（无人机型号、拍摄格式）：106、107、328",
+      "ref": "BV1fwEwzeEPp"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 114,
+      "note": "照片放在黑底上（114、312、320），每张 1–4 s",
+      "ref": "BV1fwEwzeEPp"
+    },
+    {
+      "type": "photo_montage",
+      "shot": 345,
+      "note": "片尾照片连放：黑底上 11 张照片（345–355），每张约 1.8 s；前后叠小字「早安乌玛纳克」「晚安伊卢利萨特」「再见格陵兰」「2025格陵兰篇 完结」，最后接一个夜里的航拍淡出",
+      "ref": "BV1fwEwzeEPp"
+    },
+    {
+      "type": "film_photo_insert",
+      "shot": 50,
+      "note": "胶片照片居中放在黑底上，左侧带张数计数（1/12 到 4/12：50、188、311、312），每张约 1.5–3.5 s",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "film_photo_insert",
+      "shot": 72,
+      "note": "同样的黑底照片，右侧带一个手写小签名（70、72、85、93、99、227、358、410）",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "photo_montage",
+      "shot": 99,
+      "note": "人像照片连放（99–109），接在拍照的段落后面；片尾还有一组（481–494，每张约 2 s）",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "altitude_stamp",
+      "shot": 55,
+      "note": "画面左侧叠海拔和氧气浓度，约 5–6 s（55、149、215、228、233），只在换海拔时出现",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "series_title_overlay",
+      "shot": 18,
+      "note": "手写系列标题叠在人物远景上方，约 4 s，放在冷开场结尾，随后淡出到黑",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "end_card",
+      "shot": 495,
+      "note": "黑底手写标识加拉丁字母署名，约 4 s，后面还有一段彩蛋（496–498）",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 37,
+      "note": "路线规划画板的屏幕录像，带缩放",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "map_insert",
+      "shot": 142,
+      "note": "三维路线图交代徒步路线；121 是手机地图",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "callout",
+      "shot": 36,
+      "note": "两人头顶叠性格类型标签，约 12 s",
+      "ref": "BV1jy2CBNEDL"
+    },
+    {
+      "type": "time_stamp",
+      "shot": 1,
+      "note": "左侧中部叠时间戳：大号细衬线时间，am/pm 小一号，上或下一行小黑体写地名或「DayN 地名」，淡入淡出 3–6.5 s。5 次：1（特罗姆瑟）、9（Senja）、16（Day1 Rovaniemi）、25（Day2 Lapland）、119（Day2 Lapland 下午）；冷开场 2 次、铺垫 1 次、章节里 2 次。另有一次时间写在 Rovaniemi 黑底卡里（247）",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 74,
+      "note": "照片放在黑底上居中（竖拍或 3:2），1.2–4 s 一张，常连成三四张的小相册：74；142–145（扎营的蓝调和帐篷）；154–156（极光）；242–244（雾凇）。184 是一张议会大楼的铅笔画，同样放在黑底上。276 是一张满幅的 8 年前合影，静帧上有慢推（缩放 1.048）",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "picture_in_picture",
+      "shot": 283,
+      "note": "左上角小窗放 8 年前在同一处火堆边拍的视频，底下是现在的画面。31 是另一种：自拍画面左下角叠一张带浅色边框的日落照片",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "split_compare",
+      "shot": 277,
+      "note": "左右两张和圣诞老人的合影对比，下方标年份 2018 / 2025，2.2 s 静帧",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 101,
+      "note": "0.7 s 彩条，全片一次，夹在国家公园徒步段里",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "cg_insert",
+      "shot": 10,
+      "note": "地球自转的 CG，配极夜成因的科普旁白；来源不明，不算博主的拍法",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "ai_generated_insert",
+      "shot": 176,
+      "note": "176–181 右下角有 Veo 水印：生成的古代木屋和桑拿画面，配桑拿历史旁白，之间两次叠化（e132、e133）。内容素材，不复刻",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "end_card",
+      "shot": 311,
+      "note": "片尾：飞机舷窗画面（310）上淡入下一集片名「坠入极夜」，画面淡出到黑后片名留着，字距很宽的 LINKSPHOTOGRAPH 在它两侧淡入，2.6 s",
+      "ref": "BV1sHqPBLExZ"
+    },
+    {
+      "type": "map_insert",
+      "shot": 11,
+      "note": "卫星地图，交代地理位置，1.2 s",
+      "ref": "BV1uparzhEjs"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 47,
+      "note": "网上视频的屏幕录像，连同播放器界面一起放进来（47、48）",
+      "ref": "BV1uparzhEjs"
+    },
+    {
+      "type": "map_annotation",
+      "shot": 54,
+      "note": "航拍画面上叠箭头和地点说明，标出两个上岛点",
+      "ref": "BV1uparzhEjs"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 169,
+      "note": "照片加黑底居中，4.2 s",
+      "ref": "BV1uparzhEjs"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 13,
+      "note": "照片缩小居中放在浅灰底上，每张约 1.6–3.8 s，前面多是拍摄过程或相机屏幕：清晨 13、16、19、23、24、26、28、29，废屋 40、41、42、45、49、50、51、52，咖啡店 141、142。39、43 是照片消失后只剩灰底的 0.1–0.2 s 碎片",
+      "ref": "BV1xF4m1L7Q2"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 217,
+      "note": "蓝调时分给店主拍的照片放在深灰底上（217、223、226、227、228、229），和拍摄过程交替出现",
+      "ref": "BV1xF4m1L7Q2"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 130,
+      "note": "0.5 s 彩条插入，接在第三次陷车之后、咖啡店一章之前，作笑点",
+      "ref": "BV1xF4m1L7Q2"
+    },
+    {
+      "type": "callout",
+      "shot": 98,
+      "note": "拖车一段的轮次计数：黑底卡 Round 1（96）之后，Round 2–10 叠在画面左右边缘（98、100–105，跳过 7、9），随镜头硬切出现",
+      "ref": "BV1xF4m1L7Q2"
+    },
+    {
+      "type": "end_card",
+      "shot": 281,
+      "note": "片尾「2024 / 北海道vlog」两行白字叠在最后一个镜头中间，淡入，约 3 s，随后整片淡出",
+      "ref": "BV1xF4m1L7Q2"
+    },
+    {
+      "type": "letterbox_crop",
+      "shot": 1,
+      "note": "部分镜头上下烧进约 12.2% 的黑边（2.35:1），共 90 个镜头、约 421 s，用在冷开场、片名段、日落、林间、酒店和片尾这些风景和情绪段落：1–6、16–19、22–23、46–47、50–52、54–55、64、70、76–79、81–86、154、156、158、187–196、211、214–216、218、230、239–241、243–258、272–292；说话和做事的段落是 16:9",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "map_insert",
+      "shot": 27,
+      "note": "地图动画：从整个海域推到隐岐诸岛，4.5 s",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "picture_in_picture",
+      "shot": 33,
+      "note": "航拍公路上叠一个小画面（车内镜头），1.5 s",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 68,
+      "note": "照片放在黑底上，3:2 横图约占画面高 90%（68、186、219），竖图一张（222），小图一张（127），每张 1.2–4.1 s，中位数 2.5 s，前后多是拍这张照片的过程",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 107,
+      "note": "0.6 s 彩条插入作笑点，在烤肉午饭里",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 40,
+      "note": "相机菜单的屏幕录像（40–42），在赞助段里",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "callout",
+      "shot": 90,
+      "note": "白色细黑体的旁白式强调字：加油站一段画面上方一句（90），神社旁一句居中（133）",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "quote_overlay",
+      "shot": 280,
+      "note": "片尾约 23:27–24:14，展览里的一段话，日文原文和中文译文两行，放在画面下部（中心 y 0.82 和 0.86），每句 3–6 s，画面是带遮幅的风景混剪，没有旁白",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "end_card",
+      "shot": 290,
+      "note": "片尾「隠岐諸島之旅 / 完」两行居中淡入，随后叠化成英文署名，整片淡出",
+      "ref": "BV1ydjizBE1o"
+    },
+    {
+      "type": "poster_insert",
+      "shot": 19,
+      "note": "合影做成剧集海报式的片名，放在灰底上，3.8 s，接在冷开场之后",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "archive_clips",
+      "shot": 21,
+      "note": "以前旅行的画面（雪地公路、雪山、极光、戴护目镜的人），21–24，每个 2–3 s，配旁白交代这几年一直在旅行",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 15,
+      "note": "照片居中放在灰底上，右侧带一个小签名，前后多是拍这张照片的过程：15、43、64、66、74–79、108–110、115、121、129–131、133、226、227、272、274、275，共 24 张，浅灰底（约 126/255）居多，115、226、227 是深灰底（约 48），每张 1.7–5.1 s，中位数 2.6 s；74–79 是 6 张各 1.7 s 的连放。5 是黑底",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "photo_montage",
+      "shot": 107,
+      "note": "三张竖幅照片并排铺满画面，2.9 s",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "screen_capture",
+      "shot": 36,
+      "note": "民宿平台 App 的地图页，交代民宿的位置，属于赞助内容",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "colour_bars",
+      "shot": 214,
+      "note": "「相机坏了」的桥段：废墟门口合影后硬切进 2.7 s 晃动模糊的红色画面（212），接 2.3 s 黑镜头（213）和 1.0 s 彩条（214），对上第二章卡片上的预警；1.0 s 的黑镜头 217 也在这一段",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "callout",
+      "shot": 61,
+      "note": "强调字：白色细黑体，画面右侧（约 4:06、4:08）和左侧（约 9:15、9:17）各两句；19:24–19:33 夜里开车的画面中间叠两句旁白式的字（镜头 251）",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "low_frame_rate",
+      "shot": 285,
+      "note": "夜里林子里那段（282–301）多是约 15 帧/秒的画面；285–295 每 8 帧才更新一次（约 3.75 帧/秒），像步进；测到的 286、288–295 是这段步进的假剪辑点",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "photo_insert",
+      "shot": 302,
+      "note": "萤火虫的长曝光照片铺满画面（302–305），每张 4–7 s，几乎不动",
+      "ref": "BV1ym42137vx"
+    },
+    {
+      "type": "end_card",
+      "shot": 307,
+      "note": "黑底片尾卡两行，6.5 s",
+      "ref": "BV1ym42137vx"
+    }
+  ],
+  "grade": {
+    "summary": "自然色，跟着光走：12 条的黑位都压得低，饱和度中等；冷暖跟着地方走：日本 4 条的中间调从略冷到偏暖，极地 5 条都偏冷，极夜两集整体偏暗。这一层只给黑位、中间亮度、暗部占比、饱和度和暗角的目标，不给冷暖目标，调色核对用子包",
+    "look": {
+      "L01": {
+        "median": 2.104,
+        "mad": 1.673
+      },
+      "L50": {
+        "median": 38.319,
+        "mad": 11.458
+      },
+      "shadow": {
+        "median": 0.217,
+        "mad": 0.151
+      },
+      "chroma": {
+        "median": 12.529,
+        "mad": 5.146
+      },
+      "vignette": {
+        "median": 0.95,
+        "mad": 0.28
+      }
+    },
+    "lut": null,
+    "drx": null,
+    "grain": null
+  },
+  "text": {
+    "title": {
+      "font_class": "黑体",
+      "fallback_fonts": [
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "STHeiti"
+      ],
+      "height_frac": 0.0627,
+      "position": [
+        0.499,
+        0.501
+      ],
+      "color": [
+        0.878,
+        0.898,
+        0.902
+      ],
+      "stroke": false,
+      "plate": false,
+      "in": "fade",
+      "out": "fade",
+      "duration_s": 3.25,
+      "offset_s": 3.57,
+      "template": "Text+",
+      "per": "location"
+    },
+    "chapter_card": {
+      "font_class": "黑体",
+      "fallback_fonts": [
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "STHeiti"
+      ],
+      "height_frac": 0.0619,
+      "position": [
+        0.501,
+        0.49
+      ],
+      "color": [
+        0.882,
+        0.882,
+        0.882
+      ],
+      "stroke": false,
+      "plate": false,
+      "in": "cut",
+      "out": "cut",
+      "duration_s": 1.0,
+      "offset_s": 0.16,
+      "template": "Text+",
+      "per": "location"
+    },
+    "subtitle": {
+      "height_frac": 0.0419,
+      "position": [
+        0.5,
+        0.953
+      ],
+      "font_class": "黑体",
+      "fallback_fonts": [
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "STHeiti"
+      ],
+      "stroke": true
+    }
+  },
+  "audio": {
+    "bpm": {
+      "median": 117.0,
+      "mad": 7.4,
+      "p10": 80.4,
+      "p90": 125.2,
+      "n": 12
+    },
+    "mood": "旁白和对话主导（12 条人声占比 55–70%，中位数 59.5%），音乐铺底；纯风景和航拍段落只有音乐；判读不听声音，只按测量推断",
+    "lufs": -15.2,
+    "duck_db": 0.3,
+    "sfx": [],
+    "music_changes": "约每章 12.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+  },
+  "aroll": {
+    "speech_share": 0.593,
+    "pad_s": 0.2,
+    "pad_out_s": 0.45,
+    "cutaway_after_s": 6.0,
+    "cutaway_share": 0.4,
+    "cutaway_lead_s": 1.5,
+    "cutaway_tail_s": 1.0,
+    "j_s": 0.0,
+    "l_s": 0.0
+  },
+  "photo": {
+    "dur_s": 2.6,
+    "scale": 0.9,
+    "background": "black"
+  },
+  "resolve": [
+    {
+      "element": "剪辑点",
+      "route": "live_api",
+      "status": "verified",
+      "how": "append_to_timeline clipInfos，逐条读回"
+    },
+    {
+      "element": "叠化",
+      "route": "live_api",
+      "status": "verified",
+      "how": "add_transition Cross Dissolve，从后往前加"
+    },
+    {
+      "element": "黑场过渡",
+      "route": "live_api",
+      "status": "verified",
+      "how": "add_transition Dip To Color Dissolve，从后往前加"
+    },
+    {
+      "element": "动态推拉",
+      "route": "fusion",
+      "status": "verified",
+      "how": "最小 .comp 模板（MediaIn→Transform→MediaOut，Size 关键帧，末帧=时长−1）+ timeline_item_fusion import_comp"
+    },
+    {
+      "element": "地点标题/章节卡",
+      "route": "live_api",
+      "status": "verified",
+      "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+    },
+    {
+      "element": "对白（A1）",
+      "route": "live_api",
+      "status": "verified",
+      "how": "画面和声音分开 append：V1/V2 传 media_type 1，A1 传 media_type 2，源区间可以不同（J/L cut）"
+    },
+    {
+      "element": "字幕",
+      "route": "live_api",
+      "status": "verified",
+      "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+    },
+    {
+      "element": "调色",
+      "route": "live_api",
+      "status": "verified",
+      "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+    },
+    {
+      "element": "音乐压低",
+      "route": "offline_ffmpeg",
+      "status": "verified",
+      "how": "duck.py 渲染压低版音乐床放 A2"
+    },
+    {
+      "element": "淡入淡出",
+      "route": "live_api",
+      "status": "verified",
+      "how": "set_fades，片尾淡出也用它"
+    },
+    {
+      "element": "播放帧率",
+      "route": "manual",
+      "status": "manual",
+      "how": "工程设置里手动设，API 改不了"
+    }
+  ],
+  "evidence": {
+    "basis_groups": "references",
+    "consistency": {
+      "shot_len_s": {
+        "verdict": "varies",
+        "medians": {
+          "BV16w4m1C7uN": 5.072,
+          "BV1H5xie8EJZ": 4.137,
+          "BV1HrrjB9EUj": 4.505,
+          "BV1HvQ3YgE4F": 4.238,
+          "BV1SSQLBREVV": 3.971,
+          "BV1fwEwzeEPp": 4.154,
+          "BV1jy2CBNEDL": 3.537,
+          "BV1sHqPBLExZ": 4.705,
+          "BV1uparzhEjs": 4.037,
+          "BV1xF4m1L7Q2": 3.67,
+          "BV1ydjizBE1o": 3.937,
+          "BV1ym42137vx": 3.5535
+        },
+        "spread": 0.3756
+      },
+      "transitions": {
+        "BV16w4m1C7uN": {
+          "hard_cut": 246,
+          "dip_to_black": 2
+        },
+        "BV1H5xie8EJZ": {
+          "hard_cut": 266,
+          "dip_to_black": 13,
+          "other": 1
+        },
+        "BV1HrrjB9EUj": {
+          "hard_cut": 321,
+          "dip_to_black": 1,
+          "dissolve": 2
+        },
+        "BV1HvQ3YgE4F": {
+          "hard_cut": 219,
+          "dip_to_black": 3
+        },
+        "BV1SSQLBREVV": {
+          "hard_cut": 601,
+          "dip_to_black": 10,
+          "other": 1,
+          "dissolve": 11
+        },
+        "BV1fwEwzeEPp": {
+          "hard_cut": 356,
+          "dip_to_black": 1
+        },
+        "BV1jy2CBNEDL": {
+          "hard_cut": 491,
+          "dip_to_black": 7,
+          "dissolve": 1
+        },
+        "BV1sHqPBLExZ": {
+          "hard_cut": 302,
+          "dissolve": 4,
+          "dip_to_black": 5
+        },
+        "BV1uparzhEjs": {
+          "hard_cut": 339,
+          "dip_to_black": 3,
+          "dissolve": 2
+        },
+        "BV1xF4m1L7Q2": {
+          "hard_cut": 280,
+          "dip_to_black": 2
+        },
+        "BV1ydjizBE1o": {
+          "hard_cut": 291,
+          "dip_to_black": 1
+        },
+        "BV1ym42137vx": {
+          "hard_cut": 306,
+          "dip_to_black": 1
+        }
+      },
+      "measured_push_in_share": {
+        "verdict": "varies",
+        "medians": {
+          "BV16w4m1C7uN": 0.249,
+          "BV1H5xie8EJZ": 0.1851,
+          "BV1HrrjB9EUj": 0.1723,
+          "BV1HvQ3YgE4F": 0.3094,
+          "BV1SSQLBREVV": 0.1875,
+          "BV1fwEwzeEPp": 0.2318,
+          "BV1jy2CBNEDL": 0.162,
+          "BV1sHqPBLExZ": 0.2115,
+          "BV1uparzhEjs": 0.1623,
+          "BV1xF4m1L7Q2": 0.1201,
+          "BV1ydjizBE1o": 0.2218,
+          "BV1ym42137vx": 0.2175
+        },
+        "spread": 0.9487
+      },
+      "look.L50": {
+        "verdict": "varies",
+        "medians": {
+          "BV16w4m1C7uN": 38.47,
+          "BV1H5xie8EJZ": 40.5275,
+          "BV1HrrjB9EUj": 17.963,
+          "BV1HvQ3YgE4F": 32.5515,
+          "BV1SSQLBREVV": 46.0205,
+          "BV1fwEwzeEPp": 41.528,
+          "BV1jy2CBNEDL": 45.447,
+          "BV1sHqPBLExZ": 26.636,
+          "BV1uparzhEjs": 40.86,
+          "BV1xF4m1L7Q2": 38.049,
+          "BV1ydjizBE1o": 38.167,
+          "BV1ym42137vx": 32.3245
+        },
+        "spread": 0.7322
+      },
+      "look.Lstd": {
+        "verdict": "varies",
+        "medians": {
+          "BV16w4m1C7uN": 16.368,
+          "BV1H5xie8EJZ": 17.5005,
+          "BV1HrrjB9EUj": 13.152,
+          "BV1HvQ3YgE4F": 15.7795,
+          "BV1SSQLBREVV": 20.8045,
+          "BV1fwEwzeEPp": 16.9085,
+          "BV1jy2CBNEDL": 23.1435,
+          "BV1sHqPBLExZ": 15.2235,
+          "BV1uparzhEjs": 18.821,
+          "BV1xF4m1L7Q2": 16.119,
+          "BV1ydjizBE1o": 16.643,
+          "BV1ym42137vx": 15.5315
+        },
+        "spread": 0.6053
+      },
+      "look.mid_b": {
+        "verdict": "varies",
+        "medians": {
+          "BV16w4m1C7uN": -8.719,
+          "BV1H5xie8EJZ": -16.625,
+          "BV1HrrjB9EUj": -15.2735,
+          "BV1HvQ3YgE4F": -3.1485,
+          "BV1SSQLBREVV": -10.656,
+          "BV1fwEwzeEPp": -7.531,
+          "BV1jy2CBNEDL": -7.375,
+          "BV1sHqPBLExZ": -6.484,
+          "BV1uparzhEjs": -1.3045,
+          "BV1xF4m1L7Q2": -0.766,
+          "BV1ydjizBE1o": 7.289,
+          "BV1ym42137vx": 6.766
+        },
+        "spread": 3.451
+      },
+      "look.chroma": {
+        "verdict": "varies",
+        "medians": {
+          "BV16w4m1C7uN": 11.6665,
+          "BV1H5xie8EJZ": 14.213,
+          "BV1HrrjB9EUj": 15.626,
+          "BV1HvQ3YgE4F": 8.067,
+          "BV1SSQLBREVV": 9.576,
+          "BV1fwEwzeEPp": 12.473,
+          "BV1jy2CBNEDL": 12.5855,
+          "BV1sHqPBLExZ": 15.4375,
+          "BV1uparzhEjs": 13.0465,
+          "BV1xF4m1L7Q2": 8.595,
+          "BV1ydjizBE1o": 17.2275,
+          "BV1ym42137vx": 9.8655
+        },
+        "spread": 0.7311
+      }
+    },
+    "beat": [
+      {
+        "ref": "BV16w4m1C7uN",
+        "n_cuts": 66,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.52,
+        "bpm": 115.38,
+        "hit_rate": 0.0303,
+        "baseline": 0.0858,
+        "lift": 0.353,
+        "downbeat_hit_rate": 0.0303,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1H5xie8EJZ",
+        "n_cuts": 54,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.8,
+        "bpm": 75.0,
+        "hit_rate": 0.0556,
+        "baseline": 0.0673,
+        "lift": 0.825,
+        "downbeat_hit_rate": 0.0556,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1HrrjB9EUj",
+        "n_cuts": 78,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.58,
+        "bpm": 103.45,
+        "hit_rate": 0.2179,
+        "baseline": 0.0732,
+        "lift": 2.977,
+        "downbeat_hit_rate": 0.2051,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1HvQ3YgE4F",
+        "n_cuts": 56,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.58,
+        "bpm": 103.45,
+        "hit_rate": 0.1786,
+        "baseline": 0.042,
+        "lift": 4.255,
+        "downbeat_hit_rate": 0.0714,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1SSQLBREVV",
+        "n_cuts": 131,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.68,
+        "bpm": 88.24,
+        "hit_rate": 0.3511,
+        "baseline": 0.0683,
+        "lift": 5.14,
+        "downbeat_hit_rate": 0.313,
+        "verdict": "on_beat"
+      },
+      {
+        "ref": "BV1fwEwzeEPp",
+        "n_cuts": 67,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.72,
+        "bpm": 83.33,
+        "hit_rate": 0.209,
+        "baseline": 0.0743,
+        "lift": 2.814,
+        "downbeat_hit_rate": 0.1493,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1jy2CBNEDL",
+        "n_cuts": 104,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.66,
+        "bpm": 90.91,
+        "hit_rate": 0.3077,
+        "baseline": 0.0792,
+        "lift": 3.883,
+        "downbeat_hit_rate": 0.2788,
+        "verdict": "on_beat"
+      },
+      {
+        "ref": "BV1sHqPBLExZ",
+        "n_cuts": 72,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.72,
+        "bpm": 83.33,
+        "hit_rate": 0.2917,
+        "baseline": 0.0631,
+        "lift": 4.626,
+        "downbeat_hit_rate": 0.2361,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1uparzhEjs",
+        "n_cuts": 66,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.66,
+        "bpm": 90.91,
+        "hit_rate": 0.197,
+        "baseline": 0.0607,
+        "lift": 3.246,
+        "downbeat_hit_rate": 0.1818,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1xF4m1L7Q2",
+        "n_cuts": 76,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.48,
+        "bpm": 125.0,
+        "hit_rate": 0.0789,
+        "baseline": 0.1091,
+        "lift": 0.723,
+        "downbeat_hit_rate": 0.0526,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1ydjizBE1o",
+        "n_cuts": 62,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.62,
+        "bpm": 96.77,
+        "hit_rate": 0.2742,
+        "baseline": 0.0515,
+        "lift": 5.329,
+        "downbeat_hit_rate": 0.2581,
+        "verdict": "not_on_beat"
+      },
+      {
+        "ref": "BV1ym42137vx",
+        "n_cuts": 65,
+        "tol_s": 0.033366700033366704,
+        "ibi_s": 0.6,
+        "bpm": 100.0,
+        "hit_rate": 0.0462,
+        "baseline": 0.0547,
+        "lift": 0.844,
+        "downbeat_hit_rate": 0.0154,
+        "verdict": "not_on_beat"
+      }
+    ],
+    "moves": {
+      "push_in": {
+        "measured": 808,
+        "judged": 216,
+        "digital": 5
+      },
+      "pull_out": {
+        "measured": 242,
+        "judged": 72,
+        "digital": 0
+      }
+    },
+    "ramp_candidates": 639,
+    "onsets_per_min": 163.95,
+    "letterbox": "3 of 12 references have a wider picture (2.0, 2.0, 2.0); a minority, so no letterbox",
+    "unverified": [],
+    "rejected_labels": [],
+    "single_source": []
+  }
 }

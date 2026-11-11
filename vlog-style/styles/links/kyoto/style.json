@@ -1,0 +1,611 @@
+{
+ "schema_version": 1,
+ "name": "links/kyoto",
+ "summary": "和朋友同行的日本夏天 vlog：对话和旁白带着走，底部烧录字幕贯穿全片；约 3.7 秒一刀，除一次黑场外全是硬切；远景和中景为主，没有航拍；机位运动来自拍摄，后期几乎不推拉；拍照的过程和灰底照片交替出现；片子自己分三章，第一章用叠在画面上的地点标题开头，后两章用黑底卡；调色跟着光走，整体偏暗偏素，夜里几乎全黑；2:1 画幅",
+ "sources": [
+  {
+   "id": "BV1ym42137vx",
+   "url": "https://www.bilibili.com/video/BV1ym42137vx",
+   "title": "我们在京都，找到了异世界的入口！",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1386.5,
+   "mad": 0.0,
+   "p10": 1386.5,
+   "p90": 1386.5,
+   "n": 1
+  },
+  "letterbox": 2.0
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0561,
+    "shot_len_s": {
+     "median": 3.637,
+     "mad": 1.068,
+     "p10": 1.902,
+     "p90": 6.246,
+     "n": 19
+    },
+    "notes": "雨后的森林神社和山村，朋友们在神社里拍照，没有对镜头点题；看起来和后面森林神社那一章是同一个地方"
+   },
+   {
+    "role": "intro",
+    "share": 0.0274,
+    "shot_len_s": {
+     "median": 2.92,
+     "mad": 0.451,
+     "p10": 2.165,
+     "p90": 4.077,
+     "n": 12
+    },
+    "notes": "海报式片名，接以前旅行的画面和旁白，绣球花寺里集合"
+   },
+   {
+    "role": "chapter",
+    "share": 0.9072,
+    "shot_len_s": {
+     "median": 3.57,
+     "mad": 1.401,
+     "p10": 1.695,
+     "p90": 8.896,
+     "n": 275
+    },
+    "notes": "一章一件事，按时间走：海边民宿、烧烤、日出、绣球花寺和森林神社、田野咖啡店、雨里进山、废村、夜里开车、民宿做饭、老房子、萤火虫；第一章是叠在画面上的地点标题，后两章是黑底卡；只有进第二天清晨那次用黑场"
+   },
+   {
+    "role": "ending",
+    "share": 0.0093,
+    "shot_len_s": {
+     "median": 6.44,
+     "mad": 0.067,
+     "p10": 6.386,
+     "p90": 6.494,
+     "n": 2
+    },
+    "notes": "夜空，接黑底片尾卡"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.316,
+  "shot_types": {
+   "wide": 0.461,
+   "medium": 0.333,
+   "detail": 0.174,
+   "close": 0.019,
+   "selfie": 0.012
+  },
+  "opening": "冷开场：雨后的森林神社和山村，朋友们在神社里拍照，19 个镜头约 79 s，没有对镜头点题，接海报式片名",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 3.67,
+   "mad": 1.335,
+   "p10": 1.969,
+   "p90": 8.775,
+   "n": 299
+  },
+  "cuts_per_min": 12.9,
+  "min_shot_s": 1.67
+ },
+ "beat": {
+  "hit_rate": 0.0462,
+  "baseline": 0.0547,
+  "offset_frames": -2,
+  "use_downbeats": false,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9967
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0033,
+   "frames": 14,
+   "where": "chapter_boundary"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0118,
+   "scale_end": {
+    "median": 1.176,
+    "mad": 0.0,
+    "p10": 1.176,
+    "p90": 1.176,
+    "n": 1
+   }
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.1104,
+   "amplitude_px": 7.2
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "poster_insert",
+   "shot": 19,
+   "note": "合影做成剧集海报式的片名，放在灰底上，3.8 s，接在冷开场之后"
+  },
+  {
+   "type": "archive_clips",
+   "shot": 21,
+   "note": "以前旅行的画面（雪地公路、雪山、极光、戴护目镜的人），21–24，每个 2–3 s，配旁白交代这几年一直在旅行"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 15,
+   "note": "照片居中放在灰底上，右侧带一个小签名，前后多是拍这张照片的过程：15、43、64、66、74–79、108–110、115、121、129–131、133、226、227、272、274、275，共 24 张，浅灰底（约 126/255）居多，115、226、227 是深灰底（约 48），每张 1.7–5.1 s，中位数 2.6 s；74–79 是 6 张各 1.7 s 的连放。5 是黑底"
+  },
+  {
+   "type": "photo_montage",
+   "shot": 107,
+   "note": "三张竖幅照片并排铺满画面，2.9 s"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 36,
+   "note": "民宿平台 App 的地图页，交代民宿的位置，属于赞助内容"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 214,
+   "note": "「相机坏了」的桥段：废墟门口合影后硬切进 2.7 s 晃动模糊的红色画面（212），接 2.3 s 黑镜头（213）和 1.0 s 彩条（214），对上第二章卡片上的预警；1.0 s 的黑镜头 217 也在这一段"
+  },
+  {
+   "type": "callout",
+   "shot": 61,
+   "note": "强调字：白色细黑体，画面右侧（约 4:06、4:08）和左侧（约 9:15、9:17）各两句；19:24–19:33 夜里开车的画面中间叠两句旁白式的字（镜头 251）"
+  },
+  {
+   "type": "low_frame_rate",
+   "shot": 285,
+   "note": "夜里林子里那段（282–301）多是约 15 帧/秒的画面；285–295 每 8 帧才更新一次（约 3.75 帧/秒），像步进；测到的 286、288–295 是这段步进的假剪辑点"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 302,
+   "note": "萤火虫的长曝光照片铺满画面（302–305），每张 4–7 s，几乎不动"
+  },
+  {
+   "type": "end_card",
+   "shot": 307,
+   "note": "黑底片尾卡两行，6.5 s"
+  }
+ ],
+ "grade": {
+  "summary": "跟着光走，整体偏暗偏素：海边民宿的白天清淡、接近中性；烧烤、晚饭和屋里很暖；雨天和废村又暗又灰；夜里的林子几乎全黑，只留车灯和萤火虫",
+  "look": {
+   "L01": {
+    "median": 1.642,
+    "mad": 1.447
+   },
+   "L50": {
+    "median": 32.325,
+    "mad": 11.268
+   },
+   "L99": {
+    "median": 64.376,
+    "mad": 8.965
+   },
+   "Lstd": {
+    "median": 15.532,
+    "mad": 3.809
+   },
+   "shadow": {
+    "median": 0.278,
+    "mad": 0.159
+   },
+   "chroma": {
+    "median": 9.866,
+    "mad": 5.259
+   },
+   "sh_a": {
+    "median": -0.656,
+    "mad": 2.453
+   },
+   "sh_b": {
+    "median": 4.875,
+    "mad": 5.422
+   },
+   "mid_a": {
+    "median": -1.609,
+    "mad": 3.657
+   },
+   "mid_b": {
+    "median": 6.766,
+    "mad": 9.078
+   },
+   "hi_a": {
+    "median": -2.101,
+    "mad": 1.829
+   },
+   "hi_b": {
+    "median": -2.18,
+    "mad": 2.601
+   },
+   "vignette": {
+    "median": 0.873,
+    "mad": 0.258
+   },
+   "hue_hist": [
+    0.0083,
+    0.1398,
+    0.3371,
+    0.1154,
+    0.2528,
+    0.0083,
+    0.001,
+    0.0049,
+    0.093,
+    0.0395,
+    0.0,
+    0.0
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0518,
+   "position": [
+    0.212,
+    0.562
+   ],
+   "color": [
+    0.878,
+    0.902,
+    0.91
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "cut",
+   "duration_s": 3.49,
+   "offset_s": 6.71,
+   "template": "Text+",
+   "per": "location"
+  },
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.061,
+   "position": [
+    0.501,
+    0.478
+   ],
+   "color": [
+    0.675,
+    0.675,
+    0.675
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 1.35,
+   "offset_s": 0.03,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0417,
+   "position": [
+    0.5,
+    0.91
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 120.1,
+   "mad": 0.0,
+   "p10": 120.1,
+   "p90": 120.1,
+   "n": 1
+  },
+  "mood": "对话和旁白主导（人声 55%），音乐铺底；判读不听声音，只按测量推断",
+  "lufs": -17.0,
+  "duck_db": 0.1,
+  "sfx": [],
+  "music_changes": "约每章 6.4 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "动态推拉",
+   "route": "fusion",
+   "status": "verified",
+   "how": "最小 .comp 模板（MediaIn→Transform→MediaOut，Size 关键帧，末帧=时长−1）+ timeline_item_fusion import_comp"
+  },
+  {
+   "element": "遮幅",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_output_blanking"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "第一章 淡路岛：开车到海边的民宿@116": 3.337,
+     "超市采购和傍晚烧烤@320": 4.071,
+     "烧烤失败、夜里吃西瓜@399": 2.936,
+     "第二天清晨看日出、拍照、咖啡@457": 2.569,
+     "京都：绣球花寺、森林神社和爷爷@535": 3.704,
+     "田野里的咖啡店和雨@670": 4.755,
+     "第二章 废墟探险：雨里开车进山@850": 5.589,
+     "废村@916": 4.8715,
+     "天黑开车出山@1097": 4.321,
+     "第三章 萤火之森：民宿做晚饭@1174": 2.7025,
+     "第二天早晨：老房子和车站@1210": 2.569,
+     "傍晚开车，夜里进林子看萤火虫@1260": 3.003
+    },
+    "spread": 0.8578
+   },
+   "transitions": {
+    "冷开场：森林神社和朋友们@0": {
+     "hard_cut": 18
+    },
+    "海报片名、回顾以前的旅行、集合@78": {
+     "hard_cut": 12
+    },
+    "第一章 淡路岛：开车到海边的民宿@116": {
+     "hard_cut": 49
+    },
+    "超市采购和傍晚烧烤@320": {
+     "hard_cut": 19
+    },
+    "烧烤失败、夜里吃西瓜@399": {
+     "hard_cut": 13
+    },
+    "第二天清晨看日出、拍照、咖啡@457": {
+     "dip_to_black": 1,
+     "hard_cut": 24
+    },
+    "京都：绣球花寺、森林神社和爷爷@535": {
+     "hard_cut": 31
+    },
+    "田野里的咖啡店和雨@670": {
+     "hard_cut": 32
+    },
+    "第二章 废墟探险：雨里开车进山@850": {
+     "hard_cut": 10
+    },
+    "废村@916": {
+     "hard_cut": 26
+    },
+    "天黑开车出山@1097": {
+     "hard_cut": 16
+    },
+    "第三章 萤火之森：民宿做晚饭@1174": {
+     "hard_cut": 12
+    },
+    "第二天早晨：老房子和车站@1210": {
+     "hard_cut": 15
+    },
+    "傍晚开车，夜里进林子看萤火虫@1260": {
+     "hard_cut": 27
+    },
+    "夜空和片尾卡@1374": {
+     "hard_cut": 2
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "第一章 淡路岛：开车到海边的民宿@116": 0.2449,
+     "超市采购和傍晚烧烤@320": 0.1053,
+     "烧烤失败、夜里吃西瓜@399": 0.0769,
+     "第二天清晨看日出、拍照、咖啡@457": 0.08,
+     "京都：绣球花寺、森林神社和爷爷@535": 0.0968,
+     "田野里的咖啡店和雨@670": 0.25,
+     "第二章 废墟探险：雨里开车进山@850": 0.7,
+     "废村@916": 0.1538,
+     "天黑开车出山@1097": 0.5,
+     "第三章 萤火之森：民宿做晚饭@1174": 0.1667,
+     "第二天早晨：老房子和车站@1210": 0.2667,
+     "傍晚开车，夜里进林子看萤火虫@1260": 0.1481
+    },
+    "spread": 3.888
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "第一章 淡路岛：开车到海边的民宿@116": 40.149,
+     "超市采购和傍晚烧烤@320": 32.939,
+     "烧烤失败、夜里吃西瓜@399": 36.151,
+     "第二天清晨看日出、拍照、咖啡@457": 31.607,
+     "京都：绣球花寺、森林神社和爷爷@535": 34.637,
+     "田野里的咖啡店和雨@670": 44.577,
+     "第二章 废墟探险：雨里开车进山@850": 10.587,
+     "废村@916": 10.179,
+     "天黑开车出山@1097": 10.483,
+     "第三章 萤火之森：民宿做晚饭@1174": 34.314,
+     "第二天早晨：老房子和车站@1210": 32.797,
+     "傍晚开车，夜里进林子看萤火虫@1260": 4.242
+    },
+    "spread": 1.2272
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "第一章 淡路岛：开车到海边的民宿@116": 20.825,
+     "超市采购和傍晚烧烤@320": 15.577,
+     "烧烤失败、夜里吃西瓜@399": 15.565,
+     "第二天清晨看日出、拍照、咖啡@457": 19.8505,
+     "京都：绣球花寺、森林神社和爷爷@535": 13.643,
+     "田野里的咖啡店和雨@670": 19.524,
+     "第二章 废墟探险：雨里开车进山@850": 10.087,
+     "废村@916": 12.32,
+     "天黑开车出山@1097": 12.2095,
+     "第三章 萤火之森：民宿做晚饭@1174": 14.816,
+     "第二天早晨：老房子和车站@1210": 16.3585,
+     "傍晚开车，夜里进林子看萤火虫@1260": 5.543
+    },
+    "spread": 1.006
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "第一章 淡路岛：开车到海边的民宿@116": 0.016,
+     "超市采购和傍晚烧烤@320": 13.2735,
+     "烧烤失败、夜里吃西瓜@399": 25.2425,
+     "第二天清晨看日出、拍照、咖啡@457": 0.016,
+     "京都：绣球花寺、森林神社和爷爷@535": 15.141,
+     "田野里的咖啡店和雨@670": 8.391,
+     "第二章 废墟探险：雨里开车进山@850": 10.3595,
+     "废村@916": -4.844,
+     "天黑开车出山@1097": 15.797,
+     "第三章 萤火之森：民宿做晚饭@1174": 15.906,
+     "第二天早晨：老房子和车站@1210": 4.1795,
+     "傍晚开车，夜里进林子看萤火虫@1260": 5.594
+    },
+    "spread": 3.2091
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "第一章 淡路岛：开车到海边的民宿@116": 8.655,
+     "超市采购和傍晚烧烤@320": 22.9905,
+     "烧烤失败、夜里吃西瓜@399": 16.127,
+     "第二天清晨看日出、拍照、咖啡@457": 8.375,
+     "京都：绣球花寺、森林神社和爷爷@535": 15.39,
+     "田野里的咖啡店和雨@670": 9.777,
+     "第二章 废墟探险：雨里开车进山@850": 5.857,
+     "废村@916": 4.905,
+     "天黑开车出山@1097": 8.252,
+     "第三章 萤火之森：民宿做晚饭@1174": 19.064,
+     "第二天早晨：老房子和车站@1210": 11.1935,
+     "傍晚开车，夜里进林子看萤火虫@1260": 3.0885
+    },
+    "spread": 2.1595
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1ym42137vx",
+    "n_cuts": 65,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.6,
+    "bpm": 100.0,
+    "hit_rate": 0.0462,
+    "baseline": 0.0547,
+    "lift": 0.844,
+    "downbeat_hit_rate": 0.0154,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 67,
+    "judged": 19,
+    "digital": 1
+   },
+   "pull_out": {
+    "measured": 12,
+    "judged": 5,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 58,
+  "onsets_per_min": 105.3,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 2.6,
+  "scale": 0.8,
+  "background": "black"
+ }
+}

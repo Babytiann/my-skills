@@ -1,0 +1,570 @@
+{
+ "schema_version": 1,
+ "name": "links/lofoten",
+ "summary": "挪威罗弗敦群岛冬末的 vlog：旁白和对话带着走，底部烧录字幕贯穿全片；约 5 秒一刀，除两次黑场外全是硬切；远景为主、中景次之，航拍和细节各占一成多（开头和片尾的雪山航拍）；镜头的运动几乎全来自拍摄，后期只有一个数字推镜；章节按时间走，四章用叠在画面上的「第 N 课」课名开头；调色跟着光走，雪山又亮又素，蓝调又蓝又浓，屋里偏暖偏暗；2:1 画幅",
+ "sources": [
+  {
+   "id": "BV16w4m1C7uN",
+   "url": "https://www.bilibili.com/video/BV16w4m1C7uN",
+   "title": "我看到了中国没有的地貌，峡湾地貌！挪威罗弗敦群岛",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1662.8,
+   "mad": 0.0,
+   "p10": 1662.8,
+   "p90": 1662.8,
+   "n": 1
+  },
+  "letterbox": 2.0
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0669,
+    "shot_len_s": {
+     "median": 5.839,
+     "mad": 1.669,
+     "p10": 2.929,
+     "p90": 10.13,
+     "n": 17
+    },
+    "notes": "雪山和倒影的航拍、主持人爬雪坡的自拍，旁白一开头就点题；1:51 起从坐飞机讲起"
+   },
+   {
+    "role": "intro",
+    "share": 0.0362,
+    "shot_len_s": {
+     "median": 2.936,
+     "mad": 0.834,
+     "p10": 2.022,
+     "p90": 5.725,
+     "n": 17
+    },
+    "notes": "夜里机场登上螺旋桨小飞机，机舱和窗外，一张黑底竖幅照片，渡轮上蓝调和日落的画面叠航线标注"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8274,
+    "shot_len_s": {
+     "median": 4.938,
+     "mad": 2.068,
+     "p10": 2.095,
+     "p90": 13.186,
+     "n": 199
+    },
+    "notes": "一章一件事，按时间走：改道韦略岛入住、第一课超市和做饭、第二课蓝调里的风暴、开车去小卖部和玩手机游戏的当地人、第三课离岛到罗弗敦、三天后登山寻雪、穿冰爪爬雪坡、山脊上的大风、登顶；四章用叠在画面上的课名开头，只有「三天后」用黑场接黑底卡跳时间"
+   },
+   {
+    "role": "ending",
+    "share": 0.0695,
+    "shot_len_s": {
+     "median": 7.741,
+     "mad": 1.435,
+     "p10": 3.019,
+     "p90": 10.644,
+     "n": 16
+    },
+    "notes": "山顶的风景和收尾旁白，接一串没有字幕的雪山航拍，最后一个航拍淡出到黑"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.306,
+  "shot_types": {
+   "wide": 0.432,
+   "medium": 0.265,
+   "aerial": 0.128,
+   "detail": 0.128,
+   "selfie": 0.047
+  },
+  "opening": "冷开场：雪山上的航拍和主持人爬雪坡的自拍，接夜里机场登机，倒回去讲怎么来的",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 5.072,
+   "mad": 2.169,
+   "p10": 2.095,
+   "p90": 12.579,
+   "n": 249
+  },
+  "cuts_per_min": 8.95,
+  "min_shot_s": 1.69
+ },
+ "beat": {
+  "hit_rate": 0.0303,
+  "baseline": 0.0858,
+  "offset_frames": -5,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9919
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0081,
+   "frames": 16,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0141,
+   "scale_end": {
+    "median": 1.127,
+    "mad": 0.0,
+    "p10": 1.127,
+    "p90": 1.127,
+    "n": 1
+   }
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.1265,
+   "amplitude_px": 8.5
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "map_annotation",
+   "shot": 29,
+   "note": "渡轮上蓝调和日落的画面上叠两个红点、一条连线和地名小字，标出从博得到罗弗敦的航线（29、30、31），约 10 s"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 81,
+   "note": "照片居中放在黑底上，高度是 2:1 画面高的 90%，每张 1.7–2.7 s：27（竖幅，飞机上拿手机拍窗外）、81、82、83（傍晚的红房子和海）、90、91（晾鱼架和亮灯的房子）"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 70,
+   "note": "做饭和吃饭之间插 0.6 s 彩条，硬切进出"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 75,
+   "note": "头显里看到的系统界面叠在房间画面上，2.8 s"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 122,
+   "note": "手机游戏的屏幕录像放在黑底一侧（122–125，约 26 s），另一侧用白字分行写出旁白内容，和底部字幕重复；OCR 把这些白字分成了标题，记 subtitle_misread"
+  },
+  {
+   "type": "callout",
+   "shot": 64,
+   "note": "超市里商品前叠折合人民币的价格大字，居中、白色细黑体、淡入淡出（64、65）"
+  },
+  {
+   "type": "long_take",
+   "shot": 208,
+   "note": "登山时的长镜头：208（爬雪坡，52.7 s）、226（山脊，45.1 s）、228（登顶，39.0 s），镜头跟着人走或停在原地拍人"
+  }
+ ],
+ "grade": {
+  "summary": "跟着光走：开头和登山的雪又亮又素、略偏蓝；蓝调时分的风暴又蓝又浓；屋里、超市和小卖部偏暖偏暗；离岛那段阴天很暗，灯和日落把高光拉暖；黑位压得低",
+  "look": {
+   "L01": {
+    "median": 2.451,
+    "mad": 2.311
+   },
+   "L50": {
+    "median": 38.47,
+    "mad": 10.753
+   },
+   "L99": {
+    "median": 65.427,
+    "mad": 9.519
+   },
+   "Lstd": {
+    "median": 16.368,
+    "mad": 2.531
+   },
+   "shadow": {
+    "median": 0.188,
+    "mad": 0.13
+   },
+   "chroma": {
+    "median": 11.666,
+    "mad": 5.032
+   },
+   "sh_a": {
+    "median": 1.0,
+    "mad": 1.32
+   },
+   "sh_b": {
+    "median": -1.508,
+    "mad": 5.539
+   },
+   "mid_a": {
+    "median": -0.938,
+    "mad": 2.172
+   },
+   "mid_b": {
+    "median": -8.719,
+    "mad": 9.031
+   },
+   "hi_a": {
+    "median": -3.062,
+    "mad": 1.11
+   },
+   "hi_b": {
+    "median": -5.719,
+    "mad": 3.531
+   },
+   "vignette": {
+    "median": 0.978,
+    "mad": 0.237
+   },
+   "hue_hist": [
+    0.0135,
+    0.0914,
+    0.0481,
+    0.0038,
+    0.0,
+    0.0,
+    0.0,
+    0.0071,
+    0.6504,
+    0.1819,
+    0.0023,
+    0.0015
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0735,
+   "position": [
+    0.136,
+    0.502
+   ],
+   "color": [
+    0.871,
+    0.898,
+    0.906
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "fade",
+   "out": "fade",
+   "duration_s": 2.25,
+   "offset_s": 6.24,
+   "template": "Text+",
+   "per": "location"
+  },
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0547,
+   "position": [
+    0.502,
+    0.501
+   ],
+   "color": [
+    0.886,
+    0.886,
+    0.886
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 1.48,
+   "offset_s": 0.27,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0389,
+   "position": [
+    0.5,
+    0.914
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 118.6,
+   "mad": 0.0,
+   "p10": 118.6,
+   "p90": 118.6,
+   "n": 1
+  },
+  "mood": "旁白和对话为主（人声 58%），没有字幕的段落是音乐配风景和航拍；beat_this 和 librosa 都测到约 118 BPM；判读不听声音，只按测量推断",
+  "lufs": -14.1,
+  "duck_db": 0.1,
+  "sfx": [],
+  "music_changes": "约每章 12.6 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "动态推拉",
+   "route": "fusion",
+   "status": "verified",
+   "how": "最小 .comp 模板（MediaIn→Transform→MediaOut，Size 关键帧，末帧=时长−1）+ timeline_item_fusion import_comp"
+  },
+  {
+   "element": "遮幅",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_output_blanking"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "计划改道韦略岛，入住红房子@171": 4.805,
+     "岛民第一课：超市和自己做饭@276": 3.7705,
+     "岛民第二课：蓝调里的风暴和晾鱼架@380": 5.2885,
+     "开车去小卖部，和玩宝可梦的大哥@490": 4.755,
+     "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": 4.037,
+     "三天后：登山寻雪，坡下的草地和残雪@797": 8.4085,
+     "穿冰爪，爬雪坡@1038": 5.222,
+     "山脊上的大风@1338": 8.809,
+     "登顶：山顶的风景和同伴说话@1465": 6.006
+    },
+    "spread": 0.9649
+   },
+   "transitions": {
+    "冷开场：雪山上的航拍和自拍@0": {
+     "hard_cut": 16
+    },
+    "怎么来的：夜里登机、螺旋桨飞机、渡轮和航线标注@111": {
+     "hard_cut": 17
+    },
+    "计划改道韦略岛，入住红房子@171": {
+     "hard_cut": 21
+    },
+    "岛民第一课：超市和自己做饭@276": {
+     "hard_cut": 22
+    },
+    "岛民第二课：蓝调里的风暴和晾鱼架@380": {
+     "hard_cut": 20
+    },
+    "开车去小卖部，和玩宝可梦的大哥@490": {
+     "hard_cut": 30
+    },
+    "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": {
+     "hard_cut": 29
+    },
+    "三天后：登山寻雪，坡下的草地和残雪@797": {
+     "dip_to_black": 1,
+     "hard_cut": 23
+    },
+    "穿冰爪，爬雪坡@1038": {
+     "hard_cut": 38
+    },
+    "山脊上的大风@1338": {
+     "hard_cut": 9
+    },
+    "登顶：山顶的风景和同伴说话@1465": {
+     "hard_cut": 6
+    },
+    "山顶的风景、收尾旁白和航拍，片尾淡出@1547": {
+     "hard_cut": 15,
+     "dip_to_black": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "计划改道韦略岛，入住红房子@171": 0.1905,
+     "岛民第一课：超市和自己做饭@276": 0.2727,
+     "岛民第二课：蓝调里的风暴和晾鱼架@380": 0.15,
+     "开车去小卖部，和玩宝可梦的大哥@490": 0.2333,
+     "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": 0.3448,
+     "三天后：登山寻雪，坡下的草地和残雪@797": 0.25,
+     "穿冰爪，爬雪坡@1038": 0.1579,
+     "山脊上的大风@1338": 0.0,
+     "登顶：山顶的风景和同伴说话@1465": 0.1667
+    },
+    "spread": 1.8103
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "计划改道韦略岛，入住红房子@171": 34.1465,
+     "岛民第一课：超市和自己做饭@276": 32.9145,
+     "岛民第二课：蓝调里的风暴和晾鱼架@380": 27.261,
+     "开车去小卖部，和玩宝可梦的大哥@490": 26.404,
+     "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": 21.967,
+     "三天后：登山寻雪，坡下的草地和残雪@797": 45.886,
+     "穿冰爪，爬雪坡@1038": 49.5485,
+     "山脊上的大风@1338": 54.12,
+     "登顶：山顶的风景和同伴说话@1465": 59.494
+    },
+    "spread": 1.099
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "计划改道韦略岛，入住红房子@171": 14.9935,
+     "岛民第一课：超市和自己做饭@276": 15.7775,
+     "岛民第二课：蓝调里的风暴和晾鱼架@380": 14.346,
+     "开车去小卖部，和玩宝可梦的大哥@490": 13.213,
+     "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": 15.462,
+     "三天后：登山寻雪，坡下的草地和残雪@797": 21.295,
+     "穿冰爪，爬雪坡@1038": 16.8775,
+     "山脊上的大风@1338": 16.505,
+     "登顶：山顶的风景和同伴说话@1465": 17.0865
+    },
+    "spread": 0.5122
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "计划改道韦略岛，入住红房子@171": 4.891,
+     "岛民第一课：超市和自己做饭@276": 9.07,
+     "岛民第二课：蓝调里的风暴和晾鱼架@380": -31.1095,
+     "开车去小卖部，和玩宝可梦的大哥@490": 6.188,
+     "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": -11.453,
+     "三天后：登山寻雪，坡下的草地和残雪@797": -9.859,
+     "穿冰爪，爬雪坡@1038": -7.4765,
+     "山脊上的大风@1338": -9.844,
+     "登顶：山顶的风景和同伴说话@1465": -8.3985
+    },
+    "spread": 4.7841
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "计划改道韦略岛，入住红房子@171": 15.758,
+     "岛民第一课：超市和自己做饭@276": 15.3065,
+     "岛民第二课：蓝调里的风暴和晾鱼架@380": 28.308,
+     "开车去小卖部，和玩宝可梦的大哥@490": 17.715,
+     "岛民第三课：离岛到罗弗敦，雪没了，接受当下@669": 11.718,
+     "三天后：登山寻雪，坡下的草地和残雪@797": 8.646,
+     "穿冰爪，爬雪坡@1038": 7.8315,
+     "山脊上的大风@1338": 9.853,
+     "登顶：山顶的风景和同伴说话@1465": 10.018
+    },
+    "spread": 1.7474
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV16w4m1C7uN",
+    "n_cuts": 66,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.52,
+    "bpm": 115.38,
+    "hit_rate": 0.0303,
+    "baseline": 0.0858,
+    "lift": 0.353,
+    "downbeat_hit_rate": 0.0303,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 62,
+    "judged": 18,
+    "digital": 1
+   },
+   "pull_out": {
+    "measured": 18,
+    "judged": 6,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 55,
+  "onsets_per_min": 178.3,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 1.9,
+  "scale": 0.8,
+  "background": "black"
+ }
+}

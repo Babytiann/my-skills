@@ -1,0 +1,520 @@
+{
+ "schema_version": 1,
+ "name": "links/uummannaq",
+ "summary": "格陵兰冬天的极地 vlog：旁白和对话带着走，底部烧录字幕贯穿全片；约 4.2 秒一刀，除片尾淡出外全是硬切；中景和远景为主，航拍占近两成（冰山、小镇、夜里的灯）；镜头的运动全来自拍摄，后期不加推拉；开头用地图和路线清单交代怎么来的；调色跟着光走，白天的雪又亮又素，冰山和蓝调又蓝又浓；片尾照片连放加几行小字收束",
+ "sources": [
+  {
+   "id": "BV1fwEwzeEPp",
+   "url": "https://www.bilibili.com/video/BV1fwEwzeEPp",
+   "title": "【Links】飞跃13000公里，我们抵达了北极的心脏！格陵兰乌玛那刻｜4K杜比视界",
+   "measured": "2026-11-10",
+   "author": "Linksphotograph"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1726.1,
+   "mad": 0.0,
+   "p10": 1726.1,
+   "p90": 1726.1,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0606,
+    "shot_len_s": {
+     "median": 3.37,
+     "mad": 1.117,
+     "p10": 1.712,
+     "p90": 7.818,
+     "n": 24
+    },
+    "notes": "主持人在雪地机场自拍说话，坐直升机飞向乌玛纳克，接岛和夜里小镇的航拍，然后倒回去讲怎么来的"
+   },
+   {
+    "role": "intro",
+    "share": 0.031,
+    "shot_len_s": {
+     "median": 3.87,
+     "mad": 1.902,
+     "p10": 1.445,
+     "p90": 8.218,
+     "n": 12
+    },
+    "notes": "Google Earth 推到格陵兰，航线图和逐段列出的路线清单，接机场里主持人自拍讲行程"
+   },
+   {
+    "role": "chapter",
+    "share": 0.868,
+    "shot_len_s": {
+     "median": 4.238,
+     "mad": 1.535,
+     "p10": 1.869,
+     "p90": 8.775,
+     "n": 301
+    },
+    "notes": "一章一件事，按时间走：伊卢利萨特、坐船看冰山、无人机、飞去乌玛纳克、入住和超市、无人机看小镇、走上海冰、因纽特老人的小屋、蓝调和夜里；只有一处用黑底卡「10分钟后」跳时间"
+   },
+   {
+    "role": "ending",
+    "share": 0.0404,
+    "shot_len_s": {
+     "median": 2.002,
+     "mad": 0.267,
+     "p10": 1.768,
+     "p90": 6.173,
+     "n": 21
+    },
+    "notes": "离开的直升机，黑底照片连放，叠几行告别的小字，最后一个夜里的航拍淡出"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.072,
+  "shot_types": {
+   "medium": 0.379,
+   "wide": 0.263,
+   "aerial": 0.176,
+   "detail": 0.113,
+   "selfie": 0.066,
+   "close": 0.003
+  },
+  "opening": "冷开场：主持人在雪地机场自拍说话，坐直升机飞向乌玛纳克，接岛的航拍和夜里的小镇航拍，再倒回去讲怎么来的",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 4.154,
+   "mad": 1.685,
+   "p10": 1.792,
+   "p90": 8.709,
+   "n": 358
+  },
+  "cuts_per_min": 12.41,
+  "min_shot_s": 1.36
+ },
+ "beat": {
+  "hit_rate": 0.209,
+  "baseline": 0.0743,
+  "offset_frames": 0,
+  "use_downbeats": true,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9972
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0028,
+   "frames": 6,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.0563,
+   "amplitude_px": 5.0
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "map_insert",
+   "shot": 24,
+   "note": "地图和路线：Google Earth 从高空推到格陵兰（24、36、75），一张航线图（25），一张在航拍上逐行列出东京、北京、哥本哈根、努克、伊卢利萨特、Qaarsut、乌玛纳克停机坪和每段飞行时长的路线清单（26）"
+  },
+  {
+   "type": "place_title",
+   "shot": 19,
+   "note": "地名「乌玛纳克 / Uummannaq」中文一行、拉丁字母一行，小字居中叠在岛的航拍上，约 1.5 s；全片只出现这一次，测量把它分进了普通文字，没有进标题轨"
+  },
+  {
+   "type": "callout",
+   "shot": 127,
+   "note": "叠在画面上的说明字：无人机在晃动的船上降落那段，暗的海面上居中三句（127、129、132）；超市里商品旁边写折合人民币的价格（195–199、224）；「不新鲜的土豆」大字（227）"
+  },
+  {
+   "type": "gear_caption",
+   "shot": 106,
+   "note": "航拍画面左下角叠器材小字（无人机型号、拍摄格式）：106、107、328"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 114,
+   "note": "照片放在黑底上（114、312、320），每张 1–4 s"
+  },
+  {
+   "type": "photo_montage",
+   "shot": 345,
+   "note": "片尾照片连放：黑底上 11 张照片（345–355），每张约 1.8 s；前后叠小字「早安乌玛纳克」「晚安伊卢利萨特」「再见格陵兰」「2025格陵兰篇 完结」，最后接一个夜里的航拍淡出"
+  }
+ ],
+ "grade": {
+  "summary": "跟着光走：白天的雪和海冰又亮又素，略偏蓝；冰山的航拍和蓝调时分又蓝又浓；屋里暗、颜色淡，灯下偏暖；黑位压得低",
+  "look": {
+   "L01": {
+    "median": 2.173,
+    "mad": 1.721
+   },
+   "L50": {
+    "median": 41.528,
+    "mad": 14.453
+   },
+   "L99": {
+    "median": 69.428,
+    "mad": 9.143
+   },
+   "Lstd": {
+    "median": 16.909,
+    "mad": 3.999
+   },
+   "shadow": {
+    "median": 0.19,
+    "mad": 0.149
+   },
+   "chroma": {
+    "median": 12.473,
+    "mad": 5.899
+   },
+   "sh_a": {
+    "median": 3.594,
+    "mad": 2.524
+   },
+   "sh_b": {
+    "median": -2.351,
+    "mad": 5.055
+   },
+   "mid_a": {
+    "median": -0.031,
+    "mad": 2.078
+   },
+   "mid_b": {
+    "median": -7.531,
+    "mad": 8.664
+   },
+   "hi_a": {
+    "median": -1.656,
+    "mad": 1.656
+   },
+   "hi_b": {
+    "median": -5.453,
+    "mad": 4.344
+   },
+   "vignette": {
+    "median": 1.029,
+    "mad": 0.254
+   },
+   "hue_hist": [
+    0.0427,
+    0.0443,
+    0.0137,
+    0.0012,
+    0.0,
+    0.0,
+    0.0004,
+    0.0065,
+    0.5069,
+    0.357,
+    0.0173,
+    0.01
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "chapter_card": {
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "height_frac": 0.0594,
+   "position": [
+    0.501,
+    0.5
+   ],
+   "color": [
+    0.769,
+    0.769,
+    0.769
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 0.75,
+   "offset_s": 0.1,
+   "template": "Text+",
+   "per": "location"
+  },
+  "subtitle": {
+   "height_frac": 0.0417,
+   "position": [
+    0.5,
+    0.957
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 84.1,
+   "mad": 0.0,
+   "p10": 84.1,
+   "p90": 84.1,
+   "n": 1
+  },
+  "mood": "旁白和对话主导（人声 70%），音乐铺底；判读不听声音，只按测量推断",
+  "lufs": -16.6,
+  "duck_db": 0.3,
+  "sfx": [],
+  "music_changes": "约每章 16.0 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "飞到伊卢利萨特：酒店和极光@158": 3.937,
+     "坐船看冰山、喝冰川水@233": 3.37,
+     "从船上放无人机拍冰山@426": 4.154,
+     "坐飞机和直升机去乌玛纳克@648": 3.837,
+     "入住和第一家超市@772": 4.371,
+     "无人机看小镇、第二家超市@935": 4.304,
+     "和当地人走上海冰@1110": 4.538,
+     "因纽特老人的小屋@1275": 4.037,
+     "蓝调里走小镇，夜里的航拍@1398": 5.539
+    },
+    "spread": 0.5221
+   },
+   "transitions": {
+    "冷开场：坐直升机到乌玛纳克@0": {
+     "hard_cut": 23
+    },
+    "地图和路线：从东京到格陵兰@105": {
+     "hard_cut": 12
+    },
+    "飞到伊卢利萨特：酒店和极光@158": {
+     "hard_cut": 19
+    },
+    "坐船看冰山、喝冰川水@233": {
+     "hard_cut": 41
+    },
+    "从船上放无人机拍冰山@426": {
+     "hard_cut": 48
+    },
+    "坐飞机和直升机去乌玛纳克@648": {
+     "hard_cut": 27
+    },
+    "入住和第一家超市@772": {
+     "hard_cut": 32
+    },
+    "无人机看小镇、第二家超市@935": {
+     "hard_cut": 37
+    },
+    "和当地人走上海冰@1110": {
+     "hard_cut": 27
+    },
+    "因纽特老人的小屋@1275": {
+     "hard_cut": 29
+    },
+    "蓝调里走小镇，夜里的航拍@1398": {
+     "hard_cut": 41
+    },
+    "离开：直升机、照片连放和片尾字@1656": {
+     "hard_cut": 20,
+     "dip_to_black": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "飞到伊卢利萨特：酒店和极光@158": 0.2632,
+     "坐船看冰山、喝冰川水@233": 0.1463,
+     "从船上放无人机拍冰山@426": 0.3125,
+     "坐飞机和直升机去乌玛纳克@648": 0.2963,
+     "入住和第一家超市@772": 0.125,
+     "无人机看小镇、第二家超市@935": 0.3243,
+     "和当地人走上海冰@1110": 0.1481,
+     "因纽特老人的小屋@1275": 0.1379,
+     "蓝调里走小镇，夜里的航拍@1398": 0.2683
+    },
+    "spread": 0.7574
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "飞到伊卢利萨特：酒店和极光@158": 21.259,
+     "坐船看冰山、喝冰川水@233": 41.064,
+     "从船上放无人机拍冰山@426": 44.455,
+     "坐飞机和直升机去乌玛纳克@648": 54.5105,
+     "入住和第一家超市@772": 43.744,
+     "无人机看小镇、第二家超市@935": 56.68,
+     "和当地人走上海冰@1110": 62.122,
+     "因纽特老人的小屋@1275": 23.303,
+     "蓝调里走小镇，夜里的航拍@1398": 35.019
+    },
+    "spread": 0.9341
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "飞到伊卢利萨特：酒店和极光@158": 14.795,
+     "坐船看冰山、喝冰川水@233": 21.254,
+     "从船上放无人机拍冰山@426": 18.921,
+     "坐飞机和直升机去乌玛纳克@648": 19.349,
+     "入住和第一家超市@772": 17.749,
+     "无人机看小镇、第二家超市@935": 14.26,
+     "和当地人走上海冰@1110": 14.324,
+     "因纽特老人的小屋@1275": 17.367,
+     "蓝调里走小镇，夜里的航拍@1398": 12.3185
+    },
+    "spread": 0.5145
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "飞到伊卢利萨特：酒店和极光@158": -3.078,
+     "坐船看冰山、喝冰川水@233": -10.891,
+     "从船上放无人机拍冰山@426": -24.469,
+     "坐飞机和直升机去乌玛纳克@648": -6.5545,
+     "入住和第一家超市@772": 4.25,
+     "无人机看小镇、第二家超市@935": -10.219,
+     "和当地人走上海冰@1110": -7.734,
+     "因纽特老人的小屋@1275": -2.609,
+     "蓝调里走小镇，夜里的航拍@1398": -28.891
+    },
+    "spread": 4.2851
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "飞到伊卢利萨特：酒店和极光@158": 12.025,
+     "坐船看冰山、喝冰川水@233": 11.221,
+     "从船上放无人机拍冰山@426": 19.298,
+     "坐飞机和直升机去乌玛纳克@648": 9.776,
+     "入住和第一家超市@772": 10.091,
+     "无人机看小镇、第二家超市@935": 13.529,
+     "和当地人走上海冰@1110": 9.959,
+     "因纽特老人的小屋@1275": 5.732,
+     "蓝调里走小镇，夜里的航拍@1398": 32.4325
+    },
+    "spread": 2.3795
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1fwEwzeEPp",
+    "n_cuts": 67,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.72,
+    "bpm": 83.33,
+    "hit_rate": 0.209,
+    "baseline": 0.0743,
+    "lift": 2.814,
+    "downbeat_hit_rate": 0.1493,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 83,
+    "judged": 20,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 23,
+    "judged": 4,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 68,
+  "onsets_per_min": 173.8,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 1.85,
+  "scale": 0.9,
+  "background": "black"
+ }
+}
