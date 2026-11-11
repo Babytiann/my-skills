@@ -107,6 +107,22 @@ class TextTest(unittest.TestCase):
         self.assertAlmostEqual(title["t_in"], 4.0)
         self.assertAlmostEqual(title["t_out"], 6.0)
 
+    def test_band_sits_on_the_caption_line_not_on_scene_text(self):
+        # Svalbard (BV1H5xie8EJZ): more small scene text low in the frame (a booking site on
+        # screen, signs) than caption lines, so the median height of all bottom-centred text fell
+        # between them and the captions were sorted as titles.
+        def track(y, h, text, t):
+            return {"t_in": t, "t_out": t + 1.5, "center": [0.5, y], "height": h, "drift": 0.0,
+                    "text": text, "n": 6}
+        caps = [track(0.952, 0.043, f"这是第{k}句字幕", 2.0 * k) for k in range(10)]
+        scene = [track(0.74 + 0.012 * k, 0.013, f"标牌{k}", 30.0 + k) for k in range(15)]
+        tracks = caps + scene
+        info = stats.classify_text(tracks)
+        self.assertAlmostEqual(info["subtitle_band"]["y"], 0.952, places=2)
+        self.assertAlmostEqual(info["subtitle_band"]["height"], 0.043, places=3)
+        self.assertEqual([t["kind"] for t in caps], ["subtitle"] * 10)
+        self.assertNotIn("title", [t["kind"] for t in scene])
+
     def test_gap_tolerance(self):
         step = 0.25
         s = [ocr(0.0, "地名", [0.4, 0.4, 0.2, 0.1]), ocr(0.25, "地名", [0.4, 0.4, 0.2, 0.1]),

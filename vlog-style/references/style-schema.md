@@ -81,7 +81,7 @@ vlog-style/styles/                    仓库
 | `name`、`summary` | 名字和一句话风格 | summary 由 agent 写 |
 | `sources[]` | `{id, url, title, measured, author}`。url、title 必填：B 站视频的 url 是视频链接，本地文件 url 留空、title 用文件名；author 可选 | aggregate 自动填：measured 取 measure_video.json 测量时写下的日期（旧文件没有才用当天），title、author、url 取参考目录里的 meta.json |
 | `basis` | `multi_reference`（多个参考之间比较）或 `single_reference_chapters`（一个参考的各章之间比较） | 参考个数 |
-| `deliverable` | `fps`、`width`、`height`、`duration_s`（分布）、`letterbox`（遮幅宽高比，没有为 null） | 参考片的帧率；尺寸默认 3840×2160，按用户素材定 |
+| `deliverable` | `fps`、`width`、`height`、`duration_s`（分布）、`letterbox`（画面的宽高比，比交付画幅宽时才有，没有为 null） | 参考片的帧率；尺寸默认 3840×2160，按用户素材定。参考片自带黑边，或者文件本身比交付画幅宽（2:1 的片子放进 16:9），都记成遮幅；后一种 aggregate 会把标题、章节卡和字幕的 y 和字高换算到交付画面上。多参考时过半的参考是这样才写，少数时记进 `evidence.letterbox` |
 | `structure.sections[]` | `{role, share, shot_len_s, transition_in, notes}`。role 取 hook / intro / chapter / interlude / ending；share 之和为 1；同一个 role 只写一条，plan_cut 会把 chapter 按 brief 的章节展开 | labels 的章节 + 测量 |
 | `structure.order`、`structure.order_tolerance_s` | 章内选镜头按不按拍摄时间：`free`（不看时间）或 `chronological`。不写时，有 story 就按 `chronological`，没有 story 就是 `free`；只有用户明确要混剪才写 `free`。`order_tolerance_s` 是同一场景里允许往回调换的秒数，默认 300 | 手填，炼化不测。`chronological` 要求索引里有拍摄时间 |
 | `selection` | `shot_types`（景别配比，和为 1）、`opening`、`reject[]`、`max_shake`（抖动 RMS 占画面宽的 %） | labels + 测量（max_shake 取参考的 P90 × 1.2） |

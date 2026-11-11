@@ -283,6 +283,29 @@ class CleanupTest(TempRoot):
             (ref / name).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
         return ref
 
+    def test_keep_blanks_captions_that_ocr_sorted_as_titles(self):
+        # learnings 2026-11-06: a caption line that OCR called a title kept its text in three places
+        # (labels titles, text.tracks, strips.titles) because keep only blanked non-title tracks.
+        ref = self.measured_ref()
+        mv = json.loads((ref / "measure_video.json").read_text(encoding="utf-8"))
+        mv["text"]["tracks"].append({"i": 2, "kind": "title", "text": "这一句其实是字幕", "t_in": 9.0})
+        mv["strips"] = {"titles": [{"track": 0, "text": "北极圈"}, {"track": 2, "text": "这一句其实是字幕"}]}
+        (ref / "measure_video.json").write_text(json.dumps(mv, ensure_ascii=False), encoding="utf-8")
+        labels = {"ref": "BV1keep", "chapters": [], "titles": [
+            {"track": 0, "text": "北极圈", "role": "location", "note": None},
+            {"track": 2, "text": "这一句其实是字幕", "role": "other", "note": "subtitle_misread"}]}
+        (ref / "labels.json").write_text(json.dumps(labels, ensure_ascii=False), encoding="utf-8")
+        code, _, _ = self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        self.assertEqual(code, 0)
+        kept = self.P.style_refs("links") / "BV1keep"
+        blob = "".join(p.read_text(encoding="utf-8") for p in kept.iterdir())
+        self.assertNotIn("这一句其实是字幕", blob)
+        self.assertNotIn("旁白第一句", blob)
+        self.assertEqual(blob.count("北极圈"), 3)  # a real title keeps its text everywhere
+        kl = json.loads((kept / "labels.json").read_text(encoding="utf-8"))
+        self.assertEqual([t["text"] for t in kl["titles"]], ["北极圈", ""])
+        self.assertEqual(kl["titles"][1]["note"], "subtitle_misread")  # the label itself stays
+
     def test_trash_wants_measurements_kept_first(self):
         self.measured_ref()
         code, _, err = self.run_main(cleanup.main, ["trash", "BV1keep"])
@@ -361,6 +384,39 @@ class DraftGuardTest(TempRoot):
             aggregate.main(["draft", "--name", "x", nothing, "--out", str(out), "--force"])
         self.assertIn("measure_video", str(cm.exception))
         self.assertEqual(out.read_text(encoding="utf-8"), "手写的内容")
+
+
+class WiderPictureTest(unittest.TestCase):
+    """A reference wider than the 16:9 deliverable: a 2:1 file, or 16:9 with bars baked in."""
+
+    @staticmethod
+    def ref(source_size, baked=None):
+        return {"mv": {"video": {"source_size": source_size}, "scan": {"letterbox": {"aspect": baked}}}}
+
+    def test_a_wider_file_maps_onto_the_picture_between_the_bars(self):
+        k, pad = aggregate.frame_map(self.ref([1920, 960]), (3840, 2160))
+        self.assertAlmostEqual(k, 8 / 9)
+        self.assertAlmostEqual(pad, 1 / 18)
+        # a 2:1 subtitle measured at y 0.963, 5% high, sits at 0.912 and 4.4% of the 16:9 frame
+        self.assertAlmostEqual(pad + k * 0.963, 0.9116, places=4)
+        self.assertAlmostEqual(k * 0.05, 0.0444, places=4)
+        self.assertEqual(aggregate.picture_aspect(self.ref([1920, 960]), (3840, 2160)), 2.0)
+
+    def test_a_16_9_file_is_left_alone_and_baked_bars_keep_their_aspect(self):
+        for size in ([1920, 1080], [1916, 1080]):  # 1916 wide: rounding, not a wider picture
+            self.assertEqual(aggregate.frame_map(self.ref(size), (3840, 2160)), (1.0, 0.0))
+            self.assertIsNone(aggregate.picture_aspect(self.ref(size), (3840, 2160)))
+        baked = self.ref([1920, 1080], baked=2.35)
+        self.assertEqual(aggregate.frame_map(baked, (3840, 2160)), (1.0, 0.0))  # the bars are in the measured frame
+        self.assertEqual(aggregate.picture_aspect(baked, (3840, 2160)), 2.35)
+
+    def test_only_a_majority_sets_the_letterbox(self):
+        self.assertEqual(aggregate.pooled_letterbox([2.0]), (2.0, None))
+        self.assertEqual(aggregate.pooled_letterbox([2.0, 2.0, None]), (2.0, None))
+        self.assertEqual(aggregate.pooled_letterbox([None, None]), (None, None))
+        lb, note = aggregate.pooled_letterbox([2.0, 2.0, 2.0] + [None] * 9)
+        self.assertIsNone(lb)
+        self.assertIn("3 of 12", note)
 
 
 class StyleLookupTest(TempRoot):

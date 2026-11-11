@@ -294,6 +294,44 @@ def groups_of(refs: list[dict], fn) -> dict:
     return out
 
 
+WIDE_TOL = 1.02  # a file this much wider than the deliverable counts as a wider picture, not rounding
+
+
+def frame_map(r: dict, size: tuple[int, int]) -> tuple[float, float]:
+    """(k, pad): where a height fraction of the reference's own frame lands on the deliverable frame.
+
+    A file wider than the deliverable (a 2:1 upload, a 16:9 timeline) sits between bars: its
+    picture is k of the deliverable's height and starts pad from the top, so y' = pad + k * y and
+    h' = k * h. Bars baked into a 16:9 file are already inside the measured frame: no mapping.
+    """
+    w, h = r["mv"]["video"].get("source_size") or size
+    k = (size[0] / size[1]) / (w / h)
+    return (k, (1 - k) / 2) if k * WIDE_TOL < 1 else (1.0, 0.0)
+
+
+def picture_aspect(r: dict, size: tuple[int, int]) -> float | None:
+    """Aspect of the picture when it is wider than the deliverable: baked-in bars or a wider file."""
+    baked = r["mv"]["scan"]["letterbox"]["aspect"]
+    if baked:
+        return baked
+    w, h = r["mv"]["video"].get("source_size") or size
+    return round(w / h, 2) if (w / h) > (size[0] / size[1]) * WIDE_TOL else None
+
+
+def pooled_letterbox(aspects: list[float | None]) -> tuple[float | None, str | None]:
+    """The style's letterbox, and a note when some references are wider but most are not.
+
+    Only a majority sets it: three 2:1 films among twelve 16:9 ones say nothing about the creator's frame.
+    """
+    wide = [a for a in aspects if a]
+    if not wide:
+        return None, None
+    if 2 * len(wide) > len(aspects):
+        return round(stats.median(wide), 2), None
+    return None, (f"{len(wide)} of {len(aspects)} references have a wider picture "
+                  f"({', '.join(str(a) for a in wide)}); a minority, so no letterbox")
+
+
 def look_text(look: dict) -> str:
     def m(k):
         return ((look.get(k) or {}).get("median"))
@@ -456,13 +494,15 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
     titles = []
     for r in refs:
         sec_t0 = [c["t0"] for c in r["chapters"]]
+        fk, pad = frame_map(r, size)
         for t in (r["mv"].get("strips") or {}).get("titles") or []:
             lt = r["lab"]["titles"].get(t["track"], {})
             role = lt.get("role") or "location"
             if role == "other":
                 continue
             k = max(0, max((i for i, x in enumerate(sec_t0) if x <= t["t_in"] + 1e-6), default=0))
-            titles.append({**t, "role": role, "lab": lt, "offset": t["t_in"] - sec_t0[k], "sec": (r["id"], k),
+            titles.append({**t, "center": [t["center"][0], pad + fk * t["center"][1]], "height": fk * t["height"],
+                           "role": role, "lab": lt, "offset": t["t_in"] - sec_t0[k], "sec": (r["id"], k),
                            "in_chapter": r["chapters"][k]["role"] == "chapter"})
     for key, roles in (("title", {"location", "title"}), ("chapter_card", {"chapter_card"})):
         ts = [t for t in titles if t["role"] in roles]
@@ -493,8 +533,12 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
         if not fonts:
             evidence.setdefault("unverified", []).append(f"{key}: font_class 未标注，暂填黑体")
         text[key] = spec
-    bands = [(r["mv"].get("text") or {}).get("subtitle_band") for r in refs]
-    bands = [b for b in bands if b]
+    bands = []
+    for r in refs:
+        b = (r["mv"].get("text") or {}).get("subtitle_band")
+        if b:
+            fk, pad = frame_map(r, size)
+            bands.append({**b, "y": pad + fk * b["y"], "height": fk * b["height"]})
     if bands:
         text["subtitle"] = {"height_frac": round(stats.median([b["height"] for b in bands]), 4),
                             "position": [0.5, round(stats.median([b["y"] for b in bands]), 3)], "font_class": "黑体",
@@ -546,9 +590,11 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
         used.add("subtitle")
     if audio.get("duck_db"):
         used.add("duck")
-    lb = [r["mv"]["scan"]["letterbox"]["aspect"] for r in refs if r["mv"]["scan"]["letterbox"]["aspect"]]
-    if lb:
+    letterbox, lb_note = pooled_letterbox([picture_aspect(r, size) for r in refs])
+    if letterbox:
         used.add("letterbox")
+    if lb_note:
+        evidence["letterbox"] = lb_note
     resolve = [{"element": ROUTES[k][0], "route": ROUTES[k][1], "status": ROUTES[k][2], "how": ROUTES[k][3]}
                for k in ROUTES if k in used]
     effects = [{"type": fx["type"], **{k: v for k, v in fx.items() if k not in ("type",)}} for r in refs for fx in r["lab"]["effects"]]
@@ -560,7 +606,7 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
         "basis": "single_reference_chapters" if single else "multi_reference",
         "deliverable": {"fps": src_fps, "width": size[0], "height": size[1],
                         "duration_s": dist([r["duration"] for r in refs], 1),
-                        "letterbox": round(stats.median(lb), 2) if lb else None},
+                        "letterbox": letterbox},
         "structure": {"sections": sections},
         "selection": sel,
         "rhythm": rhythm,

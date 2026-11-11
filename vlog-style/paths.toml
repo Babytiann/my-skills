@@ -1,7 +1,8 @@
 # vlog-style 的路径表。
-# root 是唯一的绝对路径，迁移到 NAS 时只改这一行。
-# 临时换根（跑测试、试挂载点）用环境变量 VLOG_STYLE_ROOT，不用改这个文件。
-root = "~/Movies/vlog-style"
+# root 是唯一的绝对路径，换盘或迁移到 NAS 时只改这一行。
+# 现在在外接硬盘 Meow Disk 上，用之前先插上；没挂载时脚本会停下来说明。
+# 临时换根（跑测试、试挂载点、硬盘不在手边）用环境变量 VLOG_STYLE_ROOT，不用改这个文件。
+root = "/Volumes/Meow Disk/vlog-style"
 
 [dirs]                  # 以下全部相对 root
 styles   = "styles"     # 风格包的本地派生素材：stills/ luts/ drx/ fusion/

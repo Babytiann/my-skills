@@ -12,6 +12,42 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-11 keep 不认 subtitle_misread：第二批三条的保留副本留着字幕原文
+- 场景：links 第二批收尾，拿缓存里的字幕原文搜 `<root>/styles/links/refs/` 下所有保留副本
+- 做法：2026-11-06 那条的修法是「keep 之后按 note 手动清空」，第二批照常 `cleanup.py keep`，手动这步没人做
+- 问题：北海道 1 条、隐岐 2 条、斯瓦尔巴 2 条记了 `subtitle_misread` 的标题，整句字幕原文还留在三处：labels.json 的 `titles[].text`、measure_video.json 的 `text.tracks[].text`，和之前没注意到的 `strips.titles[].text`。罗弗敦另有一截被 OCR 拆出来的字幕（T580）判读时记成了普通的 other，同样漏了
+- 修法：`cleanup.py keep` 自己清：`strip_labels` 清空记 `subtitle_misread` 的标题文字（标签和 note 留着），`strip_video` 按这些 track 清空 `text.tracks` 和 `strips.titles` 里的文字。test_tools 加 `test_keep_blanks_captions_that_ocr_sorted_as_titles`。北海道、隐岐、斯瓦尔巴重新 keep（缓存里的测量和保留副本逐项比过，只有北海道多了后来加的 `shots_with_bars`，数值一样）；罗弗敦 T580 改记 `subtitle_misread` 后 keep。之后拿缓存原文（6 字以上的字幕行）搜 9 条有缓存的保留副本，0 处；第一批三条缓存已清，没法这样搜，它们的误判标题文字已经是空的
+
+## 2026-11-10 画面下方的场景字太多，字幕带取到了字幕上面
+- 场景：links 第二批，斯瓦尔巴「最北的城市」（BV1H5xie8EJZ）。全片烧录字幕在 y 0.95、字高约 4.2%；另有大量小字在画面下部：约 10:00 一段录屏的订票网页（价格、行程名，字高 1.3%），加路牌、店招
+- 做法：`stats.classify_text` 取所有「下方居中、不漂」的文字的 y 中位数当字幕带中心，再取带内字高中位数
+- 问题：2216 个候选里字幕约 700 个，其余分散在 0.7–0.97，中位数落到 0.884，带里多是 1.3% 的小字。真字幕比这个高 1.6 倍以上被排出字幕带，又因为比「字幕」高被归成标题：字幕 383、标题 915。标签骨架里 915 个标题、68 个提议章节，没法判读。看分类计数时发现（其余 8 条的标题都在 51–179）
+- 修法：字幕带中心改取「±0.02 内文字最多的那一行」再取中位数（stats.py），不再取全部候选的中位数。斯瓦尔巴变成字幕 744、标题 95；其余 9 条参考（含 lonely-house）重算对照，只有青森 2 条、极夜第 1 集 1 条、lonely-house 1 条从字幕变成 other，已经炼完的子包没有重测。斯瓦尔巴 `--redo text`（27 秒）后重建了标签骨架（95 个标题、33 个提议章节）。test_stats 加 `test_band_sits_on_the_caption_line_not_on_scene_text`
+
+## 2026-11-10 低帧率步进镜头被算成一串 0.53 s 的镜头
+- 场景：links/kyoto（BV1ym42137vx），夜里进林子那段，画面每 8 帧才更新一次（约 3.75 帧/秒）
+- 做法：PySceneDetect 找到的剪辑点只要帧差有跳变就收（`cuts` 的交叉核对）
+- 问题：步进镜头每次更新帧差都会跳一下，PySceneDetect 每隔一次更新报一个剪辑点，9 个都被收了，镜头 285–295 变成 10 个 0.53 s 的碎片；同一段里另有 15 个被否掉。全片中位数 3.67 → 3.55 s，`min_shot_s` 1.67 → 1.06 s。抽样硬切的事件条（e123）前后是同一个画面，才发现
+- 修法：没有改测量（只此一处，改 cuts 要重跑整条测量、标签全部重标）。判读时看帧差：一串间隔相同、中间全是 0 的小跳变是步进，不是剪辑；这类碎片多到影响 `min_shot_s` 时按合并后的镜头手改 `rhythm`，写进炼化记录。measure.md 判读约定跟着改。以后再遇到，考虑在 cuts 交叉核对里认出等间隔的步进
+
+## 2026-11-10 只有部分镜头带黑边，look 把黑边算进了暗部
+- 场景：links 第二批，隐岐诸岛（BV1ydjizBE1o）293 个镜头里 92 个风景和情绪镜头上下烧进约 12% 的黑边（2.35:1），说话段是 16:9
+- 做法：look 只遮全片统一的遮幅（`scan.letterbox` 按全片所有帧找，这条片子是 0），单个镜头的黑边照样算进 Lab
+- 问题：带黑边的镜头黑位 L01 中位数 0、暗部占比 0.36，不带的是 2.96、0.18；全片 L01 被拉到 1.62，暗角 0.82（实际约 1.0）。只用不带黑边的镜头算又会把风景镜头全排除，look 只剩说话段。第一版检测用「整行纯黑」，字幕正好压在下面的黑边上，35 个镜头的黑边被字幕截短、上下不对称，没认出来；第二版先遮黑边再判「全黑画面不计」，黑底字卡遮掉黑边后只剩字，被当成画面算了进来
+- 修法：`measure_video.py` 加 `frame_bars`，逐个关键帧找纯黑边：一行六成以上是纯黑、中位数 ≤ 3 就算黑边行（字幕压在黑边上也行），上下或左右要成对、对称、每边 3%–35%，黑边里过半的行完全纯黑，黑边以内要有画面。先按原来的遮罩判断要不要跳过，再去掉黑边算数值，所以没有黑边的片子输出和改动前完全一样（北海道、京都、极夜第 2 集已核对）。`per_shot` 多一项 `bars`。第二批 9 条都 `--redo look` 重测过（只重算 look，0.7–1.1 秒一条）。test_synthetic 加 `FrameBarsTest`。第一批三条 keep 下来的测量是改之前测的，黑底照片插入的黑边算进了暗部；它们的抽帧已经清掉，没有重测
+
+## 2026-11-10 2:1 的参考片：文字位置按原片记，放进 16:9 会落到黑边上
+- 场景：links 第二批，北海道、京都、罗弗敦三条下载下来是 1920×960（2:1），交付是 3840×2160
+- 做法：aggregate 只认烧在画面里的黑边（`scan.letterbox`），文件本身比 16:9 宽就当成没有遮幅；字幕、标题的位置和字高直接按原片画面的比例写进 style.json
+- 问题：北海道的字幕中心 y 0.963、字高 5.0%，是 2:1 画面里的比例。放进 16:9 时间线、上下加遮幅之后，画面只占中间 88.9%，下面的黑边从 0.944 开始，照原数摆字幕会压在黑边上，compare.py 拿来比的也是这个数；letterbox 又是 null，Resolve 根本不会加遮幅
+- 修法：aggregate.py 加 `frame_map`、`picture_aspect`、`pooled_letterbox`。文件比交付画幅宽 2% 以上就按遮幅算，letterbox 记它的宽高比，标题、章节卡和字幕的 y 和字高换算到交付画面（y' = pad + k·y，北海道的字幕变成 0.912、4.44%）；多参考合并时过半的参考是这样才写 letterbox，少数时记进 `evidence.letterbox`。test_tools 加 `WiderPictureTest`；apply.md 第 7 节第 2 步加遮幅，style-schema.md 的 deliverable 跟着改
+
+## 2026-11-10 root 搬到外接盘，第一次写入卡了 8 分钟：系统在等授权
+- 场景：`paths.toml` 的 root 改到外接硬盘上的 `/Volumes/<卷名>/vlog-style`，用 `ditto` 把旧 root（5.6 MB）复制过去，macOS 27.2
+- 做法：直接复制，接着跑 `diff` 和 `paths.py show`；复制没返回，又另开了一个 `ls` 看这个卷
+- 问题：`ditto` 停在 `mkdir` 上，没有任何输出，`ls` 也不返回；`df` 和 `mount` 却正常，内核日志里没有硬盘错误。原因是 macOS 要用户点一次「可移除的卷」授权，弹窗没点之前，读写这个卷的命令都在等。用户点了之后，复制自己跑完，两边逐文件一致。同一天早些时候只读地列这个卷是通的，所以一开始没往授权上想
+- 修法：没有改代码。卷上的命令不返回时不要再起第二份：先用 `df` 确认卷还挂着，再请用户看屏幕上有没有授权弹窗；`log show --last 10m --predicate 'process == "tccd"'` 里能看到 `kTCCServiceSystemPolicyRemovableVolumes` 的请求。`paths.py` 的「卷没挂载」检查管不到这种情况，因为卷是挂着的
+
 ## 2026-11-07 成片的字幕框高：带逗号的句子框更高、更低
 - 场景：探针 #17，`vlog-style-QA-probe17`，Studio 21.1.1.10 + MCP 4.15.3，Simple White、PingFang SC Regular、`size 0.040`、`position [0.5, 0.032]`，H.265 烧录
 - 做法：`compare.py final` 取读到的所有句子的框高、中心 y 中位数，和风格包的 `text.subtitle`（links：4.44%、0.955）比，±15%、±0.015
@@ -106,7 +142,7 @@
 - 场景：links/kula-kangri，`cleanup.py keep` 之后查保留的测量里有没有字幕原文
 - 做法：只拿 kind 为 subtitle 的轨去搜
 - 问题：keep 只清 kind 不是 title 的轨。T2357 是一行字幕，OCR 判成了 title，判读时标了 other、note 记 subtitle_misread，14 个字在 measure_video.json 和 labels.json 里共留了 3 处
-- 修法：判读时把误判成标题的字幕记成 note `subtitle_misread`，keep 之后按这个 note 把保留副本里的对应文字清空，再拿缓存里的原文搜一遍，搜不到才算过
+- 修法：判读时把误判成标题的字幕记成 note `subtitle_misread`，keep 之后按这个 note 把保留副本里的对应文字清空，再拿缓存里的原文搜一遍，搜不到才算过。2026-11-11 起 keep 自己清（见上面那条），手动这步不用做了，原文搜索还要做
 
 ## 2026-11-05 PySceneDetect 和 ffmpeg 的帧号在长片上会错开
 - 场景：links/lonely-house（29:22），第一次在长片上跑 measure_video

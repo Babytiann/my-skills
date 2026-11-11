@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
@@ -142,6 +143,81 @@ class PathsTest(unittest.TestCase):
         self.assertEqual(paths.find_absolute(d / "measure_video.json"), hits)
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
             self.assertEqual(paths.main(["check", str(d)]), 1)
+
+
+class VolumeTest(unittest.TestCase):
+    """A root on an external disk. A fake /Volumes holds one mounted disk, "My Disk"; "Gone" is unplugged."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.volumes = Path(self.tmp.name) / "Volumes"
+        (self.volumes / "My Disk").mkdir(parents=True)
+        self.patches = [mock.patch.object(paths, "VOLUMES", self.volumes),
+                        mock.patch.object(paths.os.path, "ismount", lambda p: Path(p).name == "My Disk")]
+        for p in self.patches:
+            p.start()
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+        os.environ.pop(paths.ENV_ROOT, None)
+        self.tmp.cleanup()
+
+    def use(self, root: Path) -> Path:
+        os.environ[paths.ENV_ROOT] = str(root)
+        return root
+
+    def test_an_unplugged_disk_stops_load_and_names_the_disk(self):
+        root = self.use(self.volumes / "Gone" / "vlog-style")
+        self.assertIs(paths.volume_mounted(root), False)
+        with self.assertRaises(SystemExit) as cm:
+            paths.load()
+        for piece in ("'Gone'", "not mounted", paths.ENV_ROOT):
+            self.assertIn(piece, str(cm.exception))
+
+    def test_a_folder_left_where_the_disk_mounts_is_still_unplugged(self):
+        root = self.use(self.volumes / "Gone" / "vlog-style")
+        root.mkdir(parents=True)  # exists, but on the wrong disk
+        with self.assertRaises(SystemExit):
+            paths.load()
+
+    def test_a_mounted_disk_loads_and_a_space_in_its_name_survives(self):
+        root = self.use(self.volumes / "My Disk" / "vlog-style")
+        self.assertIs(paths.volume_mounted(root), True)
+        p = paths.load()
+        self.assertEqual(p.root, root)
+        made = paths.init(p, project="trip")
+        self.assertTrue((root / "projects" / "trip" / "footage").is_dir())
+        self.assertEqual(p.rel(made[-1]), "projects/trip/qa")
+
+    def test_a_root_off_the_external_disks_is_not_checked(self):
+        root = self.use(Path(self.tmp.name) / "root")
+        self.assertIsNone(paths.volume_of(root))
+        self.assertIsNone(paths.volume_mounted(root))
+        self.assertIsNone(paths.volume_mounted(self.volumes))  # /Volumes itself is no disk
+        self.assertEqual(paths.load().root, root)
+
+    def test_show_and_check_run_without_the_disk_but_resolve_and_init_stop(self):
+        self.use(self.volumes / "Gone" / "vlog-style")
+        with redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(paths.main(["show"]), 0)
+        shown = json.loads(out.getvalue())
+        self.assertIs(shown["volume_mounted"], False)
+        self.assertIs(shown["root_exists"], False)
+        note = Path(self.tmp.name) / "ok.md"
+        note.write_text("projects/a/plan/\n", encoding="utf-8")
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(paths.main(["check", str(note)]), 0)
+        for argv in (["resolve", "cache/refs/BV1test"], ["init"]):
+            with self.assertRaises(SystemExit, msg=argv):
+                paths.main(argv)
+
+    def test_show_reports_null_for_a_root_on_the_system_disk(self):
+        self.use(Path(self.tmp.name) / "root")
+        with redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(paths.main(["show"]), 0)
+        self.assertIsNone(json.loads(out.getvalue())["volume_mounted"])
+
 
 class SpokenTextTest(unittest.TestCase):
     def test_a_line_starting_with_a_slash_is_a_note_not_a_path(self):

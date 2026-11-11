@@ -45,7 +45,7 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 | cuts | TransNetV2（CPU）跑 48×27 小图，概率超过 0.5 的连续帧算一个转场。连续不超过 3 帧算硬切，用帧差把剪辑点精确到具体一帧；更长的算渐变，剪辑点放在中点。再用 PySceneDetect AdaptiveDetector 交叉核对（它的帧号先映射到恒定帧率时钟，错开的帧数记进 `psd_clock_shift`）：只有 PySceneDetect 发现的剪辑点，需要 TransNet 至少有 0.1 的弱信号，或帧差突跳，才收；不收的记进 `psd_rejected` | `cuts[]`：frame、t、kind（hard / gradual）、span、frames、src（transnet / psd / both）。`shots[]` |
 | text | 把 OCR 结果串成轨迹，再分成字幕、标题、其他三类（stats.link_text / classify_text） | `tracks[]`、`subtitle_band`、`transcript`（字幕文本） |
 | scan | 按 320 宽逐帧扫一遍，记录：亮度、清晰度（拉普拉斯方差）、过曝和死黑比例、LK 光流仿射（缩放、平移）。由此得到遮幅、每个镜头的运动，以及转场和特效的候选。闪白和黑场下的剪辑点会移到闪白或黑场的中点（`snap`），因为那里看不出画面在哪一帧切换；每次都从检测器给的原始剪辑点（`cuts[].raw`）算起，重跑 scan 不会叠加 | `letterbox`、`shots[]`（motion.type / zoom / zoom_eff / pan / shake、exposure_ok、best、ramp_candidate、freeze）、`events[]`、`keyframes[]` |
-| look | 从每个镜头的关键帧测 Lab 数值，测之前遮掉遮幅、字幕带和 OCR 文字框 | `summary`（每项的中位数和 MAD）、`hue_hist`、`per_shot[]` |
+| look | 从每个镜头的关键帧测 Lab 数值，测之前遮掉遮幅、字幕带和 OCR 文字框。遮幅除了全片统一的，还逐个关键帧找只有这个镜头才有的纯黑边（风景段的 2.35:1 裁切、4:3 片段、黑底照片），上下或左右成对、对称、黑边以内有画面才算，所以暗夜镜头不会被当成黑边；字幕压在黑边上也认得出。整幅画面中间亮度不到 3 的（黑场、黑底字卡）照旧不计 | `summary`（每项的中位数和 MAD）、`hue_hist`、`per_shot[]`（带黑边的镜头多一项 `bars`：上下左右各占的比例）、`shots_with_bars` |
 | strips | 在每个候选事件前后各取 0.5 秒，按原帧率拼成事件条。另外为每次标题出入场、每章抽几个硬切也各拼一条。标题颜色从框内像素测。推拉镜头最多抽 24 个，各取 10%、50%、90% 三帧拼成 `strips/moves_*.jpg`，给 agent 判断是剪辑加的还是机位在动 | `events[].strip`、`titles[]`（含 colour：fill、edge）、`moves[]` |
 | sheets | 用关键帧拼成总览图，每张 6×8 格。10 分钟以内的片子每个镜头取 3 张，更长的取 1 张 | `sheets[]` |
 
@@ -96,6 +96,7 @@ uv run --python 3.13 --script measure_audio.py --music <音乐文件> --out <项
    - `digital`：整幅等比放大或缩小，前景和背景之间没有视差，遮挡关系不变。剪辑里加的推拉、变焦都算。
    - `camera`：机位真的在动（无人机、车、步行、稳定器），或者是被摄物朝镜头移动。前景比背景放大得快，遮挡关系在变。
    - 高空航拍前飞几乎没有视差，和数字推镜很像，这种 `sure` 填 false。
+   - 拼图上看不准时，取镜头 10%、90% 处的两帧，分别算画面上半和下半的缩放：差得多是视差，判 camera；两帧缩放都是 1.000 的是固定机位，测到的推拉来自画面里的人或水汽在动，也判 camera；上下一样大分不出来，按 camera 填 `sure: false`。
 3. **转场事件条**（不是硬切的那些），逐条看：
    - 判断类型，取值为 `schema.TRANSITIONS` 之一；看错的候选标 `none`。
    - 记下方向（甩镜往哪边甩）和实际帧数。
@@ -137,7 +138,9 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 
 **慢动作：** 看图判断不出来就不写 `slow_mo` 这个键，在 STYLE.md 标「存疑」。要写就给每个标了景别的镜头都写明 true 或 false，只标 true 会把占比算成 100%。
 
-**转场：** 眩光造成的误切标 `none`。同一次黑场被测成淡出、淡入两条的，后半段标 `none`，免得多算一次（first-snow-mountain 当时标成了 `dip_to_black`、`sure: false`，所以 10 条标签只有 8 处）。拍摄时做的转场（手挡镜头）标 `other`，写进 note，汇总后从 style.json 的 `transitions` 去掉，否则 plan_cut 可能抽中。
+**转场：** 眩光造成的误切标 `none`。同一次黑场被测成淡出、淡入两条的，后半段标 `none`，免得多算一次（first-snow-mountain 当时标成了 `dip_to_black`、`sure: false`，所以 10 条标签只有 8 处）。拍摄时做的转场（手挡镜头）标 `other`，写进 note，汇总后从 style.json 的 `transitions` 去掉，否则 plan_cut 可能抽中。片尾整片淡出到黑记 `dip_to_black`，带帧数（库拉岗日、第一座雪山都是这样记的），STYLE.md 第 6 节写明哪一次是片尾淡出。
+
+**连续镜头里的假剪辑点（第二批补充）：** 快速手持甩动、车门打开转到雪地、运动相机放下这类，测到的剪辑点其实在一个镜头里，候选标 `none`。STYLE.md 第 4 节写明多算了几个剪辑点、哪几个镜头号其实是一个镜头；数量少时不改测量。低帧率的步进镜头（画面隔好几帧才更新一次）也会被 PySceneDetect 每隔几次更新算一个剪辑点，看帧差：一串间隔相同、中间全是 0 的小跳变就是步进，不是剪辑。假剪辑点把很多 0.5 s 左右的碎片带进来、拉低了 `min_shot_s` 时，按合并后的镜头重算 `rhythm` 手改，写进炼化记录（京都那条 P5 从 1.67 s 被拉到 1.03 s）。
 
 **标题：** 每条都要填 role，不填会默认成 location。叠加的文字如果不是地点标题，role 记 `other`，note 记用途：
 
@@ -148,7 +151,11 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 | `time_stamp` / `day_stamp` | 时间戳 / 第几天 |
 | `altitude_stamp` | 海拔和氧气角标 |
 | `photo_counter` / `photo_signature` | 照片张数 / 照片旁的手写签名 |
-| `series_title` / `end_card` | 手写系列标题 / 片尾手写标识 |
+| `series_title` / `end_card` | 手写系列标题 / 片尾标识（手写或印刷体） |
+| `card_second_line` / `title_fragment` | 黑底卡被拆出的其余几行 / 同一幅字被拆出的其余部分 |
+| `subtitle_misread` | 字幕被分成了标题（包括被 OCR 拆出来的一截字幕）；`cleanup.py keep` 按这个 note 清掉原文 |
+
+计数类的叠字（拖车的第几轮）也记 `callout`。黑底卡每张一条 `chapter_card`。特效的 `type` 先用已有的名字：`photo_insert`、`film_photo_insert`、`photo_montage`、`map_insert`、`map_annotation`、`screen_capture`、`time_stamp`、`altitude_stamp`、`location_pin`、`callout`、`series_title_overlay`、`end_card`、`colour_bars`、`split_compare`、`split_screen`、`picture_in_picture`、`stock_footage`、`long_take`、`cg_insert`，都不合适才起新名字。
 
 同一张卡或同一幅标题被 OCR 拆成几条时，只留一条作 location 或 chapter_card，其余记 `other`。手写的标题放进 `effects`，这样 `text.title` 只反映地点标题的字体和位置。
 

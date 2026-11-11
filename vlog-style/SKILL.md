@@ -25,7 +25,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 
 ## 1. 路径：只有一个根路径
 
-`paths.toml` 是唯一维护路径的地方，里面只有 `root` 是绝对路径（默认 `~/Movies/vlog-style`）。迁移到 NAS 时整个目录搬过去，只改这一行；Resolve 工程里存的是绝对媒体路径，迁移后用 `MediaPool.RelinkClips` 指回新 root。`VLOG_STYLE_ROOT` 环境变量可以临时覆盖 root（测试用）。
+`paths.toml` 是唯一维护路径的地方，里面只有 `root` 是绝对路径（现在是外接硬盘上的 `/Volumes/Meow Disk/vlog-style`）。换盘或迁移到 NAS 时整个目录搬过去，只改这一行；Resolve 工程里存的是绝对媒体路径，迁移后用 `MediaPool.RelinkClips` 指回新 root。root 在 `/Volumes/<卷名>/` 下时要先挂上那个盘：没挂载时，要读写 root 的命令会停下来说明原因；`paths.py show` 和 `check` 照常能跑，`show` 的 `volume_mounted` 报挂载状态。卷挂着、命令却一直不返回时，多半是 macOS 在等用户点「可移除的卷」授权，不要重跑，请用户看一眼弹窗（learnings.md 2026-11-10）。`VLOG_STYLE_ROOT` 环境变量可以临时覆盖 root（测试，或硬盘不在手边时）。
 
 ```
 <root>/
@@ -93,7 +93,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 8. **验收。** 过一遍 [qa.md](references/qa.md) 的炼化清单，再把 STYLE.md 交给用户审。
 9. **试剪。** 用户给几段素材走一遍 apply（工程名 `vlog-style-QA-*`），对照关键帧和统计；问题改回风格包，记进 learnings.md。
 10. **清理。** 用户确认风格包之后，先留测量，再清缓存：
-    - `cleanup.py keep <id> --style <博主|misc> --yes`，把剥掉转写、字幕原文和简介的测量留到 `<root>/styles/<博主|misc>/refs/<id>/`，以后补参考、写博主级包时直接用。`--style` 只写顶层文件夹，不写子包。
+    - `cleanup.py keep <id> --style <博主|misc> --yes`，把剥掉转写、字幕原文和简介的测量留到 `<root>/styles/<博主|misc>/refs/<id>/`，以后补参考、写博主级包时直接用。labels 里记 `subtitle_misread` 的标题（被 OCR 当成标题的字幕）也在这一步清掉原文，所以判读时误判的字幕一定要记这个 note。`--style` 只写顶层文件夹，不写子包。
     - `cleanup.py trash <id> --yes`，按 id 把 `cache/refs/<id>` 移进废纸篓。默认挡住三种：有进程正在用的，先停掉那个进程；没有 labels.json 也没有保留副本的，可能还在炼，有意放弃的下载加 `--unfinished`；有测量却没 keep 过的，确实不留的加 `--no-keep`。`trash --all` 跳过前两种并在 stderr 列出来，其余照清。每条的状态看 `cleanup.py list` 的 `state`。
     - 两步都先不加 `--yes` 跑一遍，给用户看要留下什么、要移走什么。
 
@@ -172,3 +172,4 @@ uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg
 - 2026-11-05 改成按博主建专辑。`styles/links/` 是 Links（mid 3816626）的专辑，候选视频和理由在 `links/sources.md`。`misc/` 还是空的。
 - 2026-11-06 第一批三条炼完：`links/lonely-house`、`links/kula-kangri`、`links/first-snow-mountain`（用户定的挑法：旅行片里播放量最高的三条），测量都 keep 到了 `<root>/styles/links/refs/`。博主级包 `links` 由这三份测量合并，basis = multi_reference，是多参考合并第一次用真实数据，手改项记在 `links/STYLE.md` 的炼化记录。polar-night 没有参与合并。三条的缓存 2026-11-06 移进了废纸篓，清不清空由用户定。试剪还没做：没有素材。
 - 2026-11-07 复刻补上了对白片要的环节：纸面剪辑（`story.json`）驱动的对白剪辑和按拍摄顺序铺开、按句转写和外语原文、`subs.py` 出字幕、`story.py review` 审片拼图、照片入片（`photo_clips.py`）、按章调色（`grade.py`）、对白和整片电平（`mix.py`）、读回整理和成片核对（`compare.py normalize`、`final`）。没有 story 时输出和改动前逐字节相同（`test_plan_cut.py` 的 baseline 测试）。Resolve 探针 #13–#17 跑完，#17 用合成素材从计划走到 H.265 成片，`compare.py final` 全过。用真实素材的完整试剪还没做；Links 包里 `aroll` 除 `speech_share` 外的值和 `photo` 块标着「存疑」，等试剪再定。
+- 2026-11-10 到 11-11 第二批九条炼完（用户按地点挑：日本四条、极地三条、极夜系列两集）：`links/hokkaido-dream`、`links/oki-islands`、`links/kyoto`、`links/aomori`、`links/uummannaq`、`links/longyearbyen`、`links/lofoten`，`links/polar-night` 由两集重建，替换 11-01 只用第 1 集的版本。测量都 keep 到了 `<root>/styles/links/refs/`，博主级包 `links` 由 12 份测量重新合并。途中改了四处：look 逐镜头遮黑边、2:1 参考的文字位置换算、字幕带取文字最密的一行、keep 清掉 `subtitle_misread` 的原文（见 learnings.md 2026-11-10、11-11）。第二批的缓存还在 `<root>/cache/refs/`，等用户审过 STYLE.md 再清。

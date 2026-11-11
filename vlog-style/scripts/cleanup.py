@@ -116,16 +116,37 @@ def dump(p: Path, data) -> None:
     p.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
-def strip_video(mv: dict, mtime: float) -> dict:
-    """Drop what was said or filmed; title text stays, labels point at it."""
+def misread_tracks(labels: dict) -> set:
+    """Tracks the labels mark as captions that OCR sorted as titles (note `subtitle_misread`)."""
+    return {t["track"] for t in labels.get("titles") or []
+            if t.get("note") == "subtitle_misread" and t.get("track") is not None}
+
+
+def strip_video(mv: dict, mtime: float, misread: set = frozenset()) -> dict:
+    """Drop what was said or filmed; title text stays, labels point at it.
+    Title tracks in `misread` are captions and lose their text too (learnings 2026-11-06)."""
     mv = dict(mv)
     # files measured before measure_video wrote the date: the file time is the honest one
     mv.setdefault("measured", time.strftime("%Y-%m-%d", time.localtime(mtime)))
     text = mv.get("text")
     if isinstance(text, dict):
-        tracks = [t if t.get("kind") == "title" else dict(t, text="") for t in text.get("tracks", [])]
+        tracks = [t if t.get("kind") == "title" and t.get("i", n) not in misread else dict(t, text="")
+                  for n, t in enumerate(text.get("tracks", []))]
         mv["text"] = dict(text, tracks=tracks, transcript=[])
+    strips = mv.get("strips")
+    if misread and isinstance(strips, dict) and isinstance(strips.get("titles"), list):
+        mv["strips"] = dict(strips, titles=[dict(s, text="") if s.get("track") in misread else s
+                                            for s in strips["titles"]])
     return mv
+
+
+def strip_labels(labels: dict) -> dict:
+    """Blank the text of titles noted `subtitle_misread`; the label and its note stay."""
+    labels = dict(labels)
+    if isinstance(labels.get("titles"), list):
+        labels["titles"] = [dict(t, text="") if t.get("note") == "subtitle_misread" else t
+                            for t in labels["titles"]]
+    return labels
 
 
 def strip_audio(ma: dict) -> dict:
@@ -166,10 +187,11 @@ def keep(P: vpaths.Paths, ids: list[str], group: str, yes: bool) -> int:
     for src, dest in plan:
         dest.mkdir(parents=True, exist_ok=True)
         mv = src / "measure_video.json"
-        dump(dest / mv.name, strip_video(load(mv), mv.stat().st_mtime))
+        labels = load(src / "labels.json")
+        dump(dest / mv.name, strip_video(load(mv), mv.stat().st_mtime, misread_tracks(labels)))
         if (src / "measure_audio.json").exists():
             dump(dest / "measure_audio.json", strip_audio(load(src / "measure_audio.json")))
-        shutil.copyfile(src / "labels.json", dest / "labels.json")
+        dump(dest / "labels.json", strip_labels(labels))
         meta = aggregate.video_meta(src)
         if meta:
             dump(dest / "meta.json", meta)
