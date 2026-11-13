@@ -1,0 +1,568 @@
+{
+ "schema_version": 1,
+ "name": "lawrence/hokkaido-letter",
+ "summary": "4–5 分钟的电影感北海道冬日短片：旁白配居中烧录字幕，和左对齐的双语歌词字幕段落交替；约 1.7 s 一刀，几乎全是硬切，不卡点；冷蓝低饱和；用献词黑卡、橙红宋体片名卡和片尾署名把整片做成一封致敬电影的回信。",
+ "sources": [
+  {
+   "id": "BV1eoQwYPEeu",
+   "url": "https://www.bilibili.com/video/BV1eoQwYPEeu",
+   "title": "我的人生目标，就是和你维持现状！｜北海道4k旅拍",
+   "measured": "2026-11-11",
+   "author": "小鹿Lawrence"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 283.2,
+   "mad": 0.0,
+   "p10": 283.2,
+   "p90": 283.2,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0291,
+    "shot_len_s": {
+     "median": 0.667,
+     "mad": 0.334,
+     "p10": 0.347,
+     "p90": 2.102,
+     "n": 8
+    },
+    "notes": "冷开场，无旁白：风雪扑面的人物中景（雪扑到镜头上后叠化），接 4:3 圆角胶片框里的回忆快闪（每个 0.3–0.7 s）；最后一个淡入深灰日期卡"
+   },
+   {
+    "role": "intro",
+    "share": 0.0527,
+    "shot_len_s": {
+     "median": 3.804,
+     "mad": 1.668,
+     "p10": 1.872,
+     "p90": 5.526,
+     "n": 4
+    },
+    "notes": "献词黑卡（一行小字居中，约 5.6 s）经黑场淡入片名段：航拍列车上硬切出宋体橙红片名卡和小字署名；音乐段，左对齐双语歌词字幕"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8701,
+    "shot_len_s": {
+     "median": 1.668,
+     "mad": 0.483,
+     "p10": 0.868,
+     "p90": 2.987,
+     "n": 136
+    },
+    "notes": "一章一个地点或时段，旁白段（居中烧录字幕）和歌词段（左对齐双语字幕、无旁白）交替；硬切为主，偶尔 6 帧叠化；第一章由深灰日期卡开段"
+   },
+   {
+    "role": "ending",
+    "share": 0.0481,
+    "shot_len_s": {
+     "median": 4.938,
+     "mad": 0.234,
+     "p10": 3.791,
+     "p90": 5.125,
+     "n": 3
+    },
+    "notes": "年份回望：两镜右缘年份角标（当年和 2020 年），中间 27 帧叠化；最后一镜叠橙红宋体片名重现和小字片尾署名"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.461,
+  "shot_types": {
+   "wide": 0.378,
+   "medium": 0.348,
+   "detail": 0.119,
+   "aerial": 0.089,
+   "close": 0.067
+  },
+  "opening": "风雪扑面的人物中景（手持），紧接 4:3 圆角胶片框回忆闪回和深灰日期卡",
+  "reject": [
+   "自拍/手持对着自己",
+   "对镜头口播",
+   "地图与屏幕录像插入"
+  ]
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 1.668,
+   "mad": 0.501,
+   "p10": 0.767,
+   "p90": 3.27,
+   "n": 151
+  },
+  "cuts_per_min": 31.78,
+  "min_shot_s": 0.62
+ },
+ "beat": {
+  "hit_rate": 0.0667,
+  "baseline": 0.0719,
+  "offset_frames": 1,
+  "use_downbeats": false,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.96
+  },
+  {
+   "type": "dissolve",
+   "share": 0.0333,
+   "frames": 9,
+   "where": "any"
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0067,
+   "frames": 21,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.1351,
+   "amplitude_px": 4.7
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "time_stamp",
+   "shot": 0,
+   "note": "track 0, 0.0-1.5 s, centred year + place line over the cold-open shot 0"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 8,
+   "note": "tracks 8 (6.0-12.5 s) + 9 (9.5-12.5 s), centred two-line date with a 'one month earlier' line; spans shots 7-10, mainly over the dark-grey card shot 8, carried into shot 10"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 148,
+   "note": "track 426, 269.7-275.0 s, year at the right edge (cx 0.85, cy 0.5), shot 148"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 149,
+   "note": "track 432, 275.0-278.2 s, an earlier year (the 2020 film's year) at the same right-edge spot, shot 149; the closing pair of stamps links this film back to the 2020 one"
+  },
+  {
+   "type": "dedication_card",
+   "shot": 30,
+   "note": "track 106, 69.97-75.99 s, one small English dedication line centred on black, shot 30; sits just before the main title and opens the intro chapter"
+  },
+  {
+   "type": "film_credits",
+   "shot": 33,
+   "note": "tracks 117 (79.5-85.0 s) + 122 (79.5-84.5 s), small centred credit lines under main title track 127 (80.5-85.0 s), shot 33 (aerial train on the coast)"
+  },
+  {
+   "type": "film_credits",
+   "shot": 150,
+   "note": "tracks 438-448, 278.2-283.2 s, small centred credits block (original work/director, cast, music, camera, edit, grade, quoted lines) under end card 437/449/452, over live shot 150"
+  },
+  {
+   "type": "end_card",
+   "shot": 150,
+   "note": "tracks 437/449/452 (one card split by OCR), red serif 'Love Letter' repeated from main title 127, top third, over live shot 150 (two people walking a snowy road)"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 3,
+   "note": "shots 3-7 (3.6-8.2 s), 4:3 rounded-corner film-gate frame centred on black; fast montage of memory clips, about 0.3-0.7 s each, with shot 7 at 2.6 s; event 3 fades the last one into the dark-grey date card shot 8"
+  },
+  {
+   "type": "film_photo_insert",
+   "shot": 93,
+   "note": "shots 93-97 (189.6-193.8 s), five still photos in portrait frames on dark grey, 0.6-1.1 s each, cut straight after the medium-format film-camera shots 88-91"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 31,
+   "note": "tracks 109-113, 123-124, 129-131, 140-141, 154, 159, 164-172; 76.5-103.7 s, shots 31-43. Left-aligned bottom-left: Chinese line (cy 0.87) over a smaller Japanese line (cy 0.91). Voice-over subtitles are centred (median cx 0.5); the song is credited in track 442"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 54,
+   "note": "tracks 181-184; 124.0-129.7 s, shots 54-55; same left-aligned bilingual layout; matches the no-speech span 124.2-130.5"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 66,
+   "note": "tracks 242-256, 260, 264; 148.0-159.0 s, shots 66-72; same layout; 242/248 were classed as subtitle by OCR"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 123,
+   "note": "tracks 399, 400, 402, 404, 405; 231.2-248.7 s, shots 123-132; same layout; 399/405 were classed as subtitle, so speech_share counts this stretch"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 138,
+   "note": "tracks 422-424; 257.2-260.7 s, shots 138-139; same layout, inside the no-speech span 257.7-270.5"
+  },
+  {
+   "type": "grain",
+   "global": true,
+   "strength": "light",
+   "note": "judged by eye on sheet thumbnails: faint texture on the dark-grey card (shot 8) and dusk/night shots; platform recompression makes this approximate"
+  },
+  {
+   "type": "light_leak",
+   "shot": 3,
+   "sure": false,
+   "note": "first frames of shot 3 inside the 4:3 gate are a warm orange blur, read as a film-burn/leak opening the memory montage; could also be an out-of-focus warm light"
+  }
+ ],
+ "grade": {
+  "summary": "冷蓝低饱和的雪景基调，中间调偏暗，暗部和高光都偏蓝，日落和室内留少量暖色",
+  "look": {
+   "L01": {
+    "median": 4.905,
+    "mad": 2.539
+   },
+   "L50": {
+    "median": 40.267,
+    "mad": 16.489
+   },
+   "L99": {
+    "median": 83.661,
+    "mad": 6.363
+   },
+   "Lstd": {
+    "median": 19.49,
+    "mad": 4.835
+   },
+   "shadow": {
+    "median": 0.202,
+    "mad": 0.161
+   },
+   "chroma": {
+    "median": 5.937,
+    "mad": 2.498
+   },
+   "sh_a": {
+    "median": 0.125,
+    "mad": 0.687
+   },
+   "sh_b": {
+    "median": -2.531,
+    "mad": 2.593
+   },
+   "mid_a": {
+    "median": -0.024,
+    "mad": 1.352
+   },
+   "mid_b": {
+    "median": -5.054,
+    "mad": 6.101
+   },
+   "hi_a": {
+    "median": -0.586,
+    "mad": 0.843
+   },
+   "hi_b": {
+    "median": -5.492,
+    "mad": 2.765
+   },
+   "vignette": {
+    "median": 1.034,
+    "mad": 0.323
+   },
+   "hue_hist": [
+    0.0087,
+    0.0506,
+    0.0253,
+    0.0017,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.6283,
+    0.2853,
+    0.0,
+    0.0
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": {
+   "strength": "light"
+  }
+ },
+ "text": {
+  "title": {
+   "font_class": "宋体",
+   "fallback_fonts": [
+    "Songti SC",
+    "STSong"
+   ],
+   "height_frac": 0.183,
+   "position": [
+    0.502,
+    0.461
+   ],
+   "color": [
+    1.0,
+    0.267,
+    0.0
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 4.49,
+   "offset_s": 10.58,
+   "template": "Text+",
+   "per": "section"
+  },
+  "subtitle": {
+   "height_frac": 0.0384,
+   "position": [
+    0.5,
+    0.885
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": false,
+   "plate": false,
+   "color": [
+    0.714,
+    0.678,
+    0.522
+   ]
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 80.0,
+   "mad": 0.0,
+   "p10": 80.0,
+   "p90": 80.0,
+   "n": 1
+  },
+  "mood": "约 80 BPM 的慢板抒情歌曲铺底，前约 54 s 没有稳定节拍，片名处短暂提速；旁白约占一半，音乐几乎不为旁白压低，动态起伏大",
+  "lufs": -8.7,
+  "duck_db": 1.9,
+  "sfx": [],
+  "music_changes": "约每章 1.6 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "家中唱片与北海道冬景@8": 2.9865,
+     "海岸列车、灯塔与原野动物@85": 1.685,
+     "雪镇车站、拉面与黄昏@124": 1.935,
+     "初雪之夜与雪中列车@154": 1.6185,
+     "胶片照片、雪人与雪地嬉戏@188": 1.435
+    },
+    "spread": 0.9208
+   },
+   "transitions": {
+    "风雪中的她与4:3回忆闪回@0": {
+     "dissolve": 1,
+     "hard_cut": 6
+    },
+    "家中唱片与北海道冬景@8": {
+     "dissolve": 1,
+     "hard_cut": 21
+    },
+    "献词卡与《Love Letter》片名@70": {
+     "hard_cut": 3,
+     "dip_to_black": 1
+    },
+    "海岸列车、灯塔与原野动物@85": {
+     "hard_cut": 20
+    },
+    "雪镇车站、拉面与黄昏@124": {
+     "hard_cut": 14,
+     "dissolve": 1
+    },
+    "初雪之夜与雪中列车@154": {
+     "hard_cut": 22
+    },
+    "胶片照片、雪人与雪地嬉戏@188": {
+     "hard_cut": 56,
+     "dissolve": 1
+    },
+    "年份回望与片尾卡@270": {
+     "hard_cut": 2,
+     "dissolve": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "家中唱片与北海道冬景@8": 0.0455,
+     "海岸列车、灯塔与原野动物@85": 0.05,
+     "雪镇车站、拉面与黄昏@124": 0.0667,
+     "初雪之夜与雪中列车@154": 0.3636,
+     "胶片照片、雪人与雪地嬉戏@188": 0.2281
+    },
+    "spread": 4.7727
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "家中唱片与北海道冬景@8": 32.376,
+     "海岸列车、灯塔与原野动物@85": 50.54,
+     "雪镇车站、拉面与黄昏@124": 49.811,
+     "初雪之夜与雪中列车@154": 41.527,
+     "胶片照片、雪人与雪地嬉戏@188": 38.522
+    },
+    "spread": 0.4374
+   },
+   "look.Lstd": {
+    "verdict": "consistent",
+    "medians": {
+     "家中唱片与北海道冬景@8": 17.896,
+     "海岸列车、灯塔与原野动物@85": 19.406,
+     "雪镇车站、拉面与黄昏@124": 18.539,
+     "初雪之夜与雪中列车@154": 18.5645,
+     "胶片照片、雪人与雪地嬉戏@188": 21.994
+    },
+    "spread": 0.2207
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "家中唱片与北海道冬景@8": -0.031,
+     "海岸列车、灯塔与原野动物@85": -9.125,
+     "雪镇车站、拉面与黄昏@124": -4.547,
+     "初雪之夜与雪中列车@154": -3.5705,
+     "胶片照片、雪人与雪地嬉戏@188": -5.219
+    },
+    "spread": 2.0
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "家中唱片与北海道冬景@8": 5.887,
+     "海岸列车、灯塔与原野动物@85": 11.3435,
+     "雪镇车站、拉面与黄昏@124": 5.865,
+     "初雪之夜与雪中列车@154": 5.706,
+     "胶片照片、雪人与雪地嬉戏@188": 5.651
+    },
+    "spread": 0.9706
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1eoQwYPEeu",
+    "n_cuts": 45,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.74,
+    "bpm": 81.08,
+    "hit_rate": 0.0667,
+    "baseline": 0.0719,
+    "lift": 0.927,
+    "downbeat_hit_rate": 0.0222,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 26,
+    "judged": 14,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 15,
+    "judged": 10,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 10,
+  "onsets_per_min": 182.4,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "photo": {
+  "dur_s": 0.83,
+  "scale": 1.0,
+  "background": "black"
+ }
+}
