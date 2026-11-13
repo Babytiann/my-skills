@@ -69,6 +69,20 @@ class BeatTest(unittest.TestCase):
         self.assertEqual(r["n_cuts"], 3)
         self.assertEqual(stats.bpm_from_beats(self.beats, spans=[(0, 30)]), 120.0)
 
+    def test_too_few_cuts_say_nothing(self):
+        # learnings 2026-11-13: the Lawrence vlog's 13 cuts in the music were called not_on_beat
+        on = [self.beats[8 * k + 4] for k in range(stats.MIN_BEAT_CUTS)]
+        self.assertEqual(stats.beat_alignment(on[:-1], self.beats, tol=1 / 30)["verdict"], "too_few_cuts")
+        self.assertEqual(stats.beat_alignment(on, self.beats, tol=1 / 30)["verdict"], "on_beat")
+
+    def test_half_and_double_time_agree(self):
+        self.assertTrue(stats.tempo_agrees(75.3, 152.0))   # the Japan short: librosa at double time
+        self.assertTrue(stats.tempo_agrees(80.0, 80.7))
+        self.assertTrue(stats.tempo_agrees(120.0, 61.0))
+        self.assertFalse(stats.tempo_agrees(93.17, 107.7))  # the Lawrence vlog
+        self.assertFalse(stats.tempo_agrees(99.92, 129.2))
+        self.assertIsNone(stats.tempo_agrees(None, 120.0))
+
     def test_bpm_survives_frame_quantisation(self):
         hop = 512 / 22050  # librosa frame
         beats = [round(k * 60 / 128 / hop) * hop for k in range(200)]
@@ -167,6 +181,14 @@ class SchemaTest(unittest.TestCase):
         bad = copy.deepcopy(self.style)
         bad["sources"][0]["title"] = " "
         self.assertTrue(any("sources[0].title" in e for e in schema.check_style(bad)))
+
+    def test_only_whips_and_wipes_have_a_direction(self):
+        ok = copy.deepcopy(self.style)
+        ok["transitions"] = [{"type": "hard_cut", "share": 0.9}, {"type": "whip", "share": 0.1, "direction": "right"}]
+        self.assertEqual(schema.check_style(ok), [])
+        bad = copy.deepcopy(ok)
+        bad["transitions"][1] = {"type": "dissolve", "share": 0.1, "frames": 12, "direction": "right"}
+        self.assertTrue(any("transitions[1].direction" in e for e in schema.check_style(bad)), schema.check_style(bad))
 
     def test_bool_is_not_a_number(self):
         self.assertTrue(schema.validate(True, {"type": "number"}))

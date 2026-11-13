@@ -51,7 +51,7 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 | text | 把 OCR 结果串成轨迹，再分成字幕、标题、其他三类（stats.link_text / classify_text） | `tracks[]`、`subtitle_band`、`transcript`（字幕文本） |
 | scan | 按 320 宽逐帧扫一遍，记录：亮度、清晰度（拉普拉斯方差）、过曝和死黑比例、LK 光流仿射（缩放、平移）。由此得到遮幅、每个镜头的运动，以及转场和特效的候选。闪白和黑场下的剪辑点会移到闪白或黑场的中点（`snap`），因为那里看不出画面在哪一帧切换；每次都从检测器给的原始剪辑点（`cuts[].raw`）算起，重跑 scan 不会叠加 | `letterbox`、`shots[]`（motion.type / zoom / zoom_eff / pan / shake、exposure_ok、best、ramp_candidate、freeze）、`events[]`、`keyframes[]` |
 | look | 从每个镜头的关键帧测 Lab 数值，测之前遮掉遮幅、字幕带和 OCR 文字框。遮幅除了全片统一的，还逐个关键帧找只有这个镜头才有的纯黑边（风景段的 2.35:1 裁切、4:3 片段、黑底照片），上下或左右成对、对称、黑边以内有画面才算，所以暗夜镜头不会被当成黑边；字幕压在黑边上也认得出。整幅画面中间亮度不到 3 的（黑场、黑底字卡）照旧不计 | `summary`（每项的中位数和 MAD）、`hue_hist`、`per_shot[]`（带黑边的镜头多一项 `bars`：上下左右各占的比例）、`shots_with_bars` |
-| strips | 在每个候选事件前后各取 0.5 秒，按原帧率拼成事件条。另外为每次标题出入场、每章抽几个硬切也各拼一条。标题颜色从框内像素测。推拉镜头最多抽 24 个，各取 10%、50%、90% 三帧拼成 `strips/moves_*.jpg`，给 agent 判断是剪辑加的还是机位在动 | `events[].strip`、`titles[]`（含 colour：fill、edge）、`moves[]` |
+| strips | 在每个候选事件前后各取 0.5 秒，按原帧率拼成事件条。另外为每次标题出入场、每章抽几个硬切也各拼一条。标题颜色在 Lab 三通道上测（见下面「文字颜色」）。字幕线上（居中、在字幕带上、字高够）均匀取最多 12 条字幕，测颜色、描边和底板，不留文字。推拉镜头最多抽 24 个，各取 10%、50%、90% 三帧拼成 `strips/moves_*.jpg`，给 agent 判断是剪辑加的还是机位在动 | `events[].strip`、`titles[]`（含 colour：fill、edge）、`subtitle_samples[]`（track、t、colour：fill、edge、plate）、`moves[]` |
 | sheets | 用关键帧拼成总览图，每张 6×8 格。10 分钟以内的片子每个镜头取 3 张，更长的取 1 张 | `sheets[]` |
 
 运动类型的判定阈值：
@@ -71,6 +71,12 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 - `whip`：在剪辑点附近、转场范围外的帧里，清晰度掉到镜头中位数的 0.4 以下，同时平移超过 0.03 个画面宽，或者光流追踪失败 ≥3 帧。
 - `zoom`：剪辑点附近有一帧的缩放超过 4%。
 
+文字颜色（`text_colour`，标题和字幕样本都用它；learnings.md 2026-11-13）：
+- 文字框和外圈一起在 Lab 三通道上分 5 类。框里占比最大、外圈也有的一类是底（画面或字幕底板）；在框里比外圈多 1.5 倍以上的是字的候选。只看亮度会出错：橙红字的亮度和雪地差不多。
+- 候选里取离底最远、又最少贴着底的一类：阴影贴着底板，描边和抗锯齿包着填充色。颜色取这一类里离底最远的 10%，就是笔画中心。
+- 描边（edge）：字旁边一圈比字暗、也比旁边的局部背景暗 12 以上，记 dark；亮的记 light。和局部背景比，所以橙字压过雪地和深色沙滩时，沙滩那段的暗边不算描边。
+- 底板（plate，只测字幕）：字上方一点，同一行上七成以上的列一起变暗，就是底板的上沿。上方画面太暗（L < 15）时看不出暗底板，记 null，aggregate 汇总时不算它的票。
+
 ## measure_audio.py
 
 | 字段 | 来源 |
@@ -85,6 +91,13 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 | `duck` | 比较人声段内外 30–90 Hz 频段的电平差。这是估算，没有低音的混音会被误读成压得很深 |
 
 BPM 的算法：先取拍点间隔的中位数，再对落在中位数 ±15% 以内的间隔取平均。beat tracker 输出的时间点会对齐到 20–23 ms 的帧格子上，只取中位数会被这个格子带偏，比如 120 BPM 会被测成 117.6。
+
+卡点可不可信由 `aggregate.py draft` 判，每条参考单独判，结果和原因在 `evidence.beat` 的 `reliable`、`why`。下面任一条成立就不可信（learnings.md 2026-11-13）：
+- 非人声段里的剪辑点少于 20 个（`stats.MIN_BEAT_CUTS`）：基线 6% 时，13 个剪辑点随机平移一个都命中不到，命中率说明不了什么。
+- `beats.confidence` 是 uncertain（非人声段太短）。
+- beat_this 和 librosa 的速度对不上（`tempo_check.agrees` 为 false；半速和倍速算对得上），并且命中率不到基线的 1.5 倍。对不上但命中率高出基线很多的照样可信：剪辑点跟着 beat_this 的拍点走，说明它的网格是剪辑师用的那个。
+
+过半参考可信，`beat.confidence` 才记 ok，命中率、基线、offset 只用可信的几条算；否则记 uncertain，plan_cut 就不卡点。
 
 给用户的音乐生成拍点网格：
 
@@ -162,6 +175,8 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 
 计数类的叠字（拖车的第几轮）也记 `callout`。黑底卡每张一条 `chapter_card`。特效的 `type` 先用已有的名字：`photo_insert`、`film_photo_insert`、`photo_montage`、`map_insert`、`map_annotation`、`screen_capture`、`time_stamp`、`altitude_stamp`、`location_pin`、`callout`、`series_title_overlay`、`end_card`、`colour_bars`、`split_compare`、`split_screen`、`picture_in_picture`、`stock_footage`、`long_take`、`cg_insert`，都不合适才起新名字。
 
+**写包时才发现的特效先补进 labels.json，再重新 draft，不直接加进 style.json。** 博主级包的 effects 只从各参考的 labels 汇总，直接加在子包里的到不了博主级包（learnings.md 2026-11-13）。改名也一样：同一种手法在 labels 里就改成包里用的名字。`aggregate.py draft` 会拿只用这一条参考的子包或 misc 包比一遍，子包有、labels 没有的逐条警告，改了名的在括号里标出 labels 里的名字。
+
 同一张卡或同一幅标题被 OCR 拆成几条时，只留一条作 location 或 chapter_card，其余记 `other`。手写的标题放进 `effects`，这样 `text.title` 只反映地点标题的字体和位置。
 
 ## labels.json
@@ -189,6 +204,9 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 - 对不上的标签写进 `evidence.rejected_labels`，不会被悄悄用掉。
 - 测到了但判读没标的转场，按测量值计入，同时列进 `evidence.unverified`。
 - 镜头的 `move` 只能是 digital 或 camera。推拉比例 = 测到的推拉占比 × 判过的里面 digital 的比例；一个都没判时按全部算，同时记进 `evidence.unverified`。判断的计数在 `evidence.moves`。
+- 转场的 `direction` 只写给 whip 和 wipe（`schema.DIRECTED`）；测量的 `whip_dir` 只在类型是 whip 时才用。甩镜候选判成叠化的，草稿里叠化不带方向。
+- 多参考合并时不悄悄挑一条：参考之间写法不同的文字（grade.summary、grade.grain、audio.mood、selection.opening）留空，记进 unverified，原文只打在 stderr；look 只留各条一致的项（style-schema.md「专辑」）；一条片子里位置或字高差得多的标题卡逐张打出来，记进 `evidence.text_spread`；每条特效带 `ref`。
+- 子包里有、labels 里没有的特效会警告（见判读约定「写包时才发现的特效」）。
 
 ## 已知限制
 
@@ -196,6 +214,6 @@ links 第一批三条定下的，以后的片子照这个标，统计才比得�
 - Vision OCR 会漏字，比如把「远处的山」读成「远处朐山」，把「的」漏掉。串轨迹时按文字相似度容错，单帧读错不会把一条字幕拆成两条。字幕文本拿来当转写时要人工过一遍。
 - 测出来的甩镜只是候选，要看事件条确认；运动模糊太重时光流会追踪失败。
 - 暗片子里的淡出到黑：前后镜头本来就暗（基线低于 0.12），不会被测成黑场，只会作为渐变剪辑点出现在 `dissolve` 候选里。看事件条时按实际情况标 `dip_to_black`，并填帧数。
-- 标题颜色取笔画中心（文字像素里最亮或最暗的四分之一）。540p 下细字大部分是抗锯齿边缘，取全部像素的中位数会把白字测成灰色。
+- 文字颜色取笔画中心（字那一类像素里离底最远的 10%）。540p 下很细的字几乎全是抗锯齿边缘：links 的字幕笔画只有 1–2 像素，浅灰字会测得偏暗（L 约 62）。写包时字幕颜色对着截图核一下。字幕样本是 2026-11-13 才加的，之前的测量（包括 links 的 12 份保留副本）没有，草稿里的字幕颜色、描边、底板不写。
 - 变速曲线（ramp_candidate）只是候选：摄影机运动本身的起停也会触发。
 - 一致性判断（`stats.consistency`）比较的是各组中位数的离散程度，阈值 25%。只有一个参考时按章节分组，只出现在少数章节的标为单一来源。

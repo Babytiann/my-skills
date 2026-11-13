@@ -383,6 +383,19 @@ def load_json(path: Path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def thin_card(name: str, target: dict, cast: bool) -> str | None:
+    """A warning when the look card lacks keys a grade would fit, else None.
+
+    A creator pack keeps only the keys its films agree on (style-schema.md, 专辑), so its card
+    may have no cast keys; those keys are left alone. Say so instead of skipping them silently.
+    """
+    missing = [k for k in TONE + (CAST if cast else ()) if (target.get(k) or {}).get("median") is None]
+    if not missing:
+        return None
+    return (f"{name} 的 look 没有 {', '.join(missing)}，这些项不调；"
+            "要调请在 brief 里给这一章写 look_ref，用光线和地方最像的子包")
+
+
 def card(look_ref: str | None, plan_style: str, override: dict | None) -> tuple[str, dict, str | None]:
     """The look card a chapter grades toward: (its name, grade.look, a warning or None)."""
     if override is not None:
@@ -404,8 +417,10 @@ def build(plan: dict, brief: dict, proxies: Path | None, stills: Path | None, ov
         bc = briefed.get(name, {})
         ref, target, warn = card(bc.get("look_ref"), plan["style"], override)
         frames, used, warns = gather(plan, owner, name, proxies, stills)
-        if warn:
-            warns.insert(0, warn)
+        thin = thin_card(ref, target, bc.get("cast", True) is not False)
+        for w in (thin, warn):
+            if w:
+                warns.insert(0, w)
         g = grade_chapter(name, frames, target, bc.get("night"), bc.get("cast", True) is not False)
         g["warnings"] = warns + g["warnings"]
         chapters.append({"name": name, "look_ref": ref, "stills": used, **g, "resolve": resolve_args(g["cdl"], node)})

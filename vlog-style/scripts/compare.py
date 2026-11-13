@@ -557,6 +557,11 @@ def measure_stills(files: list[Path]) -> list[dict]:
     return rows
 
 
+def missing_look_keys(target: dict) -> list[str]:
+    """Card keys compare_look can check that this card leaves out (a creator pack drops the ones its films disagree on)."""
+    return [k for k in LOOK_FLOOR if not target.get(k)]
+
+
 def compare_look(rows: list[dict], target: dict) -> dict:
     res = {}
     for k, floor in LOOK_FLOOR.items():
@@ -656,10 +661,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     res = {"stills": len(rows), "look": compare_look(rows, style["grade"]["look"]), "per_still": rows}
     res["ok"] = all(v["ok"] for v in res["look"].values())
+    res["skipped"] = missing_look_keys(style["grade"]["look"])
     for k, v in res["look"].items():
         mark = "✓" if v["ok"] else "✗"
         print(f"  {mark} {k:8s} 目标 {v['target']:8.2f}  实测 {v['got']:8.2f}  差 {v['delta']:+7.2f}  "
               f"容差 {v['tol']:.2f}  {v.get('hint', '')}", file=sys.stderr)
+    if res["skipped"]:
+        print(f"  - 这个包的 look 没有 {', '.join(res['skipped'])}，这几项没比；"
+              "博主级包只留各条一致的项，要核对冷暖请用子包（--style <博主>/<子包>）", file=sys.stderr)
     text = json.dumps(res, ensure_ascii=False, indent=1)
     if args.out:
         args.out.write_text(text, encoding="utf-8")
