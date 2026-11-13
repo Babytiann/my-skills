@@ -1,0 +1,645 @@
+{
+ "schema_version": 1,
+ "name": "lawrence",
+ "summary": "4–5 分钟的电影感旅拍短片：旁白段配居中的淡黄字幕，和配左对齐双语歌词字幕的音乐段交替，约 1.7 秒一刀、96% 以上硬切、不刻意卡点、后期几乎不加推拉，低饱和、近中性到偏冷，用一整套电影式文字（胶片框回忆快闪、大字宋体片名卡和署名、年份角标、片尾重现片名和演职员）把片子做成一部小电影",
+ "sources": [
+  {
+   "id": "BV1eoQwYPEeu",
+   "url": "https://www.bilibili.com/video/BV1eoQwYPEeu",
+   "title": "我的人生目标，就是和你维持现状！｜北海道4k旅拍",
+   "measured": "2026-11-11",
+   "author": "小鹿Lawrence"
+  },
+  {
+   "id": "BV1Rj421S7c4",
+   "url": "https://www.bilibili.com/video/BV1Rj421S7c4",
+   "title": "遇到ta的概率是六十亿分之一！｜ 日本4k旅拍",
+   "measured": "2026-11-11",
+   "author": "小鹿Lawrence"
+  }
+ ],
+ "basis": "multi_reference",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 274.2,
+   "mad": 9.0,
+   "p10": 267.1,
+   "p90": 281.4,
+   "n": 2
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0189,
+    "shot_len_s": {
+     "median": 0.734,
+     "mad": 0.434,
+     "p10": 0.354,
+     "p90": 2.222,
+     "n": 9
+    },
+    "notes": "雪中人物的中景开场（风雪扑面或雪林里奔跑），没有旁白；开头 10 s 内接黑底圆角胶片框里的回忆快闪（hokkaido 在冷开场里，japan 在片名卡之后）"
+   },
+   {
+    "role": "intro",
+    "share": 0.0462,
+    "shot_len_s": {
+     "median": 1.101,
+     "mad": 0.601,
+     "p10": 0.307,
+     "p90": 4.538,
+     "n": 15
+    },
+    "notes": "片名段：一张大字宋体片名卡硬切叠在画面上，配一组小字署名，只用一次。位置两条不同：japan 紧跟冷开场（2.2 s），hokkaido 先用一章旁白讲前情、从献词黑卡开始，约在 1/4 处（69.9 s）。brief 只给一个段写 title"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8909,
+    "shot_len_s": {
+     "median": 1.668,
+     "mad": 0.4,
+     "p10": 0.968,
+     "p90": 2.877,
+     "n": 269
+    },
+    "notes": "按地点或主题分章，一章一处地方或一件事；旁白段（居中淡黄字幕）和无旁白的音乐段（左对齐双语歌词字幕）交替，歌词段可以跨过章节边界；章与章之间多是硬切。hokkaido 的第一章在片名段之前"
+   },
+   {
+    "role": "ending",
+    "share": 0.044,
+    "shot_len_s": {
+     "median": 4.938,
+     "mad": 1.434,
+     "p10": 3.424,
+     "p90": 6.373,
+     "n": 5
+    },
+    "notes": "一两个约 5 s 的长镜头收尾，最后一镜上重现片名大字，配一组小字演职员。hokkaido 前面有两镜右缘年份角标；japan 之后接一段借用的剧集片段（单一来源，不照搬）"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.013,
+  "shot_types": {
+   "medium": 0.38,
+   "wide": 0.355,
+   "detail": 0.127,
+   "aerial": 0.094,
+   "close": 0.043
+  },
+  "opening": "雪中人物中景开场（风雪扑面或雪林里奔跑），没有旁白；开头 10 s 内接黑底圆角胶片框里的回忆快闪",
+  "reject": [
+   "自拍/手持对着自己",
+   "对镜头口播",
+   "地图与屏幕录像插入",
+   "地图动画"
+  ]
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 1.668,
+   "mad": 0.467,
+   "p10": 0.858,
+   "p90": 3.013,
+   "n": 298
+  },
+  "cuts_per_min": 32.38,
+  "min_shot_s": 0.63
+ },
+ "beat": {
+  "hit_rate": 0.0667,
+  "baseline": 0.0535,
+  "offset_frames": 0,
+  "use_downbeats": false,
+  "confidence": "uncertain"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.9628
+  },
+  {
+   "type": "dissolve",
+   "share": 0.0304,
+   "frames": 12,
+   "where": "any"
+  },
+  {
+   "type": "dip_to_black",
+   "share": 0.0068,
+   "frames": 30,
+   "where": "any"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0066,
+   "scale_end": {
+    "median": 1.057,
+    "mad": 0.0,
+    "p10": 1.057,
+    "p90": 1.057,
+    "n": 1
+   }
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.1379,
+   "amplitude_px": 3.7
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "time_stamp",
+   "shot": 0,
+   "note": "track 0, 0.0-1.5 s, centred year + place line over the cold-open shot 0",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 8,
+   "note": "tracks 8 (6.0-12.5 s) + 9 (9.5-12.5 s), centred two-line date with a 'one month earlier' line; spans shots 7-10, mainly over the dark-grey card shot 8, carried into shot 10",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 148,
+   "note": "track 426, 269.7-275.0 s, year at the right edge (cx 0.85, cy 0.5), shot 148",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 149,
+   "note": "track 432, 275.0-278.2 s, an earlier year (the 2020 film's year) at the same right-edge spot, shot 149; the closing pair of stamps links this film back to the 2020 one",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "dedication_card",
+   "shot": 30,
+   "note": "track 106, 69.97-75.99 s, one small English dedication line centred on black, shot 30; sits just before the main title and opens the intro chapter",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "film_credits",
+   "shot": 33,
+   "note": "tracks 117 (79.5-85.0 s) + 122 (79.5-84.5 s), small centred credit lines under main title track 127 (80.5-85.0 s), shot 33 (aerial train on the coast)",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "film_credits",
+   "shot": 150,
+   "note": "tracks 438-448, 278.2-283.2 s, small centred credits block (original work/director, cast, music, camera, edit, grade, quoted lines) under end card 437/449/452, over live shot 150",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "end_card",
+   "shot": 150,
+   "note": "tracks 437/449/452 (one card split by OCR), red serif 'Love Letter' repeated from main title 127, top third, over live shot 150 (two people walking a snowy road)",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "film_gate_montage",
+   "shot": 3,
+   "note": "shots 3-7 (3.6-8.2 s), 4:3 rounded-corner film-gate frame centred on black; fast montage of memory clips, about 0.3-0.7 s each, with shot 7 at 2.6 s; event 3 fades the last one into the dark-grey date card shot 8; hokkaido-letter's labels call this picture_in_picture, japan-winter's call it film_gate_montage: same device (rounded old-film gate on black with a fast memory montage), one name here",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "film_photo_insert",
+   "shot": 93,
+   "note": "shots 93-97 (189.6-193.8 s), five still photos in portrait frames on dark grey, 0.6-1.1 s each, cut straight after the medium-format film-camera shots 88-91",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 31,
+   "note": "tracks 109-113, 123-124, 129-131, 140-141, 154, 159, 164-172; 76.5-103.7 s, shots 31-43. Left-aligned bottom-left: Chinese line (cy 0.87) over a smaller Japanese line (cy 0.91). Voice-over subtitles are centred (median cx 0.5); the song is credited in track 442",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 54,
+   "note": "tracks 181-184; 124.0-129.7 s, shots 54-55; same left-aligned bilingual layout; matches the no-speech span 124.2-130.5",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 66,
+   "note": "tracks 242-256, 260, 264; 148.0-159.0 s, shots 66-72; same layout; 242/248 were classed as subtitle by OCR",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 123,
+   "note": "tracks 399, 400, 402, 404, 405; 231.2-248.7 s, shots 123-132; same layout; 399/405 were classed as subtitle, so speech_share counts this stretch",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 138,
+   "note": "tracks 422-424; 257.2-260.7 s, shots 138-139; same layout, inside the no-speech span 257.7-270.5",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "grain",
+   "global": true,
+   "strength": "light",
+   "note": "judged by eye on sheet thumbnails: faint texture on the dark-grey card (shot 8) and dusk/night shots; platform recompression makes this approximate",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "light_leak",
+   "shot": 3,
+   "sure": false,
+   "note": "first frames of shot 3 inside the 4:3 gate are a warm orange blur, read as a film-burn/leak opening the memory montage; could also be an out-of-focus warm light",
+   "ref": "BV1eoQwYPEeu"
+  },
+  {
+   "type": "film_gate_montage",
+   "shot": 3,
+   "note": "shots 3-9 (6.1-9.7 s): rapid montage framed in a rounded old-film gate on black, after the title card; fragments shorter than the measured shots",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 3,
+   "note": "an old-film shot of a European map inside the film-gate montage; source unknown, not shot in Japan",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "film_credits",
+   "shot": 1,
+   "note": "opening credits block under the title card (title track 0): tracks 2-11, 2.2-5.0 s, centred x, y 0.55-0.71, small mixed Latin/CJK role lines (studio, casting, editor, cinematographer, assistant, colour grading, guide, manager, BGM, dialogue source); static, no plate",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "film_credits",
+   "shot": 28,
+   "note": "second credits group beside the song-name section title (track 111) on shots 28-29: small director credit at left (track 110, x 0.20 y 0.33, 47.3-51.2 s) and the song title in Japanese at right (track 112, x 0.83 y 0.69, 47.3-49.0 s); the closing reprise track 757 on shot 145 repeats this layout",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "place_caption",
+   "shot": 13,
+   "note": "new name: no existing type fits a text-only place line. Track 35, 18.7-21.0 s, small letter-spaced place name centred at y 0.20 under the year time stamp (title tracks 31/43/44/49/51); appears once, only on shot 13",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "bilingual_subtitle",
+   "global": true,
+   "note": "Japanese second lines at y~0.94: OCR split them into fragments sorted as other. Most of them (centre x median ~0.2) are the Japanese line of the left-aligned lyric subtitles (see lyric_subtitle); the centred voice-over subtitles also carry a smaller Japanese second line under the Chinese one (seen on a crop), but OCR caught only a few centred fragments of it, so its size and extent are not measured",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 146,
+   "note": "closing letterboxed drama clip (cabin crew talking) with its own subtitles, different aspect and look; the credits (track 11) name a drama as the dialogue source, so this clip and probably the voice-over lines are borrowed from it; source not verified",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "grain",
+   "global": true,
+   "strength": "none",
+   "note": "1:1 crops of shots 33 and 39 from the 1.87 Mbps source show no visible grain; any grain would not survive this compression",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 12,
+   "note": "added by the pack writer from OCR tracks 31/43/44/49/51 (labelled time_stamp in titles): 16.0-29.5 s, birthday-years montage, one year at a time centred at y 0.137, h 6.2-7.4%, 黑体, plate per labels, changes about once a second; small letter-spaced place line under it (track 35, see place_caption)",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "end_card",
+   "shot": 145,
+   "note": "added by the pack writer: track 757 (+784/788/796, one card split by OCR), 256.5-261.9 s, the section-title song name repeated in white thin serif at the top of the final stair shot, h 24.3%, centre y 0.243 (OCR caught only the right half, x read from the frame as ~0.5), fades in ~10 f, out on the hard cut; director credit above-left (track 756, 0.198/0.061, h 3.4%) and the Japanese song title right (tracks 758/776/797, 0.83/0.42, h 3.9%)",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "film_credits",
+   "shot": 145,
+   "note": "added by the pack writer: tracks 759-800, 256.5-262.0 s, a left column of small credit lines (centres x 0.12-0.29, y 0.49-0.76, h 0.8-1.8%) beside the end card",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 32,
+   "note": "added by the pack writer from OCR: left-aligned bilingual lines (Chinese above at y 0.899, h 3.65%; Japanese below at y 0.943, h 2.6%; left edge x 0.055), white with a soft shadow, no plate; 58.0-62.2 s; the classifier sorted them as other",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 46,
+   "note": "added by the pack writer from OCR: left-aligned bilingual lines (Chinese above at y 0.899, h 3.65%; Japanese below at y 0.943, h 2.6%; left edge x 0.055), white with a soft shadow, no plate; 83.8-95.0 s; the classifier sorted them as other",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 59,
+   "note": "added by the pack writer from OCR: left-aligned bilingual lines (Chinese above at y 0.899, h 3.65%; Japanese below at y 0.943, h 2.6%; left edge x 0.055), white with a soft shadow, no plate; 109.5-115.5 s; the classifier sorted them as other",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 63,
+   "note": "added by the pack writer from OCR: left-aligned bilingual lines (Chinese above at y 0.899, h 3.65%; Japanese below at y 0.943, h 2.6%; left edge x 0.055), white with a soft shadow, no plate; 116.8-135.5 s; the classifier sorted them as other",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 96,
+   "note": "added by the pack writer from OCR: left-aligned bilingual lines (Chinese above at y 0.899, h 3.65%; Japanese below at y 0.943, h 2.6%; left edge x 0.055), white with a soft shadow, no plate; 177.7-206.5 s; the classifier sorted them as other",
+   "ref": "BV1Rj421S7c4"
+  },
+  {
+   "type": "lyric_subtitle",
+   "shot": 129,
+   "note": "added by the pack writer from OCR: left-aligned bilingual lines (Chinese above at y 0.899, h 3.65%; Japanese below at y 0.943, h 2.6%; left edge x 0.055), white with a soft shadow, no plate; 226.5-243.2 s; the classifier sorted them as other",
+   "ref": "BV1Rj421S7c4"
+  }
+ ],
+ "grade": {
+  "summary": "低饱和，中间调偏暗，近中性到偏冷（雪景偏蓝），黑位压低，雪的高光亮；回忆、室内和黄昏留少量暖色。冷暖和饱和度跟着片子走，调色核对用子包",
+  "look": {
+   "L01": {
+    "median": 4.638,
+    "mad": 2.228
+   },
+   "L50": {
+    "median": 39.299,
+    "mad": 14.93
+   },
+   "L99": {
+    "median": 84.705,
+    "mad": 5.351
+   },
+   "Lstd": {
+    "median": 20.579,
+    "mad": 3.958
+   },
+   "shadow": {
+    "median": 0.222,
+    "mad": 0.146
+   },
+   "vignette": {
+    "median": 0.996,
+    "mad": 0.306
+   },
+   "sh_a": {
+    "median": 0.102,
+    "mad": 0.828
+   },
+   "mid_a": {
+    "median": -0.458,
+    "mad": 1.137
+   },
+   "hi_a": {
+    "median": -0.863,
+    "mad": 0.89
+   }
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "title": {
+   "font_class": "宋体",
+   "fallback_fonts": [
+    "Songti SC",
+    "STSong"
+   ],
+   "height_frac": 0.2301,
+   "position": [
+    0.5065,
+    0.4855
+   ],
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 4.24,
+   "offset_s": 0.07,
+   "template": "Text+",
+   "per": "section"
+  },
+  "subtitle": {
+   "height_frac": 0.0373,
+   "position": [
+    0.5,
+    0.892
+   ],
+   "font_class": "宋体",
+   "fallback_fonts": [
+    "Songti SC",
+    "STSong"
+   ],
+   "stroke": false,
+   "plate": false,
+   "color": [
+    0.996,
+    0.982,
+    0.805
+   ]
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 77.7,
+   "mad": 2.4,
+   "p10": 75.8,
+   "p90": 79.5,
+   "n": 2
+  },
+  "mood": "约 75–80 BPM 的慢板抒情歌铺底；开头 40–54 s 没有稳定节拍，由旁白主导，之后一首歌铺满；旁白约占一半，音乐几乎不为旁白压低，歌词段只放音乐；参考整体做得很响",
+  "lufs": -10.2,
+  "duck_db": 0.4,
+  "sfx": [],
+  "music_changes": "约每章 0.9 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "黑场过渡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Dip To Color Dissolve，从后往前加"
+  },
+  {
+   "element": "动态推拉",
+   "route": "fusion",
+   "status": "verified",
+   "how": "最小 .comp 模板（MediaIn→Transform→MediaOut，Size 关键帧，末帧=时长−1）+ timeline_item_fusion import_comp"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "references",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1eoQwYPEeu": 1.668,
+     "BV1Rj421S7c4": 1.668
+    },
+    "spread": 0.0
+   },
+   "transitions": {
+    "BV1eoQwYPEeu": {
+     "dissolve": 5,
+     "hard_cut": 144,
+     "dip_to_black": 1
+    },
+    "BV1Rj421S7c4": {
+     "hard_cut": 141,
+     "dip_to_black": 1,
+     "dissolve": 4
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1eoQwYPEeu": 0.1722,
+     "BV1Rj421S7c4": 0.1497
+    },
+    "spread": 0.14
+   },
+   "look.L50": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1eoQwYPEeu": 40.2665,
+     "BV1Rj421S7c4": 38.33
+    },
+    "spread": 0.0493
+   },
+   "look.Lstd": {
+    "verdict": "consistent",
+    "medians": {
+     "BV1eoQwYPEeu": 19.49,
+     "BV1Rj421S7c4": 21.668
+    },
+    "spread": 0.1058
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "BV1eoQwYPEeu": -5.0545,
+     "BV1Rj421S7c4": -1.047
+    },
+    "spread": 1.3136
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "BV1eoQwYPEeu": 5.937,
+     "BV1Rj421S7c4": 4.3635
+    },
+    "spread": 0.3055
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1eoQwYPEeu",
+    "n_cuts": 45,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.74,
+    "bpm": 81.08,
+    "hit_rate": 0.0667,
+    "baseline": 0.0719,
+    "lift": 0.927,
+    "downbeat_hit_rate": 0.0222,
+    "verdict": "not_on_beat"
+   },
+   {
+    "ref": "BV1Rj421S7c4",
+    "n_cuts": 15,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.8,
+    "bpm": 75.0,
+    "hit_rate": 0.0667,
+    "baseline": 0.035,
+    "lift": 1.905,
+    "downbeat_hit_rate": 0.0,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 48,
+    "judged": 25,
+    "digital": 1
+   },
+   "pull_out": {
+    "measured": 35,
+    "judged": 23,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 25,
+  "onsets_per_min": 170.35000000000002,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ }
+}

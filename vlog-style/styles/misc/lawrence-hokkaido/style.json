@@ -1,0 +1,792 @@
+{
+ "schema_version": 1,
+ "name": "misc/lawrence-hokkaido",
+ "summary": "情侣出镜的长篇冬季北海道旅行 vlog：自拍对话和旁白把行程讲成一个「攻略全白做」的翻车故事，2–3 秒一刀的硬切为主，米白黑体字幕带半透明暗底板，四张细宋体 Part 卡分大段，大量手写标注、信息卡和画中画小窗穿插，画面低饱和偏冷。",
+ "sources": [
+  {
+   "id": "BV1S9ZGYqEEr",
+   "url": "https://www.bilibili.com/video/BV1S9ZGYqEEr",
+   "title": "攻略全白做！北海道旅行翻车实录",
+   "measured": "2026-11-11",
+   "author": "小鹿Lawrence"
+  }
+ ],
+ "basis": "single_reference_chapters",
+ "deliverable": {
+  "fps": 29.97,
+  "width": 3840,
+  "height": 2160,
+  "duration_s": {
+   "median": 1334.7,
+   "mad": 0.0,
+   "p10": 1334.7,
+   "p90": 1334.7,
+   "n": 1
+  },
+  "letterbox": null
+ },
+ "structure": {
+  "sections": [
+   {
+    "role": "hook",
+    "share": 0.0426,
+    "shot_len_s": {
+     "median": 1.986,
+     "mad": 0.734,
+     "p10": 0.867,
+     "p90": 3.486,
+     "n": 26
+    },
+    "notes": "冷开场约 57 s（镜头中位 2.0 s）：黎明河边长焦摄影人群的远景、主持人对镜头说话；约 12 s 起把破冰船片段框在青色落雪卡上，再接订票价格截图、空钱包素材、带引线的流冰百分比动画，交代这趟旅行要看什么、花了多少；直接接 intro，不放片名卡。"
+   },
+   {
+    "role": "intro",
+    "share": 0.063,
+    "shot_len_s": {
+     "median": 1.401,
+     "mad": 0.5,
+     "p10": 0.818,
+     "p90": 3.671,
+     "n": 46
+    },
+    "notes": "约 84 s，全片最快（镜头中位 1.4 s）：订票经过、行程和同行人介绍、札幌取车；自拍和中景对话为主，穿插路线贴纸动画、手机画中画、放大镜圈注、框在卡片上的片段，接近结尾一张黑底玩笑卡，然后进 Part.1。"
+   },
+   {
+    "role": "chapter",
+    "share": 0.8643,
+    "shot_len_s": {
+     "median": 2.669,
+     "mad": 0.935,
+     "p10": 1.255,
+     "p90": 5.652,
+     "n": 357
+    },
+    "notes": "十个地点章（41–215 s，按旅行先后）：其中四章是 Part 级大段，章首放细宋体 Part 卡（小号「Part.N」+ 大号章名，无底板，多在右下）；章内硬切为主（各章中位 2.2–3.5 s），自拍对话、中景、远景交替，同一地点的风景偶尔用约 1 s 叠化连接；翻车和知识点用手写标注、信息卡、照片或画中画小窗解释，清晨段用翻页时钟标时间。"
+   },
+   {
+    "role": "ending",
+    "share": 0.0301,
+    "shot_len_s": {
+     "median": 2.703,
+     "mad": 1.201,
+     "p10": 0.741,
+     "p90": 4.304,
+     "n": 15
+    },
+    "notes": "约 40 s：日落海面上叠大号浅色外文片名，接画中画窗口放电影片段讲栏目由来，再回顾旅程，最后两个黄昏风景镜头左侧叠小号片尾字幕。"
+   }
+  ]
+ },
+ "selection": {
+  "max_shake": 1.455,
+  "shot_types": {
+   "medium": 0.327,
+   "wide": 0.319,
+   "selfie": 0.225,
+   "detail": 0.078,
+   "aerial": 0.03,
+   "close": 0.02
+  },
+  "opening": "黎明河边一群长焦摄影者的远景，接主持人对镜头说话和长焦镜头的中景，约 10 s 进流冰破冰船预告",
+  "reject": []
+ },
+ "rhythm": {
+  "shot_len_s": {
+   "median": 2.469,
+   "mad": 0.967,
+   "p10": 1.011,
+   "p90": 5.395,
+   "n": 444
+  },
+  "cuts_per_min": 19.91,
+  "min_shot_s": 0.8
+ },
+ "beat": {
+  "hit_rate": 0.0,
+  "baseline": 0.055,
+  "offset_frames": 6,
+  "use_downbeats": false,
+  "confidence": "ok"
+ },
+ "transitions": [
+  {
+   "type": "hard_cut",
+   "share": 0.991
+  },
+  {
+   "type": "dissolve",
+   "share": 0.009,
+   "frames": 29,
+   "where": "within_section"
+  }
+ ],
+ "motion": {
+  "push_in": {
+   "share": 0.0
+  },
+  "pull_out": {
+   "share": 0.0
+  },
+  "shake": {
+   "share": 0.1273,
+   "amplitude_px": 6.8
+  },
+  "ramp": {
+   "share": 0.0
+  }
+ },
+ "effects": [
+  {
+   "type": "picture_in_picture",
+   "shot": 7,
+   "note": "clip framed on a flat card (labelled framed_clip_inset): shots 7-9 (12.6-19.0 s): clips framed on a teal card with falling snow, icebreaker bow / deck / ice floes; hook explains the icebreaker trip and its cost"
+  },
+  {
+   "type": "screen_capture",
+   "shot": 10,
+   "note": "shots 10-11 (19.0-21.0 s): booking-app price screenshots tiled on a patterned card, prices highlighted in red"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 12,
+   "note": "21.0-21.7 s: stock photo of hands opening an empty wallet over colour bars (event i=1 note)"
+  },
+  {
+   "type": "location_pin",
+   "shot": 14,
+   "note": "25.3-30.6 s: pin icon with place text at lower left over the lighthouse aerial"
+  },
+  {
+   "type": "callout",
+   "shot": 15,
+   "note": "31.2-36.2 s: animated countdown percentage (3.5% -> 2.8% -> 0.8%, title tracks 159/163/167) with a leader line to a floe on the sea-ice aerial"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 34,
+   "note": "clip framed on a flat card (labelled framed_clip_inset): 70.4-74.9 s: her helmet selfie clip framed on a plain grey card"
+  },
+  {
+   "type": "map_annotation",
+   "shot": 37,
+   "note": "shots 37-41 (77.0-84.5 s): animated itinerary of small cartoon place stickers joined by lines, upper left over the footage while the route is narrated"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 47,
+   "note": "91.8-95.0 s: phone-screen inset at left while he talks in the airport"
+  },
+  {
+   "type": "callout",
+   "shot": 48,
+   "note": "95.0-99.2 s: circular magnifier ring over the rental-counter clerk with a small handwritten joke caption beside it"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 52,
+   "note": "clip framed on a flat card (labelled framed_clip_inset): shots 52-53 (106.1-107.8 s): rental-car clips framed on a grey-blue card"
+  },
+  {
+   "type": "black_card",
+   "shot": 66,
+   "note": "130.0-130.9 s: black full-frame joke card, large white text with a small second line (track 389)"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 72,
+   "note": "141.0-148.9 s: vertical series-title lettering at left plus thin white serif 'Part.1 + chapter name' at lower left over a station platform shot (track 423 at 145.0 s) [pack writer: OCR puts the small Part.1 line at 0.46/0.90 and the chapter name at 0.74/0.88, i.e. lower right like Part.2; see text.chapter_card]"
+  },
+  {
+   "type": "info_card",
+   "shot": 73,
+   "note": "shots 73-74 (148.9-155.6 s): small card at left showing an earlier video (thumbnail + title) over the car selfie"
+  },
+  {
+   "type": "colour_bars",
+   "shot": 77,
+   "note": "165.1-165.7 s: full-frame colour-bars card used as a beat between car talk"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 83,
+   "note": "clip framed on a flat card (labelled framed_clip_inset): shots 83-85 (179.4-181.7 s): hotel sign and mirror selfie framed on a teal card"
+  },
+  {
+   "type": "framed_clip_montage",
+   "shot": 90,
+   "note": "shots 90-93 (196.4-200.2 s): quick clips of earlier trips framed on a grey card, each with a big white outline word (long drive / hike / climb / sunburn) stamped over it"
+  },
+  {
+   "type": "brush_title",
+   "shot": 101,
+   "note": "shots 101-103 (238.6-247.2 s): large vertical white brush-calligraphy event name at right over the fireworks selfies and the watching-from-behind shot; not in the title tracks"
+  },
+  {
+   "type": "glitch",
+   "shot": 108,
+   "note": "about 265.3 s (event i=161, 7 frames): RGB stripes and block noise inside the bar talking shot, used as a beat/transition"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 119,
+   "note": "302.6-306.9 s: a Yotei photo shown small in a dark frame with a tiny avatar at upper left, after the medium-format viewfinder shot"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 123,
+   "note": "314.8-319.9 s: game cover art comes in with a shatter/whip effect over the blurred lake and cross-dissolves out (25 frames, event i=182) into the sharp lake shot"
+  },
+  {
+   "type": "info_card",
+   "shot": 125,
+   "note": "shots 125-126 (328.2-333.0 s): beige card with a small icon and title (track 1462) that scales out of a pill, then a few lines of body text; lower left"
+  },
+  {
+   "type": "anime_clip_insert",
+   "shot": 130,
+   "note": "shots 130-131 (340.9-345.3 s) and 138-139 (354.4-356.2 s): 4:3 anime clips with black side bars and their own subtitles; 131 match-cuts to the real bear-park sign (event i=198)"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 149,
+   "note": "385.7-392.8 s (overlay 386.5-393.0): phone screenshot of someone else's bear photo, upper left over the crowd, with a handwritten red label (tracks 1969/1973/1978)"
+  },
+  {
+   "type": "scrapbook_frame",
+   "shot": 153,
+   "note": "404.5-413.2 s: handwritten segment heading on an orange brush plate (track 2040, fragments 2042-2047) over a tilted torn-edge clip on a teal card"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 159,
+   "note": "434.3-435.7 s: 'a few hours earlier' marker (tracks 2138/2141) over a fast montage of film-bordered stills, a new still every 1-2 frames, at the tail of shot 159; hard cut to the snowmobile selfie (event i=324)"
+  },
+  {
+   "type": "film_gate_montage",
+   "shot": 159,
+   "note": "434.3-435.7 s: flashback montage of film-frame stills under the time-jump marker; the measured shot 159 swallows it (no cut found between the laughing shot and the montage)"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 166,
+   "note": "clip framed on a flat card (labelled framed_clip_inset): 449.0-452.1 s: snowmobile clip framed on a light card with a curved wireframe grid"
+  },
+  {
+   "type": "callout",
+   "shot": 198,
+   "note": "572.2-575.7 s (shots 198-200): handwritten white callout on a brown brush swatch with a small bear sticker (tracks 2630/2631/2633), over the telephoto push onto a can across the room"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 204,
+   "note": "582.0-586.2 s: flip-clock style time stamp 07:00 at lower left (track 2643) over the dark lodge window, opening the next morning"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 208,
+   "note": "604.0-607.2 s: flip clock 07:39 at lower left (tracks 2656/2664) over the camera's rear screen"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 212,
+   "note": "617.0-620.7 s (shots 212-213): flip clock 07:54 at lower left (tracks 2685-2690) over the empty feeder stump"
+  },
+  {
+   "type": "time_stamp",
+   "shot": 217,
+   "note": "634.5-637.7 s: flip clock flips 07:54 -> 08:40 (tracks 2700/2701/2704); it comes in at the tail of shot 216 and stays over shot 217"
+  },
+  {
+   "type": "photo_montage",
+   "shot": 214,
+   "note": "620.7-625.1 s: three photos of long-tailed tits pop in side by side over the feeder stump"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 231,
+   "note": "685.6-691.0 s: screenshot of an online post (sea-ice photo + text) at right while she reads her phone"
+  },
+  {
+   "type": "corner_badge",
+   "shot": 233,
+   "note": "shots 233-236 (695.2-708.3 s): small rounded icon at upper left over sea-ice / coast footage and him reading his phone; purpose unclear (possibly marks borrowed online footage) - sure: false"
+  },
+  {
+   "type": "route_graphic",
+   "shot": 245,
+   "note": "small route graphic (icons on blue pills joined by a dotted line) pops in ~739.2 s over landscape in shot 245 and is still at the right edge in shot 246 (train interior) to ~742 s; title track 3035"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 248,
+   "note": "aerial of a steam train in snowy forest (248, 744.5 s) and trackside steam train (249) look like library footage; end credits name ARTLIST as footage source, so source unclear"
+  },
+  {
+   "type": "callout",
+   "shot": 276,
+   "note": "handwritten callout on a teal brush-stroke swatch, ~821.2 s, during the surprised selfie on the crane bridge; title track 3203"
+  },
+  {
+   "type": "film_strip_slide",
+   "shot": 277,
+   "note": "selfie shrinks into a frame with white film-sprocket edges on black and slides to the next clip framed the same way (277 at 824.5 s, 278 at 825.6 s), then cuts back to full frame at 279; a graphic transition between two clips, measured as two shots"
+  },
+  {
+   "type": "callout",
+   "shot": 286,
+   "note": "handwritten callout on a dark brush-stroke swatch over the photographers on the bridge, ~843.7-845.2 s across shots 286-287 (maybe into 288); title track 3219"
+  },
+  {
+   "type": "cg_overlay",
+   "shot": 294,
+   "note": "CG banknotes rain over the photographers on the bridge, 859.5-870.5 s across 294-295, ending on 296 where the clip shrinks into an inset on black with notes still flying (to ~872 s); illustrates the cost of the gear being talked about"
+  },
+  {
+   "type": "sticker_card",
+   "shot": 302,
+   "note": "0.9 s reaction card at 894.5 s: flat blue background, two cut-out heads of one host side by side and a row of three dots (speechless beat), hard cuts in and out"
+  },
+  {
+   "type": "corner_badge",
+   "shot": 307,
+   "note": "tiny badge at the top-left corner in 307-308 (~904.5-910 s) over the misty sunrise river; unreadable at sheet scale"
+  },
+  {
+   "type": "info_card",
+   "shot": 315,
+   "note": "illustrated crane explainer card at the top left (painted crane, brush-calligraphy name, one body line) fades in ~922.3 s on 315 and stays over 316, 317, 318 to ~934.6 s; title track 3489"
+  },
+  {
+   "type": "route_graphic",
+   "shot": 331,
+   "note": "second appearance of the route graphic (icons on blue pills) at the left of a drone shot of the car on a snowy road, 972.7-976.1 s, as the drive to the Abashiri pier is described; title track unknown"
+  },
+  {
+   "type": "series_title_overlay",
+   "shot": 345,
+   "note": "column name 清单人生 as a large vertical white title at the left over the pier (345, 1024.7 s), then repeated beside the host's selfie with a red cross struck through it (346, 1029.3-1032.4 s) as the plan is declared failed"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 350,
+   "note": "rounded-corner inset of a drift-ice photo with a small caption pill above it, over the boat wake (350, 1042.8 s) and the couple on deck (351, to ~1049.9 s): expectation vs. the ice-free sea"
+  },
+  {
+   "type": "kinetic_text",
+   "shot": 356,
+   "note": "large bold serif narration words typed on, a different layout per shot over deck footage, 356-359 (1058.2-1068.4 s; words ~1058.7-1066.5 s); title tracks 4004/4009/4015/4018"
+  },
+  {
+   "type": "stock_footage",
+   "shot": 381,
+   "note": "drift-ice footage in the climate passage (381 aerial of ice-filled harbour 1150.6 s, the backdrop under 382, 383 ice field 1157.0 s) can't be the couple's own since they saw no drift ice; end credits name ARTLIST as footage source"
+  },
+  {
+   "type": "map_insert",
+   "shot": 382,
+   "note": "drift-ice distribution map card (two dated maps joined by an arrow, blue sea / white ice / red shrinking area) scaled up over drift-ice footage, 1152.3-1157.0 s; title track 4114"
+  },
+  {
+   "type": "photo_insert",
+   "shot": 384,
+   "note": "dated satellite-image card (white border, date at top right: 2003/02/06 then 2025/02/06) over drift-ice footage, 1161.7-1168.1 s, cross-dissolving between the two dates, then a 0.67 s full-frame satellite image (386); narration credits NASA imagery"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 389,
+   "note": "window inserts on a flat teal background: a Japanese TV news segment (389, 1171.8 s) then museum drift-ice exhibit footage (390-391, to 1176.8 s), for the line that the ice may survive only in archives and museums"
+  },
+  {
+   "type": "film_title_overlay",
+   "shot": 429,
+   "note": "title of the Swedish film the column is named after written large in light caps over the sunset sea (429, 1294.6 s), leading into the video inset window"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 430,
+   "note": "video inset window over the sunset-sea backdrop showing the film's title and scenes (430 at 1296.9 s, 431 at 1297.7 s, continuing on sheet 10), cross-dissolving inside the window"
+  },
+  {
+   "type": "picture_in_picture",
+   "shot": 432,
+   "note": "the film-clip window over the sunset sea continues through 432-437 (1299.5-1307.2 s; ~12.6 s from 430), with a small source label at the window's top right; cuts back to the couple's own footage at 438"
+  },
+  {
+   "type": "film_credits",
+   "shot": 442,
+   "note": "(labelled end_credits) small multi-line credits block at the left over the last two dusk landscapes (442 couple on a road with power lines 1324.6 s, 443 deer on snowfield to 1334.7 s): footage source (ARTLIST) and music composers; sign-off subtitle at 1332 s. No sponsor segment, no logo end card, no subscribe animation"
+  }
+ ],
+ "grade": {
+  "summary": "低饱和、略偏冷的柔和画面：雪景和流冰冷蓝白，清晨偏蓝灰带暖色天边，室内和知床日落保留暖色；黑位正常，对比中等",
+  "look": {
+   "L01": {
+    "median": 3.784,
+    "mad": 2.21
+   },
+   "L50": {
+    "median": 43.677,
+    "mad": 14.078
+   },
+   "L99": {
+    "median": 83.764,
+    "mad": 7.031
+   },
+   "Lstd": {
+    "median": 20.193,
+    "mad": 3.788
+   },
+   "shadow": {
+    "median": 0.172,
+    "mad": 0.129
+   },
+   "chroma": {
+    "median": 6.418,
+    "mad": 3.079
+   },
+   "sh_a": {
+    "median": 0.234,
+    "mad": 0.797
+   },
+   "sh_b": {
+    "median": -1.398,
+    "mad": 2.609
+   },
+   "mid_a": {
+    "median": -0.406,
+    "mad": 1.297
+   },
+   "mid_b": {
+    "median": -3.008,
+    "mad": 6.031
+   },
+   "hi_a": {
+    "median": -1.031,
+    "mad": 1.344
+   },
+   "hi_b": {
+    "median": -2.156,
+    "mad": 4.156
+   },
+   "vignette": {
+    "median": 0.938,
+    "mad": 0.265
+   },
+   "hue_hist": [
+    0.0252,
+    0.1562,
+    0.0559,
+    0.0104,
+    0.0,
+    0.0,
+    0.0,
+    0.0082,
+    0.6367,
+    0.1052,
+    0.0011,
+    0.0011
+   ]
+  },
+  "lut": null,
+  "drx": null,
+  "grain": null
+ },
+ "text": {
+  "chapter_card": {
+   "font_class": "宋体",
+   "fallback_fonts": [
+    "Songti SC",
+    "STSong"
+   ],
+   "height_frac": 0.1237,
+   "position": [
+    0.736,
+    0.855
+   ],
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "stroke": false,
+   "plate": false,
+   "in": "cut",
+   "out": "cut",
+   "duration_s": 3.02,
+   "offset_s": 0.15,
+   "template": "Text+",
+   "per": "section"
+  },
+  "subtitle": {
+   "height_frac": 0.0466,
+   "position": [
+    0.5,
+    0.886
+   ],
+   "font_class": "黑体",
+   "fallback_fonts": [
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "STHeiti"
+   ],
+   "stroke": false,
+   "color": [
+    0.867,
+    0.825,
+    0.671
+   ],
+   "plate": true
+  }
+ },
+ "audio": {
+  "bpm": {
+   "median": 93.2,
+   "mad": 0.0,
+   "p10": 93.2,
+   "p90": 93.2,
+   "n": 1
+  },
+  "mood": "旁白和对话主导（按字幕约八成时长有人声），音乐铺底、几乎不为人声压低；两种算法测的速度对不上（约 93 / 108 BPM），节拍存疑",
+  "lufs": -22.3,
+  "duck_db": -0.4,
+  "sfx": [],
+  "music_changes": "约每章 4.5 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
+ },
+ "resolve": [
+  {
+   "element": "剪辑点",
+   "route": "live_api",
+   "status": "verified",
+   "how": "append_to_timeline clipInfos，逐条读回"
+  },
+  {
+   "element": "叠化",
+   "route": "live_api",
+   "status": "verified",
+   "how": "add_transition Cross Dissolve，从后往前加"
+  },
+  {
+   "element": "地点标题/章节卡",
+   "route": "live_api",
+   "status": "verified",
+   "how": "单独时间线 insert_fusion_title，fusion_comp bulk_set_inputs 写 Template 文字和字体，再整条时间线放到 V3"
+  },
+  {
+   "element": "字幕",
+   "route": "live_api",
+   "status": "verified",
+   "how": "导入 .srt，用旧式 append 放到空时间线（按秒 × 时间线帧率落位）；set_subtitle_preset 用 Simple White，会新建时间线修订；导出时 ExportSubtitle + BurnIn 烧录"
+  },
+  {
+   "element": "调色",
+   "route": "live_api",
+   "status": "verified",
+   "how": "grade.py 每章一个 ASC CDL，每个 V1/V2 条目 timeline_item_color safe_set_cdl（grade.json 的 resolve 块），公式和 Resolve 一致（#16）。风格包有 LUT/颗粒时先套中性 DRX + drx merge [空的 CDL 节点, 颗粒]、graph set_lut 到节点 1，CDL 用 solve --node 2 写到节点 2（同一节点里 CDL 在 LUT 之前）"
+  },
+  {
+   "element": "音乐压低",
+   "route": "offline_ffmpeg",
+   "status": "verified",
+   "how": "duck.py 渲染压低版音乐床放 A2"
+  },
+  {
+   "element": "淡入淡出",
+   "route": "live_api",
+   "status": "verified",
+   "how": "set_fades，片尾淡出也用它"
+  },
+  {
+   "element": "播放帧率",
+   "route": "manual",
+   "status": "manual",
+   "how": "工程设置里手动设，API 改不了"
+  }
+ ],
+ "evidence": {
+  "basis_groups": "chapters of one reference",
+  "consistency": {
+   "shot_len_s": {
+    "verdict": "varies",
+    "medians": {
+     "Part.1 洞爷湖：意外的花火大会@141": 3.1865,
+     "Part.2 洞爷湖清晨与羊蹄山@296": 2.703,
+     "登别熊牧场、鸭子竞走与雪地摩托@337": 2.2855,
+     "富良野民宿之夜@503": 2.336,
+     "富良野民宿清晨：窗外观鸟与松鼠@582": 3.1865,
+     "Part.3 流冰消息与阿寒湖小镇夜晚@691": 3.4705,
+     "钏路与屈斜路湖古丹温泉天鹅@737": 2.202,
+     "鹤居村清晨桥上拍丹顶鹤@794": 2.269,
+     "Part.4 网走破冰船未见流冰与流冰消退@965": 2.7695,
+     "知床最后一天：海岸日落鹿群与狐狸@1179": 2.8695
+    },
+    "spread": 0.4636
+   },
+   "transitions": {
+    "开场：长焦摄影人群与流冰破冰船预告@0": {
+     "hard_cut": 25
+    },
+    "订票经过、行程与同行人介绍，札幌取车出发@57": {
+     "hard_cut": 46
+    },
+    "Part.1 洞爷湖：意外的花火大会@141": {
+     "hard_cut": 44
+    },
+    "Part.2 洞爷湖清晨与羊蹄山@296": {
+     "hard_cut": 12,
+     "dissolve": 1
+    },
+    "登别熊牧场、鸭子竞走与雪地摩托@337": {
+     "hard_cut": 50
+    },
+    "富良野民宿之夜@503": {
+     "hard_cut": 25
+    },
+    "富良野民宿清晨：窗外观鸟与松鼠@582": {
+     "hard_cut": 28
+    },
+    "Part.3 流冰消息与阿寒湖小镇夜晚@691": {
+     "hard_cut": 11,
+     "dissolve": 1
+    },
+    "钏路与屈斜路湖古丹温泉天鹅@737": {
+     "hard_cut": 19,
+     "dissolve": 2
+    },
+    "鹤居村清晨桥上拍丹顶鹤@794": {
+     "hard_cut": 63,
+     "dissolve": 1
+    },
+    "Part.4 网走破冰船未见流冰与流冰消退@965": {
+     "hard_cut": 60,
+     "dissolve": 3,
+     "zoom": 1
+    },
+    "知床最后一天：海岸日落鹿群与狐狸@1179": {
+     "hard_cut": 36
+    },
+    "栏目由来、旅程回顾与片尾字幕@1295": {
+     "hard_cut": 14,
+     "dissolve": 1
+    }
+   },
+   "measured_push_in_share": {
+    "verdict": "varies",
+    "medians": {
+     "Part.1 洞爷湖：意外的花火大会@141": 0.1136,
+     "Part.2 洞爷湖清晨与羊蹄山@296": 0.2308,
+     "登别熊牧场、鸭子竞走与雪地摩托@337": 0.14,
+     "富良野民宿之夜@503": 0.2,
+     "富良野民宿清晨：窗外观鸟与松鼠@582": 0.0714,
+     "Part.3 流冰消息与阿寒湖小镇夜晚@691": 0.3333,
+     "钏路与屈斜路湖古丹温泉天鹅@737": 0.2381,
+     "鹤居村清晨桥上拍丹顶鹤@794": 0.2188,
+     "Part.4 网走破冰船未见流冰与流冰消退@965": 0.2031,
+     "知床最后一天：海岸日落鹿群与狐狸@1179": 0.25
+    },
+    "spread": 1.2416
+   },
+   "look.L50": {
+    "verdict": "varies",
+    "medians": {
+     "Part.1 洞爷湖：意外的花火大会@141": 29.504,
+     "Part.2 洞爷湖清晨与羊蹄山@296": 32.019,
+     "登别熊牧场、鸭子竞走与雪地摩托@337": 40.2635,
+     "富良野民宿之夜@503": 26.428,
+     "富良野民宿清晨：窗外观鸟与松鼠@582": 46.802,
+     "Part.3 流冰消息与阿寒湖小镇夜晚@691": 48.376,
+     "钏路与屈斜路湖古丹温泉天鹅@737": 49.927,
+     "鹤居村清晨桥上拍丹顶鹤@794": 38.177,
+     "Part.4 网走破冰船未见流冰与流冰消退@965": 51.9105,
+     "知床最后一天：海岸日落鹿群与狐狸@1179": 44.5635
+    },
+    "spread": 0.6008
+   },
+   "look.Lstd": {
+    "verdict": "varies",
+    "medians": {
+     "Part.1 洞爷湖：意外的花火大会@141": 19.826,
+     "Part.2 洞爷湖清晨与羊蹄山@296": 18.414,
+     "登别熊牧场、鸭子竞走与雪地摩托@337": 24.114,
+     "富良野民宿之夜@503": 17.269,
+     "富良野民宿清晨：窗外观鸟与松鼠@582": 25.365,
+     "Part.3 流冰消息与阿寒湖小镇夜晚@691": 19.608,
+     "钏路与屈斜路湖古丹温泉天鹅@737": 19.011,
+     "鹤居村清晨桥上拍丹顶鹤@794": 20.338,
+     "Part.4 网走破冰船未见流冰与流冰消退@965": 21.122,
+     "知床最后一天：海岸日落鹿群与狐狸@1179": 16.0445
+    },
+    "spread": 0.4727
+   },
+   "look.mid_b": {
+    "verdict": "varies",
+    "medians": {
+     "Part.1 洞爷湖：意外的花火大会@141": 2.875,
+     "Part.2 洞爷湖清晨与羊蹄山@296": -10.031,
+     "登别熊牧场、鸭子竞走与雪地摩托@337": 0.1485,
+     "富良野民宿之夜@503": 9.109,
+     "富良野民宿清晨：窗外观鸟与松鼠@582": 0.1565,
+     "Part.3 流冰消息与阿寒湖小镇夜晚@691": -2.688,
+     "钏路与屈斜路湖古丹温泉天鹅@737": -5.016,
+     "鹤居村清晨桥上拍丹顶鹤@794": -10.531,
+     "Part.4 网走破冰船未见流冰与流冰消退@965": -3.219,
+     "知床最后一天：海岸日落鹿群与狐狸@1179": -10.8045
+    },
+    "spread": 6.7423
+   },
+   "look.chroma": {
+    "verdict": "varies",
+    "medians": {
+     "Part.1 洞爷湖：意外的花火大会@141": 4.663,
+     "Part.2 洞爷湖清晨与羊蹄山@296": 9.041,
+     "登别熊牧场、鸭子竞走与雪地摩托@337": 4.006,
+     "富良野民宿之夜@503": 6.468,
+     "富良野民宿清晨：窗外观鸟与松鼠@582": 3.869,
+     "Part.3 流冰消息与阿寒湖小镇夜晚@691": 6.386,
+     "钏路与屈斜路湖古丹温泉天鹅@737": 5.092,
+     "鹤居村清晨桥上拍丹顶鹤@794": 6.91,
+     "Part.4 网走破冰船未见流冰与流冰消退@965": 5.807,
+     "知床最后一天：海岸日落鹿群与狐狸@1179": 14.037
+    },
+    "spread": 1.6678
+   }
+  },
+  "beat": [
+   {
+    "ref": "BV1S9ZGYqEEr",
+    "n_cuts": 13,
+    "tol_s": 0.033366700033366704,
+    "ibi_s": 0.56,
+    "bpm": 107.14,
+    "hit_rate": 0.0,
+    "baseline": 0.055,
+    "lift": 0.0,
+    "downbeat_hit_rate": 0.0,
+    "verdict": "not_on_beat"
+   }
+  ],
+  "moves": {
+   "push_in": {
+    "measured": 86,
+    "judged": 20,
+    "digital": 0
+   },
+   "pull_out": {
+    "measured": 32,
+    "judged": 4,
+    "digital": 0
+   }
+  },
+  "ramp_candidates": 66,
+  "onsets_per_min": 189.7,
+  "unverified": [],
+  "rejected_labels": [],
+  "single_source": []
+ },
+ "aroll": {
+  "speech_share": 0.8,
+  "cutaway_share": 0.45
+ },
+ "photo": {
+  "dur_s": 4.4
+ }
+}
