@@ -109,6 +109,46 @@ class DownloadTest(TempRoot):
             self.assertIn(want, str(ctx.exception))
 
 
+def stream_tags(path: Path) -> list[str]:
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_tag_string,nb_frames",
+                        "-of", "csv=p=0", str(path)], capture_output=True, text=True, check=True)
+    return r.stdout.split()
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class Hvc1RemuxTest(unittest.TestCase):
+    """Bilibili's HEVC tagged hev1 can't be opened by AVFoundation, so vision_ocr read nothing."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def make(self, name: str, *codec: str) -> Path:
+        out = self.dir / name
+        subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=64x64:rate=10:duration=1",
+                        *codec, str(out)], check=True)
+        return out
+
+    def test_hev1_download_is_retagged_with_the_same_frames(self):
+        src = self.make("a.mp4", "-c:v", "libx265", "-x265-params", "log-level=none", "-tag:v", "hev1")
+        self.assertEqual(stream_tags(src), ["hev1,10"])
+        self.assertEqual(prep.hvc1_remux(src), "hev1->hvc1")
+        self.assertEqual(stream_tags(src), ["hvc1,10"])
+        self.assertEqual([p.name for p in self.dir.iterdir()], ["a.mp4"])  # no temp file left behind
+        self.assertIsNone(prep.hvc1_remux(src))  # second run: nothing to do
+
+    def test_other_files_are_left_alone(self):
+        avc = self.make("b.mp4", "-c:v", "libx264")
+        before = avc.read_bytes()
+        self.assertIsNone(prep.hvc1_remux(avc))
+        self.assertEqual(avc.read_bytes(), before)
+        junk = self.dir / "c.mp4"
+        junk.write_bytes(b"x" * 10)  # like the fake downloads in DownloadTest
+        self.assertIsNone(prep.hvc1_remux(junk))
+
+
 class ClipIdTest(unittest.TestCase):
     def test_unique_stems_keep_their_name_wherever_they_sit(self):
         self.assertEqual(prep.assign_ids(["C0001.MP4", "day1/C0002.MP4"], {}),
