@@ -346,7 +346,8 @@
         "Hiragino Sans GB",
         "STHeiti"
       ],
-      "stroke": true
+      "stroke": false,
+      "plate": true
     }
   },
   "audio": {
