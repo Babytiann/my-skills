@@ -67,9 +67,9 @@ my-lark inbox summary                 # 只读链路通
 | im 消息 | `im:message`、`im:message.group_msg:get_as_user` | 已授权 |
 | minutes | `minutes:minutes.basic:read`、`minutes:minutes.artifacts:read` | 只读 |
 | search | `search:docs:read`、`search:message` | 已授权 |
-| calendar | `calendar:calendar.event:read` | 未授权 |
-| approval | `approval:task:read` | 未授权 |
-| contact | `contact:user:search` | 未授权 |
+| calendar | `calendar:calendar.event:read`、`calendar:calendar.event:create`、`calendar:calendar.free_busy:read` 等 | 已授权（2026-11-13 补） |
+| approval | `approval:task:read`、`approval:task:write`、`approval:instance:read` 等 | 已授权（2026-11-13 补） |
+| contact | `contact:user:search`、`contact:user.basic_profile:readonly` | 已授权（2026-11-13 补） |
 | okr、mail、vc、attendance、im:chat | — | 未授权 |
 
 缺 scope 时的报错（实测原文，节选）：
@@ -88,10 +88,12 @@ approval 的报错写法不同：`unauthorized: user authorization does not cove
 按 lark-shared 的分步设备授权走，细节见 `lark-shared/references/lark-shared-identity-and-permissions.md`：
 
 1. 跑报错 `hint` 里给的命令，或按领域一次补齐：`lark-cli auth login --domain calendar,approval,contact --no-wait --json`。拿到 `verification_url` 和 `device_code`。
-2. 把 `verification_url` 原样给用户，结束本轮，等用户授权。
-3. 用户说授权好了，再跑 `lark-cli auth login --device-code <device_code>`，然后重跑 `auth status`，确认 scope 已经在列表里。
+2. 把 `verification_url` 原样给用户，并说明它 10 分钟内有效。
+3. 收尾登录：`lark-cli auth login --device-code <device_code>`。这条命令会阻塞轮询，最多约 10 分钟，用户一同意就返回。然后重跑 `auth status`，确认 scope 已经在列表里。
+   - agent 能在后台跑命令、跑完会收到通知的（比如 Claude Code），给出链接后马上在后台跑这条，用户不用回来说「好了」。本机实测，前台等用户回复时，链接两次都过期了；改成后台跑之后一次就成功（2026-11-13）。
+   - 不能后台跑的，结束本轮，等用户说授权好了再跑。
 
-不在同一轮里轮询等待。不替用户换别的 scope 绕过去。
+每次重新 `--no-wait`，上一个 `device_code` 就会作废，所以不要反复重新生成。不替用户换别的 scope 绕过去。
 
 ## id 过桥
 
@@ -102,7 +104,7 @@ my-lark 用飞书客户端内部的纯数字 id，lark-cli 用 OpenAPI 的 `oc_`
 | 本人 | `lark-cli auth status` 的 `identities.user.openId` | `my-lark whoami` |
 | 会话 | `my-lark chat show <chat> --json` 的 `chat.openId`（`oc_…`） | 用会话名或链接：`my-lark chat show <名字>` |
 | 消息 | `lark-cli im +chat-messages-list --chat-id <oc_> --start <createdAt 前 1 分钟> --end <后 1 分钟> --as user`，按 `create_time`、`msg_type`、`sender` 对上 `message_id`（`om_…`） | 按会话、时间、内容在 `my-lark chat read <chat> --ids` 里对 |
-| 人员 | 有 contact scope：`lark-cli contact +search-user --query <姓名或邮箱前缀> --as user`，邮箱可从 `my-lark person show <人> --json` 拿。没有时：在双方都在的会话里用上面的消息列表，取对方发言的 `sender.id`（`ou_…`） | `my-lark person find <姓名>` |
+| 人员 | 有 contact scope：`lark-cli contact +search-user --query <姓名或邮箱前缀> --as user`，邮箱可从 `my-lark person show <人> --json` 拿。按姓名查会带出同名的人（实测「袁峻琦」返回 2 个，其中一个是飞书个人版），先按部门筛，剩下仍不止一个就让用户选。没有时：在双方都在的会话里用上面的消息列表，取对方发言的 `sender.id`（`ou_…`） | `my-lark person find <姓名>` |
 | 文档 | `my-lark search <词> --type docs --json` 直接返回 `url`，lark-cli 接受 URL | 同一个 URL |
 
 注意：

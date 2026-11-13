@@ -61,10 +61,10 @@
 
 ## P3 约会议
 
-带参会人的日程会给每个参会人发邀请，属于「会通知他人」。需要 calendar scope；本机还没授权，命令参数只按 `--help` 核对过，未实跑（2026-11-13）。
+带参会人的日程会给每个参会人发邀请，属于「会通知他人」。需要 calendar scope。本机实跑过第 3 步找时间和第 6 步不带参会人的 `+create`；带参会人的创建会给别人发邀请，没有实跑（2026-11-13）。
 
 1. 理清主题、参会人、时长、时间范围、要不要会议室。缺的问用户。
-2. 把参会人转成 `ou_` id。也可以直接用群的 `oc_` id 邀请全群，但先告诉用户群里有多少人。
+2. 把参会人转成 `ou_` id。也可以直接用群的 `oc_` id 邀请全群，但先告诉用户群里有多少人。按姓名查人时常有同名的人，比如别的租户或飞书个人版的账号。这时按部门筛掉不相干的；剩下的仍不止一个，就列出来让用户选。
 3. 找时间：
    - `lark-cli calendar +suggestion --attendee-ids <ou_,…> --duration-minutes 60 --start … --end … --as user`；
    - 要看每个人具体哪里忙，用 `+freebusy --user-id <ou_,…> --type common_free --min-duration 60m --as user`。
@@ -79,18 +79,24 @@
 
 ## P4 待办排进日历
 
-只给自己建时间块，不加参会人，属于「只影响自己」；但时间块是 agent 排出来的，要整批确认。需要 calendar scope；本机还没授权，未实跑（2026-11-13）。
+只给自己建时间块，不加参会人，属于「只影响自己」；但时间块是 agent 排出来的，要整批确认。需要 calendar scope。第 1～6 步本机都实跑过（2026-11-13）。
 
 1. 拿待办：`lark-cli task +get-my-tasks --complete=false --as user`，按截止时间排序。
-2. 拿空闲：`lark-cli calendar +freebusy --start … --end … --type free --min-duration 30m --as user`，不传 `--user-id` 时默认查本人。
+2. 拿空闲：`lark-cli calendar +freebusy --start … --end … --type free --min-duration 30m --as user`，不传 `--user-id` 时默认查本人。它不会去掉已经过去的时间：14:25 查当天 13:00 起的空闲，返回里仍有 13:00–14:30。所以 `--start` 用当前时间；`+suggestion` 会自己跳过已经过去的时间。
 3. 排方案：
    - 只排在用户给的时间范围里（比如「下午」「本周」）；没给范围时先问。
+   - 已经过去的时间不排。
    - 截止时间早的先排。
    - 每块的时长：用户说了的按用户的；没说的按 60 分钟估，并标「估」。
 4. 给用户看表：时间段 | 待办 | 截止时间 | 时长依据。确认后整批建。
 5. 建：每块跑一次 `lark-cli calendar +create --summary "[专注] <待办标题>" --start … --end … --description "<任务链接>" --as user`，不传 `--attendee-ids`。
-   - `+create` 默认带视频会议链接，而且关不掉。用户介意的话，建完用原始 API `lark-cli calendar events patch` 去掉 `vchat`，字段用 `lark-cli schema` 查。
-6. 回查：`lark-cli calendar +agenda --start … --end … --as user` 覆盖排的时间段，逐块核对。
+   - `+create` 建出的日程默认是忙碌，开始前 5 分钟提醒，还带一个视频会议。`+create` 本身去不掉视频会议，所以每块建完都要再把它关掉：
+     ```bash
+     lark-cli calendar events patch --calendar-id <主日历 id> --event-id <event_id> \
+       --data '{"vchat":{"vc_type":"no_meeting"}}' --as user
+     ```
+     主日历 id 用 `lark-cli calendar calendars primary --as user` 查，也可以从 `+get` 返回的 `organizer_calendar_id` 取。
+6. 回查：每块跑一次 `lark-cli calendar +get --event-id <id> --as user`，核对时间、`attendees` 为空、`vchat.vc_type` 是 `no_meeting`。也可以用 `+agenda --start … --end …` 覆盖排的时间段，整体核对一遍。
 7. 汇报：建了哪些块和对应的 event id；哪些待办没排进去，为什么（没有空闲、超出范围）。
 
 ## P5 代发、回复、表情、定时
