@@ -1,0 +1,4 @@
+interface:
+  display_name: "飞书个人助理"
+  short_description: "以本人身份读写飞书：消息、文档、待办、日程、审批、纪要，代发回复、建待办、约会议、排日程、出晨报"
+  default_prompt: "使用 $feishu-assistant，先自检 my-lark 和 lark-cli 的可用链路，再按我的要求读取飞书信息或执行操作；会被别人看到的操作先给我确认，写完回查并汇报。"
