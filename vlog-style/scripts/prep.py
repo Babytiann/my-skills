@@ -205,6 +205,33 @@ def opencli_json(args: list[str], timeout: int = 1800) -> tuple[object | None, s
         return None, r.stdout.strip()[-400:]
 
 
+def hvc1_remux(src: Path) -> str | None:
+    """Bilibili serves some HEVC tagged 'hev1'. ffmpeg plays it, AVFoundation (vision_ocr.swift)
+    can't open it, so OCR would read nothing. Re-tag a download as 'hvc1' in place: a stream
+    copy, so frames and timestamps stay the same. Returns what changed, or None."""
+    r = run(["ffprobe", "-v", "error", "-show_entries",
+             "stream=index,codec_type,codec_name,codec_tag_string:stream_disposition=attached_pic",
+             "-of", "json", str(src)])
+    if r.returncode:
+        return None  # not a readable video; probe() reports it properly later
+    try:
+        streams = json.loads(r.stdout).get("streams") or []
+    except json.JSONDecodeError:
+        return None
+    v = next((s for s in streams if s.get("codec_type") == "video"
+              and not s.get("disposition", {}).get("attached_pic")), None)
+    if not v or v.get("codec_name") != "hevc" or v.get("codec_tag_string") != "hev1":
+        return None
+    tmp = src.with_name(f".remux{src.suffix}")  # hidden, so videos() never picks it up
+    r = run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-map", "0", "-c", "copy",
+             f"-tag:{v['index']}", "hvc1", str(tmp)])
+    if r.returncode:
+        tmp.unlink(missing_ok=True)
+        raise SystemExit(f"re-tagging {src.name} as hvc1 failed: {r.stderr.strip()[-300:]}")
+    os.replace(tmp, src)
+    return "hev1->hvc1"
+
+
 def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tuple[Path, dict]:
     src_dir = ref_dir / "src"
     src_dir.mkdir(parents=True, exist_ok=True)
@@ -232,6 +259,8 @@ def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tup
         (ref_dir / "subtitles.json").write_text(json.dumps(subs, ensure_ascii=False, indent=1), encoding="utf-8")
     extra = {"bvid": bv, "url": f"https://www.bilibili.com/video/{bv}", "quality": quality,
              "platform_subtitles": bool(subs)}
+    if remuxed := hvc1_remux(files[0]):
+        extra["remuxed"] = remuxed
     return files[0], extra
 
 

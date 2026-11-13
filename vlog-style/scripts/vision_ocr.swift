@@ -165,6 +165,11 @@ if ["png", "jpg", "jpeg", "tif", "tiff", "heic", "bmp"].contains(url.pathExtensi
     }
     result["frames_sampled"] = total
     result["frames_failed"] = failed
+    // An empty ocr.json would let measure_video carry on as if the film had no text at all.
+    if total > 0 && failed == total {
+        fail("could not decode any frame of \(url.lastPathComponent); HEVC tagged hev1 needs a re-tag first: "
+             + "ffmpeg -i <in> -map 0 -c copy -tag:v:0 hvc1 <out> (prep.py ref does this for downloads)")
+    }
 }
 
 result["samples"] = samples

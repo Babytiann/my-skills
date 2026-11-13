@@ -12,6 +12,12 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-11 B 站的 HEVC 标成 hev1，OCR 一帧都没读到，却照常退出 0
+- 场景：lawrence 第一批，《日本4k旅拍》（BV1Rj421S7c4）。下载到的是 HEVC，视频轨的 codec tag 是 `hev1`。之前的参考都是 H.264 或 AV1
+- 做法：`vision_ocr.swift` 用 AVFoundation 逐帧取图，取不到的帧只在 stderr 记前 5 条，最后照常写出 ocr.json，退出 0
+- 问题：AVFoundation 只认 `hvc1` 标的 HEVC，1062 帧全部「Cannot Open」，ocr.json 是 0 条文字。ffmpeg 读得了 hev1，所以 prep 的代理和 measure_video 都照常跑完，片子看起来就像没有一个字。排队脚本记下的 OCR 耗时是 0.0 分钟，这才发现
+- 修法：`prep.py ref` 下载完，如果视频轨是 hev1 标的 HEVC，就原地转封装成 hvc1（`-c copy`，帧和时间戳不变），prep.json 记 `remuxed: "hev1->hvc1"`。用户的本地文件照旧不动。`vision_ocr.swift` 一帧都解不出时报错退出 2，给出转封装命令，不写 ocr.json。test_tools 加 `Hvc1RemuxTest`。这条参考按新的 prep 重跑了取片和 OCR。注意：measure_video 不加 `--redo` 时会沿用已有的各阶段，看不出 ocr.json 换过了；重跑 OCR 之后要跑 `--redo text`（这次就是不带 `--redo` 跑了一遍，文字还是空的）
+
 ## 2026-11-11 keep 不认 subtitle_misread：第二批三条的保留副本留着字幕原文
 - 场景：links 第二批收尾，拿缓存里的字幕原文搜 `<root>/styles/links/refs/` 下所有保留副本
 - 做法：2026-11-06 那条的修法是「keep 之后按 note 手动清空」，第二批照常 `cleanup.py keep`，手动这步没人做

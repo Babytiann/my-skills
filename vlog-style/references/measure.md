@@ -34,6 +34,11 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
     - 库拉岗日（37:33）：prep 3.5、OCR 12.3、measure_video 8.5、measure_audio 0.8、`--redo text` 0.3，合计 25.4。
     - 第一座雪山（55:12）：prep 5.0、OCR 17.4、measure_video 13.7、measure_audio 1.5、`--redo text` 0.5，合计 38.1。另外有两次 prep 因 opencli 超时报失败（2.0、2.4），见 learnings.md。
     - 测量合计约是片长的 0.7 倍，OCR 占将近一半。
+  - 2026-11-11 小鹿Lawrence 第一批（同一台机器，都是 `--no-asr`）：
+    - 北海道4k旅拍（4:44）：prep 0.8、OCR 2.0、measure_video 1.2、measure_audio 0.2、`--redo text` 0.1，合计 4.3。
+    - 日本4k旅拍（4:26）：prep 0.5、OCR 1.9、measure_video 1.2、measure_audio 0.1、`--redo text` 0.1，合计 3.8。第一次 OCR 因为 hev1 一帧没读到，按 learnings.md 2026-11-11 重跑了，这里记的是重跑的 OCR。
+    - 北海道翻车实录（22:15）：prep 1.8、OCR 9.4、measure_video 5.0、measure_audio 0.5、`--redo text` 0.9，合计 17.6。measure_audio 和 `--redo text` 跑的时候，另一条片子也在测。
+    - 5 分钟以内的短片约是片长的 0.9 倍：加载模型这类固定开销占得多。
 - **先 keep 再 trash。** 留下的测量够重新 draft（结果和用 cache 跑的一样），但没有原片、代理和抽帧，不能重跑 measure 的各阶段。`measure_video.json` 的 `measured` 记的是每次跑的日期；旧文件没有这一项，keep 时用文件修改日期补上。
 
 ## measure_video.py
