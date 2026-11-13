@@ -28,6 +28,7 @@ an input stage re-ran:
           keyframes (frames/)
   look    Lab stats per shot keyframe, letterbox and text masked
   strips  event strips at native fps around candidates, titles, sampled cuts;
+          title colours and caption samples (fill, outline, plate; no text kept);
           start/middle/end frames of sampled push/pull shots (strips/moves_*.jpg)
   sheets  contact sheets, one row of labelled keyframes per shot
 
@@ -705,43 +706,127 @@ def grab(proxy: Path, fps: float, first: int, n: int, w: int, h: int) -> np.ndar
     return read_frames(proxy, w, h, ss=(first - 0.5) / fps if first > 0 else None, n=n)
 
 
-def title_colour(proxy: Path, fps: float, tr: dict, pw: int, ph: int) -> dict | None:
+TEXT_K = 5            # colour clusters over a text box and the ring around it
+TEXT_ENRICH = 1.5     # a text colour is at least this much commoner in the box than around it
+TEXT_GROUND = 4.0     # a colour this much commoner in the box than around it is never the background
+TEXT_MIN_SHARE = 0.01  # ... and covers this much of the box (a thin caption's core is small at 540p)
+TEXT_CORE = 90        # the stroke core: pixels of the text colour this far out from the background (percentile);
+                      # a thin caption is 1-2 px wide at 540p and mostly anti-aliased edge
+EDGE_DL = 12          # an outline is this much darker or lighter (L, 0-100) than the fill and the scene beside it
+PLATE_STEP = 3.0      # L drop per column at a caption plate's top edge
+PLATE_COHERE = 0.6    # share of the text's columns that drop on the same row
+PLATE_DARK = 15       # over a scene darker than this (L) a dark plate does not show: no verdict
+SUB_SAMPLES = 12      # captions measured for the subtitle style
+
+
+def lab_of(rgb: np.ndarray) -> np.ndarray:
+    """Float Lab, L 0-100."""
+    return cv2.cvtColor(rgb.astype(np.float32) / 255.0, cv2.COLOR_RGB2Lab)
+
+
+def plate_above(rgb: np.ndarray, X0: int, Y0: int, X1: int, h: int) -> bool | None:
+    """Is the caption set on a plate? A plate's top edge drops the lightness on one row across
+    the text's whole width, a little above the letters; scenery rarely does that. None when the
+    scene above is too dark for a dark plate to show."""
+    lo = max(1, Y0 - max(3, int(1.2 * h)))
+    if Y0 - lo < 3 or X1 - X0 < 8:
+        return None
+    L = lab_of(rgb[lo - 1:min(rgb.shape[0], Y0 + 2), X0:X1])[..., 0]
+    if float(np.median(L[:max(2, (Y0 - lo) // 2)])) < PLATE_DARK:
+        return None
+    # two rows apart: edges are soft at 540p
+    best = max(float(np.mean(L[r + 1] - L[r - 1] < -PLATE_STEP)) for r in range(1, L.shape[0] - 1))
+    return best >= PLATE_COHERE
+
+
+def text_colour(rgb: np.ndarray, box: tuple[int, int, int, int], plate: bool = False) -> dict | None:
+    """Fill colour, outline (and with plate=True, caption plate) of the text in box (X0, Y0, X1, Y1 px).
+
+    All three Lab channels, not lightness alone (learnings 2026-11-13: an orange-red title over
+    snow and dark sand was measured as the snow). The box and a ring around it are clustered
+    together; the colour that fills most of the box is what the letters sit on, and text colours
+    are those commoner inside the box than in the ring. Of those, the fill stands out most from
+    the background and touches it least: a drop shadow sits close to a dark plate, an outline and
+    anti-aliasing wrap the fill. Its colour is taken from the stroke core, the tenth of its
+    pixels furthest from the background (TEXT_CORE).
+    """
+    ph, pw = rgb.shape[:2]
+    X0, Y0, X1, Y1 = box
+    h = Y1 - Y0
+    if (X1 - X0) * h < 30:
+        return None
+    m = max(4, int(0.3 * h))
+    y0, y1, x0, x1 = max(0, Y0 - m), min(ph, Y1 + m), max(0, X0 - m), min(pw, X1 + m)
+    lab = lab_of(rgb[y0:y1, x0:x1])
+    inbox = np.zeros(lab.shape[:2], bool)
+    inbox[Y0 - y0:Y1 - y0, X0 - x0:X1 - x0] = True
+    if inbox.all():
+        return None
+    cv2.setRNGSeed(0)  # deterministic clusters: a re-run measures the same colour
+    _, ids, centres = cv2.kmeans(lab.reshape(-1, 3), TEXT_K, None,
+                                 (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.2), 3, cv2.KMEANS_PP_CENTERS)
+    ids = ids.reshape(lab.shape[:2])
+    s_in = np.array([(ids[inbox] == c).mean() for c in range(TEXT_K)])
+    enrich = s_in / np.maximum(np.array([(ids[~inbox] == c).mean() for c in range(TEXT_K)]), 0.005)
+    # what the letters sit on fills most of the box, but over a busy scene that splits into several
+    # clusters a bold fill can outnumber each of them; a colour that hardly shows outside is text
+    sits = [c for c in range(TEXT_K) if enrich[c] < TEXT_GROUND] or list(range(TEXT_K))
+    ground = max(sits, key=lambda c: s_in[c])
+    cand = [c for c in range(TEXT_K) if c != ground and s_in[c] >= TEXT_MIN_SHARE and enrich[c] >= TEXT_ENRICH]
+    if not cand:
+        rest = [c for c in range(TEXT_K) if c != ground and s_in[c] >= TEXT_MIN_SHARE]
+        if not rest:
+            return None
+        cand = [max(rest, key=lambda c: enrich[c])]
+    bg = [c for c in range(TEXT_K) if c == ground or enrich[c] < TEXT_ENRICH]  # colours that run on outside the box
+    near_bg = cv2.dilate(np.isin(ids, bg).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
+
+    def score(c: int) -> float:
+        px = (ids == c) & inbox
+        contrast = float(np.min(np.linalg.norm(centres[bg] - centres[c], axis=1)))
+        return contrast * (1.0 - (px & near_bg).sum() / max(1, px.sum()))
+    text = (ids == max(cand, key=score)) & inbox
+    dist = np.min(np.linalg.norm(lab[text][:, None, :] - centres[bg][None], axis=2), axis=1)
+    core = dist >= np.percentile(dist, TEXT_CORE)
+    fill = np.median(rgb[y0:y1, x0:x1][text][core], axis=0).astype(int)
+    L = lab[..., 0]
+    tL = float(np.median(L[text][core]))
+    out = {"fill": "#%02x%02x%02x" % tuple(fill), "bg_L": rnd(float(np.median(L[~inbox])), 1), "fill_L": rnd(tL, 1),
+           "edge": "none", "method": "lab_kmeans"}
+    near = cv2.dilate(text.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~text & inbox
+    far = ~cv2.dilate(text.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool) & inbox
+    if near.any() and far.any():
+        # against the scene right beside each letter: a title crossing snow and dark sand has dark
+        # edges over the sand, which is no outline; on a plate the edges are the plate's colour
+        k = max(5, int(0.6 * h)) | 1
+        ff = far.astype(np.float32)
+        den = cv2.boxFilter(ff, -1, (k, k), normalize=False)
+        local = cv2.boxFilter(L * ff, -1, (k, k), normalize=False) / np.maximum(den, 1e-6)
+        ok = near & (den > 0.5)
+        if ok.any():
+            dl, eL = float(np.median(L[ok] - local[ok])), float(np.median(L[ok]))
+            if dl < -EDGE_DL and eL < tL - EDGE_DL:
+                out["edge"] = "dark"
+            elif dl > EDGE_DL and eL > tL + EDGE_DL:
+                out["edge"] = "light"
+    if plate:
+        out["plate"] = plate_above(rgb, X0, Y0, X1, h)
+    return out
+
+
+def title_colour(proxy: Path, fps: float, tr: dict, pw: int, ph: int, plate: bool = False) -> dict | None:
     fr = grab(proxy, fps, int((tr["t_in"] + tr["t_out"]) / 2 * fps), 1, pw, ph)
     if not len(fr):
         return None
-    rgb = fr[0]
     x, y, w, h = tr["box"]
-    X0, Y0, X1, Y1 = int(x * pw), int(y * ph), int((x + w) * pw), int((y + h) * ph)
-    box = rgb[Y0:Y1, X0:X1]
-    if box.size < 30:
-        return None
-    L = cv2.cvtColor(box, cv2.COLOR_RGB2Lab)[..., 0]
-    _, th = cv2.threshold(L, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    m = (max(2, int(0.3 * (Y1 - Y0))))
-    ring = rgb[max(0, Y0 - m):min(ph, Y1 + m), max(0, X0 - m):min(pw, X1 + m)]
-    ring_mask = np.ones(ring.shape[:2], bool)
-    ring_mask[Y0 - max(0, Y0 - m):Y0 - max(0, Y0 - m) + (Y1 - Y0), X0 - max(0, X0 - m):X0 - max(0, X0 - m) + (X1 - X0)] = False
-    bg_L = float(np.median(cv2.cvtColor(ring, cv2.COLOR_RGB2Lab)[..., 0][ring_mask])) if ring_mask.any() else 128
-    bright, dark = th > 0, th == 0
-    if not bright.any() or not dark.any():
-        return None
-    light_text = abs(np.median(L[bright]) - bg_L) >= abs(np.median(L[dark]) - bg_L)
-    text_mask = bright if light_text else dark
-    # thin strokes at proxy size are mostly anti-aliased edge: take the colour of the stroke core
-    tl = L[text_mask]
-    core = text_mask & ((L >= np.percentile(tl, 75)) if light_text else (L <= np.percentile(tl, 25)))
-    fill = np.median(box[core], axis=0).astype(int)
-    edge = cv2.dilate(text_mask.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~text_mask
-    out = {"fill": "#%02x%02x%02x" % tuple(fill), "bg_L": rnd(bg_L * 100 / 255, 1),
-           "fill_L": rnd(float(np.median(L[core])) * 100 / 255, 1), "edge": "none"}
-    if edge.any():
-        eL = float(np.median(L[edge]))
-        tL = float(np.median(L[text_mask]))
-        if eL < min(tL, bg_L) - 25:
-            out["edge"] = "dark"
-        elif eL > max(tL, bg_L) + 25:
-            out["edge"] = "light"
-    return out
+    return text_colour(fr[0], (int(x * pw), int(y * ph), int((x + w) * pw), int((y + h) * ph)), plate=plate)
+
+
+def caption_line(tr: dict, band: dict) -> bool:
+    """A caption on the subtitle line itself: centred, at the band's height and size. Leaves out
+    left-aligned lyric lines, the smaller second-language line under a caption and OCR fragments."""
+    return (tr["kind"] == "subtitle" and abs(tr["center"][0] - 0.5) <= 0.06
+            and abs(tr["center"][1] - band["y"]) <= 0.5 * band["height"] and tr["height"] >= 0.75 * band["height"])
 
 
 def stage_strips(d: Path, proxy: Path, fps: float, pw: int, ph: int, cuts: dict, scan: dict, text: dict) -> dict:
@@ -764,6 +849,12 @@ def stage_strips(d: Path, proxy: Path, fps: float, pw: int, ph: int, cuts: dict,
         titles.append({"track": tr["i"], "text": tr["text"], "t_in": tr["t_in"], "t_out": tr["t_out"],
                        "height": tr["height"], "center": tr["center"], "grow": tr["grow"], "drift": tr["drift"],
                        "colour": title_colour(proxy, fps, tr, pw, ph)})
+    # captions: fill, outline and plate for the style's text.subtitle (no text is kept)
+    band = (text or {}).get("subtitle_band")
+    caps = [tr for tr in (text or {}).get("tracks", []) if band and caption_line(tr, band)]
+    if len(caps) > SUB_SAMPLES:
+        caps = [caps[round(k * (len(caps) - 1) / (SUB_SAMPLES - 1))] for k in range(SUB_SAMPLES)]
+    samples = [{"track": tr["i"], "t": tr["t_in"], "colour": title_colour(proxy, fps, tr, pw, ph, plate=True)} for tr in caps]
     events.sort(key=lambda e: e["frame"])
     half = int(round(STRIP_HALF * fps))
     for k, e in enumerate(events):
@@ -780,7 +871,8 @@ def stage_strips(d: Path, proxy: Path, fps: float, pw: int, ph: int, cuts: dict,
         render_strip(fr[keep], [i - centre for i in keep], header, d / name)
         e["strip"] = name
         e["i"] = k
-    return {"events": events, "titles": titles, "tile": [tw, th], "moves": render_moves(d, proxy, fps, pw, ph, scan)}
+    return {"events": events, "titles": titles, "subtitle_samples": samples, "tile": [tw, th],
+            "moves": render_moves(d, proxy, fps, pw, ph, scan)}
 
 
 def render_moves(d: Path, proxy: Path, fps: float, pw: int, ph: int, scan: dict) -> list[dict]:

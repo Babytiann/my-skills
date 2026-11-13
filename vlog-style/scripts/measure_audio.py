@@ -227,10 +227,7 @@ def tempo_check(y: np.ndarray, sr: int, bpm: float | None) -> dict:
 
     tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
     t = float(np.atleast_1d(tempo)[0])
-    ok = None
-    if bpm and t:
-        ok = any(abs(t * k - bpm) / bpm < 0.04 for k in (0.5, 1, 2))
-    return {"librosa_bpm": rnd(t, 1), "agrees": ok}
+    return {"librosa_bpm": rnd(t, 1), "agrees": stats.tempo_agrees(bpm, t)}
 
 
 def onsets(y: np.ndarray, sr: int, beats: list[float], total: float) -> dict:

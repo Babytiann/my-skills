@@ -33,6 +33,11 @@ vlog-style/styles/                    仓库
 - **refs/。** `cleanup.py keep` 写进去：measure_video.json、measure_audio.json（转写和字幕原文剥掉，标题文字保留，labels 要用）、labels.json、meta.json（只留 bvid、title、author、mid、publish_time、duration_sec）。够重新 draft，不够重跑 measure。只在本机，不进仓库。
 - **博主专辑只收本人投稿的视频。** 入池前核对 mid；别人的视频即使出现在投稿列表里，也放进 misc，出处写真实的 UP 主。
 - **博主级包按每条视频比较**（multi_reference）。节奏写各条视频中位数的分布。调色跟着内容走，博主级包只写各条一致的部分，调色核对用子包。
+- **`aggregate.py draft` 合并多条参考时不悄悄挑一条**（learnings.md 2026-11-13）：
+  - `grade.look` 只留各条一致的项：2–3 条时，亮度和比值类（L01、L50、L99、Lstd、shadow、chroma、vignette）极差不超过合并中位数的 25%，色偏类（sh、mid、hi 的 a 和 b）相差不超过 2；4 条以上时，每条的中位数都要落在合并中位数 ± 合并 MAD 以内。`hue_hist` 不合并。去掉的项和各条的值写进 `evidence.look_dropped`，写包的人可以按内容加回来（links 的 L50、shadow 让开了极夜两集），写进炼化记录。
+  - `grade.summary`、`grade.grain`、`audio.mood`、`selection.opening` 各条写法不同时留空，原文只打在 stderr，记进 `evidence.unverified`，由写包的人合并。`selection.reject` 去重。
+  - 标题和章节卡的字高、位置、颜色、时长先按视频取中位数，再在视频之间取；一条片子里卡片的字高或位置差得多（像几种不同的卡）时逐张列出，记进 `evidence.text_spread`，写包时挑一种。
+  - 每条特效带 `ref`。
 
 ## sources.md 模板
 
@@ -86,11 +91,11 @@ vlog-style/styles/                    仓库
 | `structure.order`、`structure.order_tolerance_s` | 章内选镜头按不按拍摄时间：`free`（不看时间）或 `chronological`。不写时，有 story 就按 `chronological`，没有 story 就是 `free`；只有用户明确要混剪才写 `free`。`order_tolerance_s` 是同一场景里允许往回调换的秒数，默认 300 | 手填，炼化不测。`chronological` 要求索引里有拍摄时间 |
 | `selection` | `shot_types`（景别配比，和为 1）、`opening`、`reject[]`、`max_shake`（抖动 RMS 占画面宽的 %） | labels + 测量（max_shake 取参考的 P90 × 1.2） |
 | `rhythm` | `shot_len_s`（分布）、`cuts_per_min`、`min_shot_s` | 测量 |
-| `beat` | `hit_rate`、`baseline`（随机平移剪辑点后的命中率）、`offset_frames`（剪辑点相对拍点提前为负）、`use_downbeats`、`confidence`（ok / uncertain） | 测量。uncertain 时 plan_cut 不卡点 |
-| `transitions[]` | `{type, share, frames, where, direction}`。type 取 `schema.TRANSITIONS`；share 之和为 1；where 取 any / within_section / section_boundary / chapter_boundary | labels 优先，没标的按测量计入并列为未核实 |
+| `beat` | `hit_rate`、`baseline`（随机平移剪辑点后的命中率）、`offset_frames`（剪辑点相对拍点提前为负）、`use_downbeats`、`confidence`（ok / uncertain） | 测量。每条参考单独判可不可信：剪辑点少于 20、非人声段太短、两种算法速度对不上且命中率不到基线 1.5 倍，都算不可信（measure.md）。过半可信才记 ok，数值只用可信的几条算；每条的判断在 `evidence.beat`。uncertain 时 plan_cut 不卡点 |
+| `transitions[]` | `{type, share, frames, where, direction}`。type 取 `schema.TRANSITIONS`；share 之和为 1；where 取 any / within_section / section_boundary / chapter_boundary；direction 只有 whip、wipe 才写（`schema.DIRECTED`），别的类型带 direction 校验不过 | labels 优先，没标的按测量计入并列为未核实 |
 | `motion` | `push_in` / `pull_out`：`{share, scale_end}`，指剪辑里加的数字推拉；`slow_mo`：`{share, speed}`；`ramp`：`{share}`；`shake`：`{share, amplitude_px}` | 测量 + labels。推拉比例 = 测到的稳定推拉占比 × labels 里判为 digital 的比例；慢动作只能靠看图判断 |
-| `effects[]` | `{type, ...}`，如颗粒、光晕、漏光、暗角 | labels |
-| `grade` | `summary`、`look`（见下）、`lut`、`drx`、`grain` | 测量 + labels |
+| `effects[]` | `{type, ...}`，如颗粒、光晕、漏光、暗角；多参考时每条带 `ref`（出自哪条参考，shot / event 是那条片子的序号） | labels。写包时才发现的特效先补进 labels.json 再 draft，不直接加进 style.json，否则到不了博主级包 |
+| `grade` | `summary`、`look`（见下）、`lut`、`drx`、`grain` | 测量 + labels；多参考时 summary、grain 各条写法不同就留空 |
 | `text` | `title`、`chapter_card`、`subtitle`，每项见下 | 测量 + labels |
 | `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]`、`broll_ambient_db`（B-roll 环境声放 A4 的电平，dB；不写就不放） | 测量；mood 和 sfx 由 agent 根据测量写；broll_ambient_db 手填 |
 | `photo` | 照片怎么放：`dur_s`（每张几秒）、`scale`（相对铺满画面的大小，搭建时用 `set_transform` 设，1 是铺满）、`background`（目前只有 black）。不写时 3 s、1.0、black。只在 brief 写了 `photos` 时起作用 | 看参考里的照片插入：时长按镜头算，大小量照片在画面里的宽高 |
@@ -110,14 +115,16 @@ vlog-style/styles/                    仓库
 - `vignette`：四角亮度和中心亮度之比
 - `hue_hist`：12 格色相分布
 
+博主级包只留各条一致的项（规则见上面「两种文件夹」），`hue_hist` 只有单参考的包才有。look 缺项时，`grade.py solve` 不调这几项，并在章节警告里列出；`compare.py look` 跳过它们，列在输出的 `skipped` 里。要核对冷暖，用子包做 look_ref。
+
 **文字样式**（TEXT_STYLE）的字段：
 
 - `font_class`：黑体 / 宋体 / 圆体 / 楷体 / 手写 / 装饰体
 - `fallback_fonts`：本机已装的备选字体
 - `height_frac`：字高占画面高的比例
 - `position`：文字中心，[x, y]，0–1，原点在左上
-- `color`：[r, g, b]，0–1
-- `stroke`、`plate`：有没有描边、有没有底板
+- `color`：[r, g, b]，0–1。标题和章节卡用 strips 测的颜色，每条视频先取中位数；字幕用 `strips.subtitle_samples`。参考之间色差 ΔE 超过 20 时草稿不写
+- `stroke`、`plate`：有没有描边、有没有底板。标题的描边来自测量，底板来自 labels；字幕的两项都来自字幕样本，各条不一致或没有样本（2026-11-13 前的测量）时草稿不写，写包时看图填
 - `in` / `out`：出入场方式
 - `duration_s`、`offset_s`：持续多久，章节开始后多久出现
 - `template`：Resolve 标题模板

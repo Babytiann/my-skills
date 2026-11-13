@@ -230,6 +230,13 @@ class SyntheticTest(unittest.TestCase):
         self.assertTrue(text["subtitle_band"] and abs(text["subtitle_band"]["y"] - 0.9) < 0.03)
         colour = self.m["strips"]["titles"][0]["colour"]
         self.assertGreater(colour["fill_L"], 85, colour)
+        self.assertEqual(colour["edge"], "dark", colour)  # white with a dark stroke
+        # the captions: white, outlined, no plate (each frame shows one, never the title)
+        caps = [s["colour"] for s in self.m["strips"]["subtitle_samples"] if s["colour"]]
+        self.assertGreaterEqual(len(caps), 6, self.m["strips"]["subtitle_samples"])
+        self.assertGreaterEqual(sum(c["edge"] == "dark" for c in caps), 0.7 * len(caps), caps)
+        self.assertFalse(any(c.get("plate") for c in caps), caps)
+        self.assertGreater(sorted(c["fill_L"] for c in caps)[len(caps) // 2], 85, caps)
 
     def test_outputs_exist_and_paths_are_relative(self):
         for name in (self.m["sheets"]["sheets"] + [e["strip"] for e in self.m["strips"]["events"] if "strip" in e]
@@ -395,6 +402,79 @@ class FrameBarsTest(unittest.TestCase):
         self.assertEqual(self.bars(thin), (0, 0, 0, 0))
 
 
+class TextColourTest(unittest.TestCase):
+    """Title and caption colour from all three Lab channels (learnings 2026-11-13: an orange-red title
+    over snow and dark sand was measured as the snow, because only lightness was split)."""
+
+    def setUp(self):
+        import measure_video
+        self.mv = measure_video
+        self.rng = np.random.default_rng(7)
+
+    def scene(self, rgb, noise=6.0, w=960, h=540):
+        img = np.asarray(rgb, np.float32) + self.rng.normal(0, noise, (h, w, 3))
+        return np.clip(img, 0, 255).astype(np.uint8)
+
+    def write(self, img, text, size, xy, fill, stroke=0, stroke_fill=(0, 0, 0)):
+        """Draw text at 540p like a proxy frame; returns the box an OCR pass would give (2 px around)."""
+        pil = Image.fromarray(img)
+        dr = ImageDraw.Draw(pil)
+        font = ImageFont.truetype(FONT_BOLD, size)
+        dr.text(xy, text, font=font, fill=fill, stroke_width=stroke, stroke_fill=stroke_fill)
+        x0, y0, x1, y1 = dr.textbbox(xy, text, font=font, stroke_width=stroke)
+        img[:] = np.asarray(pil)
+        return (x0 - 2, y0 - 2, x1 + 2, y1 + 2)
+
+    @staticmethod
+    def rgb(hexstr):
+        return [int(hexstr[i:i + 2], 16) for i in (1, 3, 5)]
+
+    def test_orange_title_over_snow_and_dark_sand(self):
+        img = self.scene((232, 238, 245))
+        img[220:300] = self.scene((74, 64, 56))[220:300]  # a dark beach across the middle, like BV1eoQwYPEeu at 82 s
+        box = self.write(img, "北海道的冬天", 80, (200, 200), (255, 68, 0))
+        c = self.mv.text_colour(img, box)
+        r, g, b = self.rgb(c["fill"])
+        self.assertTrue(r > 220 and g < 110 and b < 60, c)  # orange-red, neither the snow nor the sand
+        self.assertEqual(c["edge"], "none", c)  # dark edges over the sand are not an outline
+
+    def test_white_over_dark(self):
+        img = self.scene((32, 40, 48))
+        c = self.mv.text_colour(img, self.write(img, "知床半岛", 70, (260, 200), (255, 255, 255)))
+        self.assertGreater(c["fill_L"], 90, c)
+        self.assertEqual(c["edge"], "none", c)
+
+    def test_dark_grey_over_bright_ice_with_dark_water(self):
+        img = self.scene((223, 230, 236))
+        img[150:420, 120:170] = self.scene((24, 36, 48))[150:420, 120:170]  # open water beside the card
+        c = self.mv.text_colour(img, self.write(img, "湿原之神", 70, (200, 220), (34, 42, 47)))
+        self.assertLess(c["fill_L"], 25, c)
+
+    def test_outlined_title_gives_the_fill(self):
+        img = self.scene((120, 128, 110), noise=25)
+        c = self.mv.text_colour(img, self.write(img, "北极圈", 96, (300, 180), (255, 255, 255), 3, (20, 20, 20)))
+        self.assertGreater(c["fill_L"], 85, c)
+        self.assertEqual(c["edge"], "dark", c)
+
+    def test_caption_plate(self):
+        def caption(bg, plate):
+            img = self.scene(bg, noise=10)
+            box = self.write(img.copy(), "我回来啦今天很冷", 22, (380, 470), (224, 214, 176))
+            if plate:  # a translucent black plate, padded like the Lawrence captions
+                x0, y0, x1, y1 = box
+                pad = int(0.3 * (y1 - y0))
+                img[y0 - pad:y1 + pad, x0 - 12:x1 + 12] = (img[y0 - pad:y1 + pad, x0 - 12:x1 + 12] * 0.45).astype(np.uint8)
+            self.write(img, "我回来啦今天很冷", 22, (380, 470), (224, 214, 176))
+            return self.mv.text_colour(img, box, plate=True)
+        on = caption((150, 165, 185), True)
+        self.assertIs(on["plate"], True, on)
+        r, g, b = self.rgb(on["fill"])
+        self.assertTrue(r > 190 and b < 200 and r - b > 25, on)  # cream, not the plate under it
+        self.assertEqual(on["edge"], "none", on)  # the plate around the letters is no outline
+        self.assertIs(caption((150, 165, 185), False)["plate"], False)
+        self.assertIsNone(caption((8, 8, 10), True)["plate"])  # too dark to see a dark plate: no verdict
+
+
 
 @unittest.skipUnless(os.environ.get("ASR"), "set ASR=1 to run whisper (needs the 1.6 GB model)")
 class AsrSentencesTest(unittest.TestCase):
@@ -503,6 +583,16 @@ class GradeTest(unittest.TestCase):
         self.assertTrue(all(v["ok"] for v in fitted.values()), fitted)
         self.assertLessEqual(res["evals"], self.g.EVALS)
         self.assertEqual(res, self.g.solve(self.frames, target, self.src, night=False, cast=True))  # deterministic
+
+    def test_a_card_without_cast_keys_grades_the_tone_only(self):
+        # a creator pack keeps only the keys its films agree on (learnings 2026-11-13): lawrence has no
+        # chroma, sh_b, mid_b, hi_b; grading toward it must not fail, and fits only what it has
+        thin = {k: v for k, v in card_of(self.src, L50=4.0).items() if k not in ("chroma", "sh_b", "mid_b", "hi_b")}
+        g = self.g.grade_chapter("A", self.frames, thin, None, True)
+        fitted = {k for k, v in g["look"].items() if v["fit"]}
+        self.assertTrue(fitted)
+        self.assertFalse(fitted & {"chroma", "sh_b", "mid_b", "hi_b"}, fitted)
+        self.assertIn("mid_b", self.g.thin_card("lawrence", thin, cast=True))
 
     def test_inside_the_card_stays_put(self):
         target = card_of(self.src, L50=1.0, chroma=-1.0)  # within half a tolerance: nothing to fix

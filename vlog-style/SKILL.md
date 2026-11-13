@@ -89,6 +89,8 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
    - `--out` 已经存在时拒绝覆盖，因为定稿的 style.json 里有手写的项。重炼时不加 `--out`，草稿写到第一个参考目录下的 `style.draft.json`，对照着把变化并回去；确实要整个覆盖才加 `--force`。
    - 合并的参考来自不同 UP 主（mid）时会打印警告。
 7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md 和 sources.md，补完 style.json 里要看过画面才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
+   - 写包时才发现的特效（或要改名的特效）先补进参考的 labels.json，再重新 draft，不直接加进 style.json：博主级包的 effects 只从 labels 汇总。draft 会拿只用这一条参考的包比一遍，包里有、labels 里没有的会警告。
+   - 草稿 `evidence.unverified` 里列的项要逐条处理：参考之间写法不同的文字、不一致的颜色、混了几种卡片的标题、没测到的字幕描边和底板。处理结果写进炼化记录。
    - sources.md 开头是出处表：UP 主（名字、mid、空间链接）、视频（标题、链接、发布日期、时长）、测量日期，至少要有视频链接。style.json 的 `sources[]` 由 aggregate 从 meta.json 填好 url、title、author，和出处表对一遍。出处主要给人回溯，复刻时默认不去看原片（见第 5 节）。
 8. **验收。** 过一遍 [qa.md](references/qa.md) 的炼化清单，再把 STYLE.md 交给用户审。
 9. **试剪。** 用户给几段素材走一遍 apply（工程名 `vlog-style-QA-*`），对照关键帧和统计；问题改回风格包，记进 learnings.md。
@@ -104,7 +106,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 3. **分类。** 旅行片、器材和手机评测、音乐纯享、实验片分开，只挑和要学的风格同类的。都写进 `styles/<博主>/sources.md` 的候选表，每条写状态（入池 / 待炼 / 不入池）和理由。
 4. **挑 3 条给用户确认，确认后才下载。** 挑法听用户的（links 第一批是旅行片里播放量最高的三条）；用户没说就先挑 20–30 分钟的。第一次炼长片时把耗时记进 measure.md。
 5. **逐条炼化。** 每条走上面的第 1–10 步，ref id 直接用 BV 号，第 10 步用 `keep --style <博主>`。一条视频（或同一系列的几集）可以单独成子包 `styles/<博主>/<名字>/`。
-6. **写博主级包。** 炼完至少 2 条之后：`aggregate.py draft --name <博主> "$(python3 -I -B paths.py resolve styles/<博主>/refs)"/* --out vlog-style/styles/<博主>/style.json`，basis 是 multi_reference。节奏按每条视频的中位数比较。调色跟着内容走（polar-night 各章中间调的 b 从 −21 到 +12），博主级包的 look 只写各条一致的部分，调色核对用子包。
+6. **写博主级包。** 炼完至少 2 条之后：`aggregate.py draft --name <博主> "$(python3 -I -B paths.py resolve styles/<博主>/refs)"/* --out vlog-style/styles/<博主>/style.json`，basis 是 multi_reference。节奏按每条视频的中位数比较。调色跟着内容走（polar-night 各章中间调的 b 从 −21 到 +12），博主级包的 look 只写各条一致的部分，draft 按 style-schema.md「两种文件夹」的规则自动去掉不一致的项，调色核对用子包。
 
 ### 只要这一条：misc
 
@@ -173,3 +175,4 @@ uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg
 - 2026-11-06 第一批三条炼完：`links/lonely-house`、`links/kula-kangri`、`links/first-snow-mountain`（用户定的挑法：旅行片里播放量最高的三条），测量都 keep 到了 `<root>/styles/links/refs/`。博主级包 `links` 由这三份测量合并，basis = multi_reference，是多参考合并第一次用真实数据，手改项记在 `links/STYLE.md` 的炼化记录。polar-night 没有参与合并。三条的缓存 2026-11-06 移进了废纸篓，清不清空由用户定。试剪还没做：没有素材。
 - 2026-11-07 复刻补上了对白片要的环节：纸面剪辑（`story.json`）驱动的对白剪辑和按拍摄顺序铺开、按句转写和外语原文、`subs.py` 出字幕、`story.py review` 审片拼图、照片入片（`photo_clips.py`）、按章调色（`grade.py`）、对白和整片电平（`mix.py`）、读回整理和成片核对（`compare.py normalize`、`final`）。没有 story 时输出和改动前逐字节相同（`test_plan_cut.py` 的 baseline 测试）。Resolve 探针 #13–#17 跑完，#17 用合成素材从计划走到 H.265 成片，`compare.py final` 全过。用真实素材的完整试剪还没做；Links 包里 `aroll` 除 `speech_share` 外的值和 `photo` 块标着「存疑」，等试剪再定。
 - 2026-11-10 到 11-11 第二批九条炼完（用户按地点挑：日本四条、极地三条、极夜系列两集）：`links/hokkaido-dream`、`links/oki-islands`、`links/kyoto`、`links/aomori`、`links/uummannaq`、`links/longyearbyen`、`links/lofoten`，`links/polar-night` 由两集重建，替换 11-01 只用第 1 集的版本。测量都 keep 到了 `<root>/styles/links/refs/`，博主级包 `links` 由 12 份测量重新合并。途中改了四处：look 逐镜头遮黑边、2:1 参考的文字位置换算、字幕带取文字最密的一行、keep 清掉 `subtitle_misread` 的原文（见 learnings.md 2026-11-10、11-11）。第二批的缓存还在 `<root>/cache/refs/`，用户审过 STYLE.md 后决定先不清；以后清不清还是由用户定。
+- 2026-11-13 修了炼化小鹿Lawrence 时发现的 5 个脚本问题：标题颜色测成背景色、叠化带上甩镜方向、剪辑点太少也判卡点可信、博主级合并只取一条参考的写法、子包手加的特效进不了博主级包（见 learnings.md 2026-11-13）。字幕的颜色、描边、底板改成测量，只有 2026-11-13 以后跑过 strips 的参考才有。

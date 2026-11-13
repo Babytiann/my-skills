@@ -12,6 +12,58 @@
 - 修法：改成了什么，改了哪个文件或参数
 ```
 
+## 2026-11-13 标题颜色测成了背景色：橙红字压在雪地和深色沙滩上
+- 场景：lawrence 第一批，《北海道4k旅拍》（BV1eoQwYPEeu）。片名卡 track 127（82 s）和片尾 track 437（280 s）是橙红衬线字（约 #ff4400），背景是雪地，中间夹着深色沙滩和树枝
+- 做法：`measure_video.title_colour` 只按 L 做 Otsu 二分，哪一侧的 L 离外圈背景远就当字，取笔画核心
+- 问题：橙红字的 L（约 57）和背景差不多，雪和沙滩各占一侧。127 测成淡蓝白 #d2dde9，437 测成灰 #616369，草稿的 `text.title.color` 跟着错。写包时看截图才发现，手改成 #ff4400
+- 修法：新的 `text_colour` 把文字框和外圈一起放到 Lab 三通道上分 5 类：框里占比最大、外圈也有的一类是底；在框里明显比外圈多的是字的候选；候选里取离底最远、又最少贴着底的一类（阴影贴着底板，描边和抗锯齿包着填充色），颜色取这一类里离底最远的 10%。描边改成和每个字旁边的局部背景比，雪地夹沙滩不再误报描边。只读打表：127 → #ff4100，437 → #ff4200；日本 0（深蓝）、111 和 757（白）、misc 2819（深灰压在亮冰上）、四张 Part 卡（白）都没变。test_synthetic 加 `TextColourTest`：橙红字压雪地夹沙滩、白字压暗底、深灰字压亮冰、带黑描边的白字、字幕有没有底板。三条缓存的 strips 里存的还是旧颜色，要不要 `--redo strips` 由用户定
+
+## 2026-11-13 叠化带上了甩镜候选的方向
+- 场景：lawrence 第一批，北海道 event 0 测成甩镜候选（`whip_dir` right），判读成 dissolve
+- 做法：aggregate 给每个剪辑点取方向时，先取标签的，没有就取测量的 `whip_dir`，不管标签最后判成什么类型；汇总时同一类型取最常见的方向
+- 问题：北海道和博主级草稿的 dissolve 都写成 direction "right"，日本是 "left"，misc 的急推转场是 "in"。叠化没有方向，schema 里 direction 又只能是字符串，写不了 null，三个包都是手动把这个键删掉的
+- 修法：`schema.DIRECTED = [whip, wipe]`，`aggregate.cut_direction` 只给这两种写方向，测量的 `whip_dir` 只在类型是 whip 时才用；`check_style` 碰到别的类型带 direction 就报错。test_tools 加 `DirectionTest`，test_stats 加 schema 的那一条
+
+## 2026-11-13 只有十几个剪辑点、两种算法速度对不上，也判节拍可信
+- 场景：misc/lawrence-hokkaido（BV1S9ZGYqEEr），非人声段里只有 13 个剪辑点：命中率 0，基线 0.055；beat_this 测 93.17 BPM，librosa 测 107.7，`tempo_check.agrees` 为 false。草稿照样写了 `confidence: ok`
+- 做法：只有对齐结果是 too_few_cuts 一类（门槛是 8 个剪辑点）或 `beats.confidence` 是 uncertain 时，才写 uncertain；`tempo_check` 没人看
+- 问题：13 个剪辑点、6% 的基线，随机平移一个都命中不到，命中率说明不了什么；两种算法对不上时拍点本身也不可靠
+- 修法：`stats.MIN_BEAT_CUTS = 20`。aggregate 的 `beat_reliable` 每条参考单独判，三种情况算不可信：剪辑点太少、measure_audio 判 uncertain、两种算法对不上（半速和倍速仍算对得上，日本 75.3 / 152 就是）并且命中率不到基线的 1.5 倍。对不上但命中率高出基线很多的照样可信：links 12 条里有 6 条对不上，其中 5 条的命中率是基线的 2.8–5.3 倍，剪辑点跟着 beat_this 的拍点走。过半参考可信才记 ok，数值只用可信的几条算；每条的判断和原因写进 `evidence.beat`。结果：北海道 ok，日本、misc、lawrence 是 uncertain，links 仍是 ok（命中率 0.203 → 0.209，去掉了斯瓦尔巴）。行为变化：misc 包重新 draft 后不卡点（原来按 0 的命中率卡，实际也不卡）。速度比较挪进 `stats.tempo_agrees`，test_stats 和 test_tools 各加了测试
+
+## 2026-11-13 博主级合并只取一条参考的写法，字幕描边写死，几种卡片混着取中位数
+- 场景：lawrence 博主级包（北海道 + 日本），回看 links 博主级包（12 条）
+- 做法：
+  - grade.summary、grade.grain、audio.mood 取第一个非空值；selection.opening 后面的覆盖前面的；selection.reject 直接拼接
+  - `text.subtitle.stroke` 写死成 true
+  - `text.title` 和 `chapter_card` 把所有角色对得上的卡池化取中位数，颜色取十六进制字符串的众数
+  - grade.look 每项取各条中位数，一致性只查四项，不删任何一项
+- 问题：
+  - 博主级草稿照抄了北海道判读里写的音乐人名字，opening 只剩日本的写法，reject 有重复
+  - 三条参考看过去都没有描边，links 的字幕是浅灰字加半透明暗底板、没有描边，定稿却写着 stroke true（2026-11-13 打表才发现，links 定稿没改）
+  - 日本一条片子里有三种卡（开场片名卡 y 0.33、字高 9.9%；歌名段落标题 y 0.51、27.7%；片尾重现在画面上部），中位数哪一种都对不上；misc 的 chapter_card 混了黑底笑点卡、四张 Part 卡和手写段落标题，算出位置 [0.62, 0.667]、offset 67.33 s
+  - look 照抄中位数，博主级包手改时删掉了 chroma、sh_b、mid_b、hi_b 和 hue_hist
+- 修法（aggregate.py）：
+  - 参考之间写法不同的文字不挑一条：summary、mood 写空串，grain 写 null，opening 不写，记进 `evidence.unverified`；原文只打在 stderr，不进 style.json。只有一条参考时照旧
+  - reject 按原文去重
+  - 字幕的颜色、描边、底板改成测：strips 阶段在字幕线上（居中、在字幕带上、字高够）均匀取最多 12 条，记 `strips.subtitle_samples`；每条参考七成样本一致才算有或没有，看不出底板的（上方画面太暗）不投票，参考之间不一致就不写。老的测量没有样本，也不写，记进 unverified
+  - 标题卡的字高、位置、颜色、时长先按视频取中位数，再在视频之间取；颜色按通道取，参考之间 ΔE > 20 就不写。出现时间（offset_s）照旧把各章开头的卡池化：按视频取中位数时，links 有的片子卡多在章首、偶尔在章中，算出 8.3 s，比池化的 0.2 s 离定稿更远。一条片子里字高差 1.5 倍、或 y 差 0.15 以上的，stderr 逐张列出，记进 `evidence.text_spread` 和 unverified，不自动挑
+  - look 只留各条一致的项（`agreeing_look`）：2–3 条时比值类极差不超过合并中位数的 25%、色偏类相差不超过 2；4 条以上每条都在合并中位数 ± MAD 以内（links 包手改时用的规则）。hue_hist 不合并。去掉的项和各条的值写进 `evidence.look_dropped`。北海道加日本正好得到定稿的 9 项；links 草稿留 L01、chroma、vignette，L50 和 shadow 因为极夜两集出界被去掉（定稿按内容加回来了）
+  - `look_text` 没有 mid_b 时不再写「中性」
+  - `grade.py solve` 和 `compare.py look` 拿缺项的博主级包当 look_ref 本来就不会崩，只是不说；现在 grade 的章节警告和 compare 的输出（`skipped`）都会列出缺的项，提示用子包
+  - 测试：test_tools 加 `MergeTest`，test_synthetic 加缺色偏项的调色测试，原有期望值都没有改
+
+## 2026-11-13 子包里手加的特效进不了博主级包
+- 场景：lawrence/japan-winter 写包时往 style.json 里直接加了 9 条特效：time_stamp（镜头 12）、end_card（145）、film_credits（145）、lyric_subtitle ×6（镜头 32、46、59、63、96、129）
+- 做法：aggregate 的 effects 只从各参考的 labels.json 来
+- 问题：博主级草稿里没有这 9 条，写 lawrence 包时手动补的。下次重新 draft 还会丢
+- 修法：
+  - 规定写包时发现的特效先补进 labels.json，再重新 draft（measure.md 判读约定、SKILL.md 第 4 节第 7 步）
+  - `aggregate.py draft` 拿只用这一条参考的子包或 misc 包（`--packs`，默认仓库的 styles/）比一遍，子包有、labels 没有的逐条警告，写包时改了名的标出 labels 里的名字，并记进 unverified
+  - 多参考合并时每条特效带 `ref`
+  - 日本的 9 条按用户同意补进了 `cache/refs/BV1Rj421S7c4/labels.json`（先备份成 `labels.json.bak-20261113`，note 后面注了来历），重新 draft 后日本的 effects 和定稿一致（17 条），lawrence 也是 34 条，只差北海道镜头 3 的改名（labels 叫 picture_in_picture，定稿叫 film_gate_montage）
+  - misc 还有 6 条改名（framed_clip_inset → picture_in_picture ×5，end_credits → film_credits）会被警告列出来
+  - test_tools 加 `PackOnlyEffectsTest`
+
 ## 2026-11-11 B 站的 HEVC 标成 hev1，OCR 一帧都没读到，却照常退出 0
 - 场景：lawrence 第一批，《日本4k旅拍》（BV1Rj421S7c4）。下载到的是 HEVC，视频轨的 codec tag 是 `hev1`。之前的参考都是 H.264 或 AV1
 - 做法：`vision_ocr.swift` 用 AVFoundation 逐帧取图，取不到的帧只在 stderr 记前 5 条，最后照常写出 ocr.json，退出 0

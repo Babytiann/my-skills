@@ -36,6 +36,8 @@ import paths  # noqa: E402
 import photo_clips  # noqa: E402
 import plan_cut  # noqa: E402
 import prep  # noqa: E402
+import schema  # noqa: E402
+import stats  # noqa: E402
 import story  # noqa: E402
 import subs  # noqa: E402
 
@@ -457,6 +459,268 @@ class WiderPictureTest(unittest.TestCase):
         lb, note = aggregate.pooled_letterbox([2.0, 2.0, 2.0] + [None] * 9)
         self.assertIsNone(lb)
         self.assertIn("3 of 12", note)
+
+
+def fake_measurements(dur=60.0, fps=30.0, shot_s=2.0, beat_s=0.5, beat_shift=0.0, agrees=True):
+    """measure_video.json / measure_audio.json just complete enough for aggregate.analyse_ref.
+
+    Cuts fall every shot_s seconds; beats every beat_s seconds, shifted by beat_shift, so with
+    no shift every cut is on a beat and with a quarter-beat shift none is.
+    """
+    n = int(round(dur / shot_s))
+    shots = [{"i": k, "t0": k * shot_s, "t1": (k + 1) * shot_s, "len_s": shot_s,
+              "start": round(k * shot_s * fps), "end": round((k + 1) * shot_s * fps),
+              "motion": {"type": "static", "zoom": 1.0, "shake": 0.05}} for k in range(n)]
+    cuts = [{"t": k * shot_s, "frame": round(k * shot_s * fps), "kind": "hard", "frames": 1} for k in range(1, n)]
+    mv = {"video": {"fps": fps, "duration_s": dur, "source_fps": fps, "source_size": [1920, 1080]},
+          "cuts": {"cuts": cuts},
+          "scan": {"shots": shots, "events": [], "letterbox": {"top": 0.0, "bottom": 0.0, "aspect": None}},
+          "look": {"summary": {}, "per_shot": [], "hue_hist": None},
+          "text": {"tracks": [], "subtitle_band": None},
+          "strips": {"events": [], "titles": [], "moves": []}}
+    beats = [round(k * beat_s + beat_shift, 4) for k in range(int(dur / beat_s))]
+    ma = {"beats": {"engine": "beat_this", "beats": beats, "nonspeech_spans": [[0.0, dur]], "nonspeech_s": dur,
+                    "confidence": "ok", "bpm": 60 / beat_s},
+          "tempo_check": {"librosa_bpm": 60 / beat_s if agrees else 60 / beat_s * 1.3, "agrees": agrees},
+          "loudness": {"integrated_lufs": -14.0}, "duck": {"db": 6.0}}
+    return mv, ma
+
+
+def write_ref(d: Path, mv: dict, ma: dict, labels: dict | None = None, meta: dict | None = None) -> Path:
+    d.mkdir(parents=True, exist_ok=True)
+    for name, data in (("measure_video.json", mv), ("measure_audio.json", ma), ("labels.json", labels),
+                       ("meta.json", meta)):
+        if data is not None:
+            (d / name).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    return d
+
+
+def whip_event(i: int, cut: int, t: float, whip_dir: str = "right") -> dict:
+    return {"i": i, "kind": "whip", "candidates": ["whip"], "cut": cut, "t": t, "frame": round(t * 30),
+            "frames": 1, "evidence": {"blur": 0.3, "whip_dir": whip_dir}}
+
+
+class DirectionTest(unittest.TestCase):
+    """learnings 2026-11-13: a whip candidate labelled dissolve carried the whip's direction into the dissolve."""
+
+    def test_only_whips_and_wipes_keep_a_direction(self):
+        e = {"evidence": {"whip_dir": "right"}}
+        self.assertIsNone(aggregate.cut_direction("dissolve", {"type": "dissolve", "direction": None}, e))
+        self.assertIsNone(aggregate.cut_direction("dissolve", {"type": "dissolve", "direction": "left"}, e))
+        self.assertEqual(aggregate.cut_direction("whip", {"type": "whip", "direction": "left"}, e), "left")
+        self.assertEqual(aggregate.cut_direction("whip", None, e), "right")  # measured, not labelled
+        self.assertIsNone(aggregate.cut_direction("wipe", None, e))         # whip_dir is a whip's measurement
+        self.assertEqual(aggregate.cut_direction("wipe", {"type": "wipe", "direction": "up"}, e), "up")
+
+    def test_draft_writes_no_direction_on_a_dissolve(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mv, ma = fake_measurements()
+            mv["strips"]["events"] = [whip_event(0, 0, 2.0), whip_event(1, 1, 4.0, "left"), whip_event(2, 2, 6.0)]
+            labels = {"events": [{"i": 0, "type": "dissolve", "frames": 9, "direction": None, "sure": True},
+                                 {"i": 1, "type": "whip", "frames": 8, "direction": "left", "sure": True}]}
+            ref = aggregate.analyse_ref(write_ref(Path(tmp) / "r", mv, ma, labels))
+            style = aggregate.build_style("x", [ref], (3840, 2160))
+        types = {t["type"]: t for t in style["transitions"]}
+        self.assertNotIn("direction", types["dissolve"])
+        self.assertIn(types["whip"]["direction"], ("left", "right"))
+        self.assertEqual(schema.check_style(style), [])
+
+
+class BeatConfidenceTest(unittest.TestCase):
+    """learnings 2026-11-13: 13 cuts and two tempo engines that disagree still drafted confidence ok."""
+
+    @staticmethod
+    def judged(n_cuts=40, hit=0.3, base=0.07, conf="ok", agrees=True):
+        verdict = "too_few_cuts" if n_cuts < stats.MIN_BEAT_CUTS else "not_on_beat"
+        return aggregate.beat_reliable({"align": {"n_cuts": n_cuts, "hit_rate": hit, "baseline": base, "verdict": verdict},
+                                        "ma": {"beats": {"confidence": conf, "bpm": 93.17, "nonspeech_s": 50},
+                                               "tempo_check": {"librosa_bpm": 107.7, "agrees": agrees}}})
+
+    def test_each_reference_is_judged_on_its_own(self):
+        self.assertEqual(self.judged(), (True, "ok"))
+        ok, why = self.judged(n_cuts=13, hit=0.0, base=0.055, agrees=False)  # the Lawrence vlog
+        self.assertFalse(ok)
+        self.assertIn("too_few_cuts", why)
+        self.assertIn("disagree", why)
+        self.assertFalse(self.judged(conf="uncertain")[0])
+        self.assertFalse(self.judged(hit=0.0556, base=0.0673, agrees=False)[0])  # Svalbard: 0.83x
+        ok, why = self.judged(hit=0.209, base=0.0743, agrees=False)               # Kula Kangri: 2.8x
+        self.assertTrue(ok)
+        self.assertIn("follow beat_this", why)
+
+    def test_most_references_must_be_reliable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            def ref(name, **kw):
+                return aggregate.analyse_ref(write_ref(Path(tmp) / name, *fake_measurements(**kw)))
+            on, on2 = ref("on"), ref("on2")
+            off = ref("off", beat_shift=0.25, agrees=False)  # misses every beat, engines disagree
+            few = ref("few", dur=30.0)                        # 14 cuts
+            size = (3840, 2160)
+            self.assertEqual(aggregate.build_style("x", [on], size)["beat"]["confidence"], "ok")
+            self.assertEqual(aggregate.build_style("x", [few], size)["beat"]["confidence"], "uncertain")
+            half = aggregate.build_style("x", [on, off], size)
+            self.assertEqual(half["beat"]["confidence"], "uncertain")
+            self.assertEqual(half["beat"]["hit_rate"], 0.5)  # uncertain: numbers from every reference
+            most = aggregate.build_style("x", [on, on2, off], size)
+            self.assertEqual(most["beat"]["confidence"], "ok")
+            self.assertEqual(most["beat"]["hit_rate"], 1.0)  # ok: numbers from the reliable ones only
+            self.assertEqual([b["reliable"] for b in most["evidence"]["beat"]], [True, True, False])
+
+
+HK_LOOK = {"L01": [4.905, 2.539], "L50": [40.267, 16.489], "L99": [83.661, 6.363], "Lstd": [19.49, 4.835],
+           "shadow": [0.202, 0.161], "chroma": [5.937, 2.498], "sh_a": [0.125, 0.687], "sh_b": [-2.531, 2.593],
+           "mid_a": [-0.024, 1.352], "mid_b": [-5.054, 6.101], "hi_a": [-0.586, 0.843], "hi_b": [-5.492, 2.765],
+           "vignette": [1.034, 0.323]}  # BV1eoQwYPEeu look.summary (median, mad)
+JP_LOOK = {"L01": [4.37, 1.916], "L50": [38.33, 13.37], "L99": [85.749, 4.339], "Lstd": [21.668, 3.082],
+           "shadow": [0.242, 0.13], "chroma": [4.364, 1.506], "sh_a": [0.078, 0.969], "sh_b": [0.016, 2.454],
+           "mid_a": [-0.891, 0.921], "mid_b": [-1.047, 3.797], "hi_a": [-1.141, 0.937], "hi_b": [-1.586, 2.898],
+           "vignette": [0.959, 0.29]}  # BV1Rj421S7c4
+
+
+def summary_of(look: dict) -> dict:
+    return {k: {"median": m, "mad": d} for k, (m, d) in look.items()}
+
+
+class MergeTest(unittest.TestCase):
+    """learnings 2026-11-13: pooling took one film's words, wrote stroke true for every pack and mixed card kinds."""
+
+    def test_two_films_keep_the_look_keys_they_agree_on(self):
+        look, dropped = aggregate.agreeing_look({"hk": summary_of(HK_LOOK), "jp": summary_of(JP_LOOK)})
+        # the keys the hand-merged lawrence pack kept on 2026-11-12
+        self.assertEqual(set(look), {"L01", "L50", "L99", "Lstd", "shadow", "vignette", "sh_a", "mid_a", "hi_a"})
+        self.assertEqual(set(dropped), {"chroma", "sh_b", "mid_b", "hi_b"})
+        self.assertEqual(dropped["mid_b"]["values"], {"hk": -5.054, "jp": -1.047})
+        self.assertAlmostEqual(look["L50"]["median"], 39.299, delta=0.0011)
+        self.assertAlmostEqual(look["L50"]["mad"], 14.93, delta=0.0011)
+        alone, none = aggregate.agreeing_look({"hk": summary_of(HK_LOOK)})
+        self.assertEqual((len(alone), none), (13, {}))  # one film keeps its whole card
+
+    def test_four_or_more_films_use_the_band(self):
+        films = {f"f{i}": summary_of({"L50": [40 + i, 5.0], "mid_b": [-2.0 + i, 1.0]}) for i in range(4)}
+        films["f4"] = summary_of({"L50": [60.0, 5.0], "mid_b": [0.0, 1.0]})  # one bright film
+        look, dropped = aggregate.agreeing_look(films)
+        self.assertNotIn("L50", look)  # 60 sits outside 42 ± 5
+        self.assertIn("median ± MAD", dropped["L50"]["rule"])
+        self.assertNotIn("mid_b", look)  # -2..2 around 0 with a MAD of 1
+        films = {f"f{i}": summary_of({"L50": [40 + i, 5.0], "mid_b": [-2.0 + i, 3.0]}) for i in range(4)}
+        films["f4"] = summary_of({"L50": [44.0, 5.0], "mid_b": [0.0, 3.0]})  # a wider MAD takes them all in
+        look, _ = aggregate.agreeing_look(films)
+        self.assertEqual(set(look), {"L50", "mid_b"})
+
+    def test_free_text_is_kept_only_when_the_films_agree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            def ref(name, summary, reject):
+                labels = {"grade": {"summary": summary, "grain": "light"}, "audio": {"mood": "慢板钢琴"},
+                          "selection": {"opening": "航拍远景", "reject": reject},
+                          "effects": [{"type": "grain", "global": True}]}
+                return aggregate.analyse_ref(write_ref(Path(tmp) / name, *fake_measurements(), labels))
+            a, b = ref("a", "冷蓝低饱和", ["自拍", "口播"]), ref("b", "近中性偏暖", ["自拍", "地图"])
+            err = io.StringIO()
+            with redirect_stderr(err):
+                pooled = aggregate.build_style("x", [a, b], (3840, 2160))
+            single = aggregate.build_style("x", [a], (3840, 2160))
+        self.assertEqual(pooled["grade"]["summary"], "")
+        self.assertEqual(pooled["grade"]["grain"], {"strength": "light"})
+        self.assertEqual(pooled["audio"]["mood"], "慢板钢琴")
+        self.assertEqual(pooled["selection"]["opening"], "航拍远景")
+        self.assertEqual(pooled["selection"]["reject"], ["自拍", "口播", "地图"])
+        self.assertTrue(any(u.startswith("grade.summary") for u in pooled["evidence"]["unverified"]))
+        self.assertNotIn("冷蓝低饱和", json.dumps(pooled, ensure_ascii=False))  # the words go to stderr only
+        self.assertIn("冷蓝低饱和", err.getvalue())
+        self.assertEqual([e["ref"] for e in pooled["effects"]], ["a", "b"])
+        self.assertEqual(schema.check_style(pooled), [])
+        self.assertEqual(single["grade"]["summary"], "冷蓝低饱和")
+        self.assertNotIn("ref", single["effects"][0])
+
+    @staticmethod
+    def card(rid, track, y, h, x=0.5, fill="#ffffff"):
+        return {"sec": (rid, 0), "track": track, "t_in": float(track), "center": [x, y], "height": h,
+                "colour": {"fill": fill, "edge": "none"}}
+
+    def test_one_film_mixing_card_kinds_is_flagged(self):
+        jp = [self.card("jp", 0, 0.326, 0.0991, fill="#1e4d86"), self.card("jp", 111, 0.510, 0.2772),
+              self.card("jp", 757, 0.243, 0.2427, x=0.72)]  # film title, song-name title, its reprise
+        self.assertEqual(aggregate.card_spread(jp), {"jp": {"n": 3, "height": [0.0991, 0.2772], "y": [0.243, 0.51]}})
+        alike = [self.card("lk", 1, 0.50, 0.062), self.card("lk", 2, 0.52, 0.060), self.card("hk", 3, 0.46, 0.18)]
+        self.assertEqual(aggregate.card_spread(alike), {})  # different films may differ; one film's cards agree
+
+    def test_each_film_is_one_voice(self):
+        many = [self.card("a", k, 0.5, 0.1) for k in range(5)] + [self.card("b", 9, 0.5, 0.3)]
+        self.assertAlmostEqual(aggregate.ref_median(many, lambda t: t["height"]), 0.2)
+        many.append(self.card("c", 10, 0.5, 0.3))  # 5 small cards from one film, 2 big ones from two films
+        self.assertIs(aggregate.ref_vote(many, lambda t: t["height"] > 0.2), True)
+        unverified = []
+        self.assertIsNone(aggregate.pooled_colour({"hk": [1.0, 0.267, 0.0], "jp": [1.0, 1.0, 1.0]}, "t", unverified))
+        self.assertIn("#ff4400", unverified[0])
+        self.assertEqual(aggregate.pooled_colour({"a": [1.0, 1.0, 1.0], "b": [0.98, 0.98, 0.96]}, "t", []),
+                         [0.99, 0.99, 0.98])
+
+    def test_subtitle_stroke_and_plate_are_measured_not_assumed(self):
+        def ref(rid, n, plate=True, edge="none", fill="#fefad0"):
+            samples = [{"track": k, "colour": {"fill": fill, "edge": edge, "plate": plate}} for k in range(n)]
+            return {"id": rid, "mv": {"strips": {"subtitle_samples": samples}}}
+        unverified = []
+        out = aggregate.subtitle_look([ref("jp", 10), ref("misc", 8, fill="#ddd2ab")], unverified)
+        self.assertEqual((out["plate"], out["stroke"]), (True, False))
+        self.assertEqual(len(out["color"]), 3)
+        self.assertEqual(unverified, [])
+        out = aggregate.subtitle_look([ref("hk", 10, plate=False), ref("jp", 10)], unverified)
+        self.assertNotIn("plate", out)  # the films disagree: the pack writer decides
+        self.assertTrue(any("plate" in u for u in unverified))
+        dark = ref("night", 10)  # six of ten over a scene too dark to show a plate: they abstain
+        for s in dark["mv"]["strips"]["subtitle_samples"][:6]:
+            s["colour"]["plate"] = None
+        self.assertIs(aggregate.subtitle_look([dark], [])["plate"], True)
+        unverified = []
+        self.assertEqual(aggregate.subtitle_look([{"id": "old", "mv": {"strips": {}}}], unverified), {})
+        self.assertIn("没有字幕样本", unverified[0])
+
+    def test_a_thin_card_says_what_it_leaves_out(self):
+        pooled, _ = aggregate.agreeing_look({"hk": summary_of(HK_LOOK), "jp": summary_of(JP_LOOK)})
+        self.assertEqual(compare.missing_look_keys(pooled), ["chroma", "sh_b", "mid_b", "hi_b"])
+        warn = grade.thin_card("lawrence", pooled, cast=True)
+        for k in ("chroma", "sh_b", "mid_b", "hi_b"):
+            self.assertIn(k, warn)
+        self.assertIn("look_ref", warn)
+        self.assertNotIn("mid_b", grade.thin_card("lawrence", pooled, cast=False))  # cast keys are not fitted
+        self.assertIsNone(grade.thin_card("hk", summary_of(HK_LOOK), cast=True))
+
+
+class PackOnlyEffectsTest(unittest.TestCase):
+    """learnings 2026-11-13: nine effects added straight into japan-winter's style.json never reached the creator pack."""
+
+    def test_effects_only_in_the_sub_pack_are_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            labelled = [{"type": "grain", "global": True}, {"type": "photo_insert", "shot": 3}]
+            ref = write_ref(tmp / "refs" / "BVx", *fake_measurements(), {"effects": labelled})
+            packs = tmp / "styles"
+
+            def pack(name, ids, effects):
+                (packs / name).mkdir(parents=True, exist_ok=True)
+                (packs / name / "style.json").write_text(json.dumps(
+                    {"sources": [{"id": i} for i in ids], "effects": effects}), encoding="utf-8")
+            pack("grp/sub", ["BVx"], labelled + [{"type": "time_stamp", "shot": 1},
+                                                 {"type": "picture_in_picture", "shot": 3}])
+            pack("grp", ["BVx", "BVy"], [{"type": "end_card", "shot": 9}])  # a creator pack: not this ref's own
+            out = tmp / "draft.json"
+            err = io.StringIO()
+            with redirect_stderr(err), redirect_stdout(io.StringIO()):
+                code = aggregate.main(["draft", "--name", "x", str(ref), "--out", str(out), "--packs", str(packs)])
+            self.assertEqual(code, 0, err.getvalue())
+            self.assertIn("2 effect(s) in its pack but not in labels.json", err.getvalue())
+            self.assertIn("grp/sub: time_stamp @ shot 1", err.getvalue())
+            self.assertIn("picture_in_picture @ shot 3  (labels call it photo_insert)", err.getvalue())
+            self.assertNotIn("end_card", err.getvalue())
+            style = json.loads(out.read_text(encoding="utf-8"))
+            self.assertTrue(any("2 条特效" in u for u in style["evidence"]["unverified"]))
+            # once labels.json holds them, the draft is quiet
+            (ref / "labels.json").write_text(json.dumps({"effects": labelled + [
+                {"type": "time_stamp", "shot": 1}, {"type": "picture_in_picture", "shot": 3}]}), encoding="utf-8")
+            err = io.StringIO()
+            with redirect_stderr(err), redirect_stdout(io.StringIO()):
+                aggregate.main(["draft", "--name", "x", str(ref), "--out", str(out), "--force", "--packs", str(packs)])
+            self.assertNotIn("effect(s) in its pack", err.getvalue())
 
 
 class StyleLookupTest(TempRoot):

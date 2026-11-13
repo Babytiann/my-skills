@@ -18,6 +18,7 @@ from pathlib import Path
 
 TRANSITIONS = ["hard_cut", "dissolve", "dip_to_black", "flash_white", "whip", "zoom",
                "smooth_cut", "wipe", "other"]
+DIRECTED = ["whip", "wipe"]  # the only transitions that move one way; the rest have no direction
 CONSISTENCY = ["consistent", "varies", "single_source", "uncertain"]
 ROUTES = ["live_api", "fusion", "offline_drt", "offline_drx", "offline_ffmpeg", "manual"]
 STATUSES = ["verified", "probe", "manual"]
@@ -220,6 +221,10 @@ def check_style(style: dict) -> list[str]:
     tshare = sum(t["share"] for t in style["transitions"])
     if abs(tshare - 1.0) > 0.02:
         errs.append(f"$.transitions: shares sum to {tshare:.3f}, expected 1.0")
+    for i, t in enumerate(style["transitions"]):
+        if "direction" in t and t["type"] not in DIRECTED:
+            errs.append(f"$.transitions[{i}].direction: a {t['type']} has no direction "
+                        f"(only {'/'.join(DIRECTED)} do); leave the key out")
     return errs
 
 

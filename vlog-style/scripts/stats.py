@@ -116,6 +116,12 @@ def nearest_offset(t: float, beats: list[float]) -> float | None:
     return t - b
 
 
+# Fewer cuts than this in the music stretches say nothing about cutting on the beat: at a ~6 %
+# baseline, 13 cuts expect less than one hit by chance (learnings 2026-11-13; was 8).
+MIN_BEAT_CUTS = 20
+ON_BEAT_LIFT = 1.5  # hit rate over the shifted-cut baseline that counts as cutting on the beat
+
+
 def beat_alignment(cuts: list[float], beats: list[float], tol: float,
                    spans=None, downbeats=None, shuffles: int = 200, seed: int = 0) -> dict:
     """How often cuts land on beats, compared with chance.
@@ -155,13 +161,21 @@ def beat_alignment(cuts: list[float], beats: list[float], tol: float,
         db = sorted(downbeats)
         out["downbeat_hit_rate"] = round(
             sum(1 for c in use if abs(nearest_offset(c, db)) <= tol) / len(use), 4)
-    if len(use) < 8:
+    if len(use) < MIN_BEAT_CUTS:
         out["verdict"] = "too_few_cuts"
-    elif out["lift"] is not None and out["lift"] >= 1.5 and out["hit_rate"] >= 0.3:
+    elif out["lift"] is not None and out["lift"] >= ON_BEAT_LIFT and out["hit_rate"] >= 0.3:
         out["verdict"] = "on_beat"
     else:
         out["verdict"] = "not_on_beat"
     return out
+
+
+def tempo_agrees(bpm: float | None, other: float | None) -> bool | None:
+    """Do two tempo estimates agree within 4 %? Half and double time count as agreeing.
+    None when either is missing."""
+    if not bpm or not other:
+        return None
+    return any(abs(other * k - bpm) / bpm < 0.04 for k in (0.5, 1, 2))
 
 
 def bpm_from_beats(beats: list[float], spans=None) -> float | None:
