@@ -106,7 +106,7 @@
   "baseline": 0.055,
   "offset_frames": 6,
   "use_downbeats": false,
-  "confidence": "ok"
+  "confidence": "uncertain"
  },
  "transitions": [
   {
@@ -753,6 +753,8 @@
   "beat": [
    {
     "ref": "BV1S9ZGYqEEr",
+    "reliable": false,
+    "why": "too_few_cuts (13 cuts in the music, need 20); tempo engines disagree (93.17 vs librosa 107.7 BPM) and hits are 0.00x the baseline",
     "n_cuts": 13,
     "tol_s": 0.033366700033366704,
     "ibi_s": 0.56,
@@ -761,7 +763,7 @@
     "baseline": 0.055,
     "lift": 0.0,
     "downbeat_hit_rate": 0.0,
-    "verdict": "not_on_beat"
+    "verdict": "too_few_cuts"
    }
   ],
   "moves": {

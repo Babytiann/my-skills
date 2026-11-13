@@ -114,9 +114,9 @@
 - 没有人声的部分很少（8 段、53.7 s），里面只有 13 个剪辑点能测。
 - 其中 0% 落在拍点 ±1 帧以内，随机平移剪辑点的基线是 5.5%；落在重拍上的也是 0；剪辑点相对拍点的中位数是晚 6 帧。`beat_alignment` 判 not_on_beat。
 - 结论：**不卡点**，大概率是对的：对话片的剪辑跟着话和画面走。但数值**存疑**：
-  - 只有 13 个剪辑点，样本太小；aggregate 仍然写了 `confidence: ok`。
+  - 只有 13 个剪辑点，样本太小。aggregate 当时仍然写了 `confidence: ok`；2026-11-14 按新规则改成 `uncertain`：剪辑点少于 20 个，两种算法又对不上（learnings.md 2026-11-13，`evidence.beat` 写了原因）。
   - 拍子本身不稳：beat_this 测 93.17 BPM（全片 bpm_all 100.61），librosa 测 107.7，两种算法对不上；剪辑点附近的拍距 0.56 s（约 107 BPM）。21 处速度变化、24 处拍点中断。
-- 对复刻没有影响：plan_cut 按 `hit_rate` 决定往拍点上吸附的比例，这里是 0，所以不会卡点。
+- 对复刻没有影响：`confidence` 是 uncertain 时 plan_cut 不卡点；原来按 `hit_rate` 0 吸附，也不卡点。
 - J/L cut 没有测：没有跑 whisper，没有逐句的人声时间（第 11 节）。
 
 ## 6. 转场
@@ -400,3 +400,4 @@ plan_cut 放不了的，全部手动做（标在时间线开头）：
   - `effects`：5 条 framed_clip_inset 改名 picture_in_picture（镜头 7、34、52、83、166，note 里保留原名）；end_credits 改名 film_credits（442）；去掉 3 条 chapter_card（116、232、329，归 `text.chapter_card`）；镜头 72 的 note 补上 Part.1 位置的更正（在右下，不在左下）。59 → 56 条。
 - 没改：`audio`（mood 按判读）、`grade`、`rhythm`、`beat`（`confidence` 仍是 aggregate 写的 ok，见第 5 节）、`motion`、`selection`、`deliverable`、`evidence`（`consistency.transitions` 仍按 9 次叠化记）。没有 `text.title`，没写 `motion.slow_mo`（没标，存疑）。
 - 验收对照帧：`<root>/styles/misc/lawrence-hokkaido/stills/`，10 张 320×180 关键帧，文件名带镜头序号和用途：冷开场的长焦人群（000）、框在青色卡上的片段（008）、带字幕的对话自拍（089）、跳切的对话自拍（097）、Part.2 卡（116）、翻页时钟（204）、桥上的长焦人群（280）、流冰照片小窗（350）、知床日落（413）、片尾署名（442）。
+- 2026-11-14：`beat.confidence` ok → uncertain，`evidence.beat` 换成按新规则逐条判过的版本（第 5 节；learnings.md 2026-11-13）。参考的 labels.json 里 6 条特效改成包里用的名字（framed_clip_inset → picture_in_picture ×5，end_credits → film_credits），重新 draft 不再警告。
