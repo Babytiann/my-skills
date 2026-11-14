@@ -714,5 +714,189 @@ class GradeTest(unittest.TestCase):
                 shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- music library: music_lib.py add + scan
+
+MSR = 44100
+PROG = [[261.63, 329.63, 392.0], [220.0, 261.63, 329.63], [174.61, 220.0, 261.63], [196.0, 246.94, 293.66]]
+
+
+def m_tone(freqs, seconds, amp):
+    t = np.arange(int(seconds * MSR)) / MSR
+    return amp * sum(np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs)
+
+
+def m_place(buf, hit, at):
+    i = int(at * MSR)
+    if i < buf.size:
+        n = min(hit.size, buf.size - i)
+        buf[i:i + n] += hit[:n]
+
+
+def m_kick(amp):
+    t = np.arange(int(0.35 * MSR)) / MSR
+    return amp * np.sin(2 * np.pi * np.cumsum(50 + 70 * np.exp(-t * 30)) / MSR) * np.exp(-t * 9)
+
+
+def m_noise(seconds, decay, amp, seed):
+    t = np.arange(int(seconds * MSR)) / MSR
+    return amp * np.random.default_rng(seed).uniform(-1, 1, t.size) * np.exp(-t * decay)
+
+
+def m_drums(buf, bpm, t0, t1, kick_amp=0.9, snare_amp=0.5, hat_amp=0.15):
+    beat, k = 60 / bpm, 0
+    while t0 + k * beat < t1 - 0.05:
+        at = t0 + k * beat
+        if kick_amp:
+            m_place(buf, m_kick(kick_amp), at)
+        if snare_amp and k % 2 == 1:
+            m_place(buf, m_noise(0.2, 18, snare_amp, k), at)
+        m_place(buf, m_noise(0.05, 60, hat_amp, 1000 + k), at)
+        m_place(buf, m_noise(0.05, 60, hat_amp * 0.6, 2000 + k), at + beat / 2)
+        k += 1
+
+
+def m_write(path, mono):
+    pcm = (np.clip(np.stack([mono, mono], axis=1), -1, 1) * 32767).astype("<i2")
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(MSR)
+        w.writeframes(pcm.tobytes())
+
+
+def song_slow_fade(path):
+    """90 BPM C major, 60 s: quiet to 24 s, loud to 52 s, then -60 dB over 8 s while the beat goes on."""
+    dur = 60.0
+    t = np.arange(int(dur * MSR)) / MSR
+    buf = m_tone([261.63, 329.63, 392.0], dur, 1.0) * np.where(t < 24, 0.03, 0.12)
+    m_drums(buf, 90, 0, 24, kick_amp=0, snare_amp=0, hat_amp=0.03)
+    m_drums(buf, 90, 24, dur)
+    m_write(path, buf * 10 ** (np.where(t < 52, 0.0, -60.0 * (t - 52) / 8) / 20) * 0.8)
+
+
+def song_fast_hard(path):
+    """128 BPM A minor, 45 s: pad only to 4 s, then drums and bass, stopped dead at the end."""
+    dur = 45.0
+    t = np.arange(int(dur * MSR)) / MSR
+    buf = m_tone([220.0, 261.63, 329.63], dur, 0.1) + np.where(t >= 4, m_tone([110.0], dur, 0.25), 0)
+    m_drums(buf, 128, 4, dur)
+    m_write(path, buf * 0.8)
+
+
+def song_piano(path, dur=30.0):
+    """Piano-like notes (decaying harmonics), a C major arpeggio, no drums."""
+    buf = np.zeros(int(dur * MSR))
+    t = np.arange(int(2.0 * MSR)) / MSR
+    notes = [261.63, 329.63, 392.0, 523.25, 392.0, 329.63]
+    for k in range(int(dur / 0.5)):
+        f = notes[k % len(notes)]
+        note = sum(np.sin(2 * np.pi * f * h * t) / h ** 1.5 for h in range(1, 7)) * np.exp(-t * 2.5)
+        m_place(buf, 0.25 * note * np.minimum(1, t / 0.005), 0.5 * k)
+    m_write(path, buf * 0.7)
+
+
+def song_drums(path, dur=30.0):
+    buf = np.zeros(int(dur * MSR))
+    m_drums(buf, 100, 0, dur)
+    m_write(path, buf * 0.7)
+
+
+def m_chords(dur):
+    buf = np.zeros(int(dur * MSR))
+    for k in range(int(dur / 2)):
+        m_place(buf, m_tone(PROG[k % 4], 2.0, 0.15), 2.0 * k)
+    return buf
+
+
+def song_chords(path, dur=30.0):
+    m_write(path, m_chords(dur))
+
+
+def song_voice(path, dur=30.0):
+    """A `say` voice over the same chords: demucs puts any voice in its vocals stem."""
+    text = "今天我们从札幌出发，沿着海岸一路向北开，路边全是雪，天很蓝，风很大，傍晚到了稚内。" * 3
+    aiff = path.with_suffix(".aiff")
+    subprocess.run(["say", "-v", "Tingting", "-o", str(aiff), text], check=True)
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(aiff), "-f", "f32le", "-ac", "1", "-ar", str(MSR), "-"],
+                         check=True, capture_output=True).stdout
+    voice = np.frombuffer(raw, np.float32)[: int(dur * MSR)]
+    buf = m_chords(dur)
+    buf[: voice.size] += 0.5 * voice / (np.abs(voice).max() + 1e-9)
+    m_write(path, buf * 0.8)
+
+
+@unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("uv"), "needs ffmpeg and uv")
+class MusicLibTest(unittest.TestCase):
+    """music_lib.py add + scan on songs whose answers are known.
+
+    Default: --no-models (beats, sections, intro, climax, ending, key). MODELS=1 also runs demucs and CLAP
+    (the first run downloads about 700 MB) on a piano piece, a drum loop, chords, and a voice over chords.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp(prefix="vlog-music-"))
+        cls.env = {**os.environ, paths.ENV_ROOT: str(cls.tmp / "root")}
+        cls.models = bool(os.environ.get("MODELS")) and bool(shutil.which("say"))
+        src = cls.tmp / "src"
+        src.mkdir()
+        songs = {"slow_fade": song_slow_fade, "fast_hard": song_fast_hard}
+        if cls.models:
+            songs |= {"piano": song_piano, "drums": song_drums, "chords": song_chords, "voice": song_voice}
+        for name, make in songs.items():
+            make(src / f"{name}.wav")
+            run([sys.executable, "-I", "-B", str(HERE / "music_lib.py"), "add", str(src / f"{name}.wav"),
+                 "--title", name], cls.env)
+        run(UV + [str(HERE / "music_lib.py"), "scan"] + ([] if cls.models else ["--no-models"]), cls.env)
+        cls.m = {}
+        for tj in (cls.tmp / "root" / "music").glob("*/track.json"):
+            t = json.loads(tj.read_text(encoding="utf-8"))
+            cls.m[t["title"]] = t["measured"]
+
+    @classmethod
+    def tearDownClass(cls):
+        if os.environ.get("KEEP"):
+            print(f"\nkept {cls.tmp}", file=sys.stderr)
+        elif shutil.which("trash"):
+            subprocess.run(["trash", str(cls.tmp)])
+        else:
+            shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_slow_song_with_a_fade(self):
+        m = self.m["slow_fade"]
+        self.assertAlmostEqual(m["beats"]["bpm"], 90, delta=1)
+        self.assertAlmostEqual(m["duration_s"], 60, delta=0.1)
+        self.assertEqual(m["ending"]["type"], "fade")
+        self.assertAlmostEqual(m["climax_s"], 24, delta=2)
+        self.assertAlmostEqual(m["intro_s"], 24, delta=1.5)
+        self.assertEqual((m["key"]["tonic"], m["key"]["mode"]), ("C", "major"))
+
+    def test_fast_song_that_stops_dead(self):
+        m = self.m["fast_hard"]
+        self.assertAlmostEqual(m["beats"]["bpm"], 128, delta=1)
+        self.assertAlmostEqual(m["duration_s"], 45, delta=0.1)
+        self.assertEqual(m["ending"]["type"], "hard")
+        self.assertAlmostEqual(m["climax_s"], 4, delta=1.5)
+        self.assertEqual((m["key"]["tonic"], m["key"]["mode"]), ("A", "minor"))
+
+    def test_records_are_relative_and_a_rescan_skips(self):
+        self.assertEqual(paths.check([self.tmp / "root" / "music"]), [])
+        r = subprocess.run(UV + [str(HERE / "music_lib.py"), "scan", "--no-models"], env=self.env,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr[-1000:])
+        self.assertNotIn("measuring", r.stderr)
+
+    def test_models_hear_a_voice_and_tell_piano_from_drums(self):
+        if not self.models:
+            self.skipTest("MODELS=1 (and macOS `say`) runs demucs and CLAP")
+        self.assertGreater(self.m["voice"]["vocal"]["share"], 0.5)
+        self.assertLess(self.m["chords"]["vocal"]["share"], 0.05)
+        inst = {k: {x["tag"]: x["score"] for x in self.m[k]["tags"] if x["cat"] == "instrument"}
+                for k in ("piano", "drums")}
+        self.assertEqual(max(inst["drums"], key=inst["drums"].get), "drums")
+        self.assertIn("piano", inst["piano"])
+        self.assertGreater(inst["piano"]["piano"], inst["drums"].get("piano", -1.0))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

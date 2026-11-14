@@ -40,8 +40,8 @@ CONFIG = SKILL_DIR / "paths.toml"
 ENV_ROOT = "VLOG_STYLE_ROOT"
 VOLUMES = Path("/Volumes")  # where macOS mounts external and network disks
 
-STYLE_SUBDIRS = ("stills", "luts", "drx", "fusion")
-PROJECT_SUBDIRS = ("footage", "proxies", "index", "plan", "qa")
+STYLE_SUBDIRS = ("stills", "luts", "drx", "fusion", "music")  # music/: profile.json, the CLAP centroid of the refs' music
+PROJECT_SUBDIRS = ("footage", "proxies", "index", "plan", "qa", "music")  # music/: the user's own tracks
 # A creator or misc folder keeps these next to its sub-packs, so a sub-pack can't take the name.
 RESERVED_PIECES = {"refs", *STYLE_SUBDIRS}
 
@@ -98,6 +98,10 @@ class Paths:
 
     def ref(self, ref_id: str) -> Path:
         return self.dir("cache") / "refs" / check_name(ref_id)
+
+    def music(self, track_id: str) -> Path:
+        """One track of the shared music library: <root>/music/<id>/."""
+        return self.dir("music") / check_name(track_id)
 
 
 def check_name(name: str) -> str:
@@ -156,7 +160,7 @@ def load(config: Path = CONFIG, need_volume: bool = True) -> Paths:
     if not root:
         raise SystemExit(f"{config}: missing root")
     dirs = dict(data.get("dirs") or {})
-    for key in ("styles", "projects", "cache"):
+    for key in ("styles", "projects", "cache", "music"):
         dirs.setdefault(key, key)
     for key, value in dirs.items():
         if value.startswith(("/", "~")) or ".." in PurePosixPath(value).parts:
@@ -171,7 +175,7 @@ def load(config: Path = CONFIG, need_volume: bool = True) -> Paths:
 
 def init(paths: Paths, style: str | None = None, project: str | None = None) -> list[Path]:
     made = []
-    targets = [paths.dir(k) for k in ("styles", "projects", "cache")]
+    targets = [paths.dir(k) for k in ("styles", "projects", "cache", "music")]
     if style:
         targets += [paths.style(style) / d for d in STYLE_SUBDIRS]
     if project:

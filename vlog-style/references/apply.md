@@ -12,7 +12,7 @@ P=$(python3 -I -B paths.py resolve projects/<项目>)
 python3 -I -B paths.py init --project <项目>
 ```
 
-会建出 `projects/<项目>/{footage,proxies,index,plan,qa}`。用户把原始素材放进 `footage/`（可以分子目录），音乐放进自己建的 `music/`。素材只读，脚本不会改它。
+会建出 `projects/<项目>/{footage,proxies,index,plan,qa,music}`。用户把原始素材放进 `footage/`（可以分子目录），自己带的曲子放进 `music/`。素材和曲子都只读，脚本不会改它们。共享曲库在 root 下的 `music/`，所有项目共用，怎么加曲子、怎么测见 [music.md](music.md)。
 
 ## 2. 检查素材、做代理
 
