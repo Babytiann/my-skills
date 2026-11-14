@@ -416,6 +416,111 @@
   "sfx": [],
   "music_changes": "约每章 18.0 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 2,
+  "coverage": {
+   "median": 0.811,
+   "mad": 0.022,
+   "p10": 0.789,
+   "p90": 0.833,
+   "n": 2
+  },
+  "songs_per_10min": {
+   "median": 4.3,
+   "mad": 0.3,
+   "p10": 4.0,
+   "p90": 4.6,
+   "n": 2
+  },
+  "bed_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 2
+  },
+  "enter_s": {
+   "median": 0.5,
+   "mad": 0.5,
+   "p10": 0,
+   "p90": 1,
+   "n": 2
+  },
+  "body_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 2
+  },
+  "fade_in_s": {
+   "median": 2.5,
+   "mad": 1.5,
+   "p10": 1.0,
+   "p90": 4.0,
+   "n": 2
+  },
+  "fade_out_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0.0,
+   "p90": 0.0,
+   "n": 2
+  },
+  "under_speech": {
+   "median": 0.778,
+   "mad": 0.03,
+   "p10": 0.748,
+   "p90": 0.807,
+   "n": 2
+  },
+  "duck_db": {
+   "median": 10.3,
+   "mad": 1.1,
+   "p10": 9.2,
+   "p90": 11.4,
+   "n": 2
+  },
+  "song_s": {
+   "median": 110.0,
+   "mad": 50.0,
+   "p10": 40.6,
+   "p90": 181.5,
+   "n": 26
+  },
+  "bpm": {
+   "median": 74.5,
+   "mad": 14.5,
+   "p10": 40.5,
+   "p90": 115.0,
+   "n": 25
+  },
+  "vocal": {
+   "share": 0.248,
+   "verdict": "mixed"
+  },
+  "change_at": "within_chapter",
+  "tags": [
+   {
+    "cat": "energy",
+    "tag": "slow and gentle",
+    "zh": "慢而柔",
+    "share": 0.7
+   }
+  ],
+  "energy_curve": [
+   -3.6,
+   -11.3,
+   -5.6,
+   -6.2,
+   -0.7,
+   -6.5,
+   -17.2,
+   -5.7,
+   -13.1,
+   -1.2
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -578,7 +683,61 @@
   "onsets_per_min": 159.25,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1sHqPBLExZ": {
+     "coverage": 0.789,
+     "songs": 12,
+     "stings": 0,
+     "beds": 0,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "vocal",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "vocal",
+      "instrumental",
+      "instrumental",
+      "instrumental"
+     ],
+     "body_s": 0,
+     "under_speech": 0.748
+    },
+    "BV1HrrjB9EUj": {
+     "coverage": 0.833,
+     "songs": 14,
+     "stings": 1,
+     "beds": 0,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "vocal",
+      "vocal",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "mixed"
+     ],
+     "body_s": 0,
+     "under_speech": 0.807
+    }
+   },
+   "dropped": [
+    "vocal verdict: references differ (BV1sHqPBLExZ instrumental, BV1HrrjB9EUj mixed); pooled as mixed"
+   ],
+   "doubts": []
+  }
  },
  "photo": {
   "dur_s": 2.6,

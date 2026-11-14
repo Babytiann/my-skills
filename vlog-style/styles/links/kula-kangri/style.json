@@ -343,6 +343,123 @@
   "sfx": [],
   "music_changes": "约每章 11.2 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.759,
+   "mad": 0.0,
+   "p10": 0.759,
+   "p90": 0.759,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 4.8,
+   "mad": 0.0,
+   "p10": 4.8,
+   "p90": 4.8,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 69.1,
+   "mad": 0.0,
+   "p10": 69.1,
+   "p90": 69.1,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "body_s": {
+   "median": 30.0,
+   "mad": 0.0,
+   "p10": 30,
+   "p90": 30,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0.0,
+   "p90": 0.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 2.0,
+   "mad": 0.0,
+   "p10": 2.0,
+   "p90": 2.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 0.714,
+   "mad": 0.0,
+   "p10": 0.714,
+   "p90": 0.714,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 12.1,
+   "mad": 0.0,
+   "p10": 12.1,
+   "p90": 12.1,
+   "n": 1
+  },
+  "song_s": {
+   "median": 80.0,
+   "mad": 20.0,
+   "p10": 50.2,
+   "p90": 132.5,
+   "n": 18
+  },
+  "bpm": {
+   "median": 84.0,
+   "mad": 19.6,
+   "p10": 55.2,
+   "p90": 127.0,
+   "n": 18
+  },
+  "vocal": {
+   "share": 0.092,
+   "verdict": "instrumental"
+  },
+  "change_at": "within_chapter",
+  "tags": [
+   {
+    "cat": "instrument",
+    "tag": "flute",
+    "zh": "长笛",
+    "share": 0.36
+   },
+   {
+    "cat": "energy",
+    "tag": "slow and gentle",
+    "zh": "慢而柔",
+    "share": 0.41
+   },
+   {
+    "cat": "energy",
+    "tag": "medium tempo",
+    "zh": "中速",
+    "share": 0.32
+   }
+  ],
+  "energy_curve": [
+   -8.4,
+   -13.3,
+   -4.4,
+   -4.4,
+   -9.1,
+   -2.2,
+   -8.2,
+   -7.6,
+   -0.2,
+   0.0
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -604,6 +721,40 @@
   "onsets_per_min": 182.7,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1jy2CBNEDL": {
+     "coverage": 0.759,
+     "songs": 18,
+     "stings": 0,
+     "beds": 3,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "mixed",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "mixed",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental"
+     ],
+     "body_s": 30,
+     "under_speech": 0.714
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  }
 }

@@ -5,7 +5,8 @@
 Reference downloads, proxies, sheets and strips live in <root>/cache/refs/<id>/
 and are not kept once a style pack is accepted. Before they go, `keep` copies
 what a later re-draft needs (measure_video.json, measure_audio.json,
-labels.json, meta.json) to <root>/styles/<group>/refs/<id>/ with transcripts
+labels.json, meta.json, and measure_music.json with its .embed.json, which hold
+no text) to <root>/styles/<group>/refs/<id>/ with transcripts
 and subtitle text stripped, so a creator album can grow without downloading
 the reference again. The kept copy lives under root only, never in the repo.
 
@@ -192,6 +193,9 @@ def keep(P: vpaths.Paths, ids: list[str], group: str, yes: bool) -> int:
         if (src / "measure_audio.json").exists():
             dump(dest / "measure_audio.json", strip_audio(load(src / "measure_audio.json")))
         dump(dest / "labels.json", strip_labels(labels))
+        for name in (aggregate.MUSIC_FILE, aggregate.MUSIC_EMBED):  # numbers and CLAP vectors only, nothing to strip
+            if (src / name).exists():
+                dump(dest / name, load(src / name))
         meta = aggregate.video_meta(src)
         if meta:
             dump(dest / "meta.json", meta)

@@ -331,6 +331,117 @@
   "sfx": [],
   "music_changes": "约每章 8.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.791,
+   "mad": 0.0,
+   "p10": 0.791,
+   "p90": 0.791,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 4.5,
+   "mad": 0.0,
+   "p10": 4.5,
+   "p90": 4.5,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 24.2,
+   "mad": 0.0,
+   "p10": 24.2,
+   "p90": 24.2,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "body_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 5.0,
+   "mad": 0.0,
+   "p10": 5.0,
+   "p90": 5.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 2.0,
+   "mad": 0.0,
+   "p10": 2.0,
+   "p90": 2.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 0.763,
+   "mad": 0.0,
+   "p10": 0.763,
+   "p90": 0.763,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 9.7,
+   "mad": 0.0,
+   "p10": 9.7,
+   "p90": 9.7,
+   "n": 1
+  },
+  "song_s": {
+   "median": 66.8,
+   "mad": 36.5,
+   "p10": 30.0,
+   "p90": 190.0,
+   "n": 11
+  },
+  "bpm": {
+   "median": 73.7,
+   "mad": 11.9,
+   "p10": 10.5,
+   "p90": 119.5,
+   "n": 11
+  },
+  "vocal": {
+   "share": 0.247,
+   "verdict": "mixed"
+  },
+  "change_at": "within_chapter",
+  "tags": [
+   {
+    "cat": "instrument",
+    "tag": "flute",
+    "zh": "长笛",
+    "share": 0.66
+   },
+   {
+    "cat": "energy",
+    "tag": "slow and gentle",
+    "zh": "慢而柔",
+    "share": 0.5
+   }
+  ],
+  "energy_curve": [
+   -1.2,
+   -4.4,
+   -3.3,
+   -6.9,
+   -7.5,
+   -3.6,
+   -0.6,
+   -9.2,
+   -7.9,
+   0.0
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -574,7 +685,34 @@
   "onsets_per_min": 155.9,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1ydjizBE1o": {
+     "coverage": 0.791,
+     "songs": 11,
+     "stings": 2,
+     "beds": 1,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "mixed",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental"
+     ],
+     "body_s": 0,
+     "under_speech": 0.763
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  },
  "photo": {
   "dur_s": 2.5,

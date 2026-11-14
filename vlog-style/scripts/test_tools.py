@@ -104,6 +104,20 @@ class DownloadTest(TempRoot):
         self.fetch(**{prep.OPENCLI_TIMEOUT_ENV: "7200"})
         self.assertEqual(self.seen.read_text().strip(), "7200")
 
+    @unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+    def test_a_download_whose_sound_stops_early_is_refused(self):
+        # learnings 2026-11-14: a re-download had 3311 s of picture and 560 s of sound
+        src = self.P.ref("BV1test") / "src"
+        src.mkdir(parents=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc2=s=64x36:r=10:d=12", "-f", "lavfi",
+                        "-i", "sine=d=3", "-c:v", "libx264", "-c:a", "aac", str(src / "v.mp4")], check=True)
+        with self.assertRaises(SystemExit) as ctx:
+            self.fetch()
+        self.assertIn("cut short", str(ctx.exception))
+        full = {"format": {"duration": "12"}, "streams": [{"codec_type": "audio", "duration": "11.98"}]}
+        self.assertAlmostEqual(prep.audio_short_s(full), 0.02, places=3)
+        self.assertEqual(prep.audio_short_s({"format": {"duration": "12"}, "streams": [{"codec_type": "video"}]}), 0.0)
+
     def test_failed_download_reports_exit_code_and_both_streams(self):
         with self.assertRaises(SystemExit) as ctx:
             self.fetch(FAKE_DOWNLOAD="fail")
@@ -722,6 +736,105 @@ class PackOnlyEffectsTest(unittest.TestCase):
                 aggregate.main(["draft", "--name", "x", str(ref), "--out", str(out), "--force", "--packs", str(packs)])
             self.assertNotIn("effect(s) in its pack", err.getvalue())
 
+
+
+def music_measure(songs, coverage=0.9, body=40, under=0.8, change="none"):
+    """measure_music.json just complete enough for aggregate.music_of."""
+    return {"schema": "measure_music/1", "coverage": coverage, "enter_s": 0, "body_s": body, "exit_s": 60,
+            "fade_in_s": 3.0, "fade_out_s": 8.0, "under_speech": under, "duck_db": 9.0, "songs_per_10min": 10.0,
+            "change_at": change, "stings": [], "doubts": [], "energy_curve": [-3.0] * 9 + [0.0],
+            "songs": [{"t0": a, "t1": b, "bpm": 80.0, "vocal_share": 0.6 if v == "vocal" else 0.0, "verdict": v,
+                       "tags": [{"cat": "genre", "tag": g, "zh": g + "（中）", "score": 0.3},
+                                {"cat": "genre", "tag": "jazz", "zh": "爵士", "score": 0.2}],
+                       "at_chapter_cut": None, "start_sure": True} for a, b, v, g in songs]}
+
+
+def write_music(ref: Path, mm: dict, vecs) -> Path:
+    (ref / "measure_music.json").write_text(json.dumps(mm, ensure_ascii=False), encoding="utf-8")
+    (ref / "measure_music.embed.json").write_text(json.dumps(
+        {"schema": "measure_music_embed/1", "model": "clap-test", "window_s": 10, "songs": vecs}), encoding="utf-8")
+    return ref
+
+
+class MusicBlockTest(TempRoot):
+    def refs(self, second_verdict="vocal", second_cov=0.9):
+        a = write_music(write_ref(self.root / "r" / "BVa", *fake_measurements()),
+                        music_measure([(0, 60, "vocal", "ambient")]), [[1.0, 0.0]])
+        b = write_music(write_ref(self.root / "r" / "BVb", *fake_measurements()),
+                        music_measure([(0, 20, second_verdict, "ambient"), (20, 60, second_verdict, "ambient")],
+                                      coverage=second_cov, change="chapter"), [[0.0, 1.0], [1.0, 0.0]])
+        return a, b
+
+    def test_draft_pools_the_music_and_writes_the_profile_under_root(self):
+        a, b = self.refs()
+        out = self.root / "draft.json"
+        code, _, err = self.run_main(aggregate.main, ["draft", "--name", "grp", str(a), str(b), "--out", str(out)])
+        self.assertEqual(code, 0, err)
+        m = json.loads(out.read_text(encoding="utf-8"))["music"]
+        self.assertEqual((m["refs"], m["vocal"], m["coverage"]["median"]), (2, {"share": 1.0, "verdict": "vocal"}, 0.9))
+        self.assertEqual([t["tag"] for t in m["tags"]], ["ambient"])  # jazz never leads, so it is not listed
+        self.assertEqual(m["change_at"], "chapter")
+        self.assertEqual((m["song_s"]["p10"], m["song_s"]["p90"]), (20, 60))  # under 5 values: smallest and largest
+        prof = json.loads((self.P.style("grp") / "music" / "profile.json").read_text(encoding="utf-8"))
+        self.assertEqual((prof["refs"], len(prof["songs"])), (["BVa", "BVb"], 3))
+        # BVb alone is (40, 20) by song length; then each film counts once (pooled song time would give 0.981)
+        b_unit = [40 / math.hypot(40, 20), 20 / math.hypot(40, 20)]
+        mean = [(1.0 + b_unit[0]) / 2, b_unit[1] / 2]
+        self.assertAlmostEqual(prof["centroid"][0], mean[0] / math.hypot(*mean), places=4)
+        self.assertEqual(paths.find_absolute(out), [])
+
+    def test_a_pooled_pack_drops_what_the_references_disagree_on(self):
+        a, b = self.refs(second_verdict="instrumental", second_cov=0.3)
+        m, ev = aggregate.music_of([aggregate.analyse_ref(a), aggregate.analyse_ref(b)])
+        self.assertNotIn("coverage", m)
+        self.assertEqual(m["vocal"]["verdict"], "mixed")
+        self.assertEqual(len(ev["dropped"]), 2)
+        one, _ = aggregate.music_of([aggregate.analyse_ref(b)])  # one reference: its own numbers stand
+        self.assertEqual((one["coverage"]["median"], one["vocal"]["verdict"]), (0.3, "instrumental"))
+
+    def test_a_quiet_bed_is_not_one_of_the_pack_songs(self):
+        mm = music_measure([(0, 30, "instrumental", "solo piano"), (30, 60, "vocal", "ambient")])
+        mm["songs"][0]["bed"] = True
+        m, ev = aggregate.music_of([{"id": "BVa", "mm": mm}])
+        self.assertEqual((m["vocal"]["share"], [t["tag"] for t in m["tags"]], m["song_s"]["median"]), (1.0, ["ambient"], 30))
+        self.assertEqual((ev["refs"]["BVa"]["songs"], ev["refs"]["BVa"]["beds"]), (1, 1))
+
+    def test_a_near_tie_between_tags_gives_no_tag(self):
+        mm = music_measure([(0, 60, "vocal", "ambient")])
+        mm["songs"][0]["tags"][1]["score"] = 0.29  # jazz 0.01 behind ambient
+        m, _ = aggregate.music_of([{"id": "BVa", "mm": mm}])
+        self.assertEqual(m["tags"], [])
+
+    def test_section_music_changes_only_the_music_block(self):
+        a, b = self.refs()
+        out = self.root / "style.json"
+        self.run_main(aggregate.main, ["draft", "--name", "grp", str(a), str(b), "--out", str(out)])
+        style = json.loads(out.read_text(encoding="utf-8"))
+        del style["music"], style["evidence"]["music"]
+        style["summary"] = "手写的总结"
+        out.write_text(json.dumps(style, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        before = out.read_text(encoding="utf-8")
+        code, _, err = self.run_main(aggregate.main, ["draft", "--name", "grp", str(a), str(b), "--out", str(out),
+                                                      "--section", "music"])
+        self.assertEqual(code, 0, err)
+        after = json.loads(out.read_text(encoding="utf-8"))
+        self.assertEqual(list(after).index("music"), list(after).index("audio") + 1)
+        self.assertEqual(after["summary"], "手写的总结")
+        del after["music"], after["evidence"]["music"]
+        self.assertEqual(json.dumps(after, ensure_ascii=False, indent=2) + "\n", before)  # nothing else, same format
+        with self.assertRaises(SystemExit):  # the section goes into a finished pack, never a new file
+            aggregate.main(["draft", "--name", "grp", str(a), "--out", str(self.root / "none.json"), "--section", "music"])
+
+    def test_keep_takes_the_music_measurements_along(self):
+        ref = self.P.ref("BV1keep")
+        ref.mkdir(parents=True)
+        mv, ma = fake_measurements()
+        write_ref(ref, mv, ma, {"ref": "BV1keep", "chapters": []})
+        write_music(ref, music_measure([(0, 60, "vocal", "ambient")]), [[1.0, 0.0]])
+        code, _, err = self.run_main(cleanup.main, ["keep", "BV1keep", "--style", "links", "--yes"])
+        self.assertEqual(code, 0, err)
+        kept = self.P.style_refs("links") / "BV1keep"
+        self.assertTrue((kept / "measure_music.json").exists() and (kept / "measure_music.embed.json").exists())
 
 class StyleLookupTest(TempRoot):
     def test_missing_pack_names_existing_ones(self):

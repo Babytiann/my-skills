@@ -370,6 +370,129 @@
   "sfx": [],
   "music_changes": "约每章 1.6 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.989,
+   "mad": 0.0,
+   "p10": 0.989,
+   "p90": 0.989,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 4.2,
+   "mad": 0.0,
+   "p10": 4.2,
+   "p90": 4.2,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "body_s": {
+   "median": 80.0,
+   "mad": 0.0,
+   "p10": 80,
+   "p90": 80,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 4.0,
+   "mad": 0.0,
+   "p10": 4.0,
+   "p90": 4.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 10.0,
+   "mad": 0.0,
+   "p10": 10.0,
+   "p90": 10.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 1.0,
+   "mad": 0.0,
+   "p10": 1.0,
+   "p90": 1.0,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 15.7,
+   "mad": 0.0,
+   "p10": 15.7,
+   "p90": 15.7,
+   "n": 1
+  },
+  "song_s": {
+   "median": 140.0,
+   "mad": 59.7,
+   "p10": 80.3,
+   "p90": 199.7,
+   "n": 2
+  },
+  "bpm": {
+   "median": 69.9,
+   "mad": 10.2,
+   "p10": 59.7,
+   "p90": 80.1,
+   "n": 2
+  },
+  "vocal": {
+   "share": 0.713,
+   "verdict": "vocal"
+  },
+  "change_at": "chapter",
+  "tags": [
+   {
+    "cat": "genre",
+    "tag": "post-rock",
+    "zh": "后摇",
+    "share": 0.71
+   },
+   {
+    "cat": "mood",
+    "tag": "epic",
+    "zh": "壮阔",
+    "share": 0.71
+   },
+   {
+    "cat": "instrument",
+    "tag": "ukulele",
+    "zh": "尤克里里",
+    "share": 0.71
+   },
+   {
+    "cat": "energy",
+    "tag": "intense and powerful",
+    "zh": "强烈",
+    "share": 0.71
+   }
+  ],
+  "energy_curve": [
+   -6.2,
+   -22.3,
+   -11.3,
+   -1.0,
+   -1.5,
+   -3.6,
+   -3.9,
+   -6.8,
+   0.0,
+   -0.8
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -558,7 +681,25 @@
   "onsets_per_min": 182.4,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1eoQwYPEeu": {
+     "coverage": 0.989,
+     "songs": 2,
+     "stings": 0,
+     "beds": 0,
+     "verdicts": [
+      "instrumental",
+      "vocal"
+     ],
+     "body_s": 80,
+     "under_speech": 1.0
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  },
  "photo": {
   "dur_s": 0.83,

@@ -374,6 +374,123 @@
   "sfx": [],
   "music_changes": "约每章 0.5 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.942,
+   "mad": 0.0,
+   "p10": 0.942,
+   "p90": 0.942,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 2.3,
+   "mad": 0.0,
+   "p10": 2.3,
+   "p90": 2.3,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 21.3,
+   "mad": 0.0,
+   "p10": 21.3,
+   "p90": 21.3,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "body_s": {
+   "median": 40.0,
+   "mad": 0.0,
+   "p10": 40,
+   "p90": 40,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 6.0,
+   "mad": 0.0,
+   "p10": 6.0,
+   "p90": 6.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 12.0,
+   "mad": 0.0,
+   "p10": 12.0,
+   "p90": 12.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 0.898,
+   "mad": 0.0,
+   "p10": 0.898,
+   "p90": 0.898,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 6.9,
+   "mad": 0.0,
+   "p10": 6.9,
+   "p90": 6.9,
+   "n": 1
+  },
+  "song_s": {
+   "median": 218.7,
+   "mad": 0.0,
+   "p10": 218.7,
+   "p90": 218.7,
+   "n": 1
+  },
+  "bpm": {
+   "median": 74.7,
+   "mad": 0.0,
+   "p10": 74.7,
+   "p90": 74.7,
+   "n": 1
+  },
+  "vocal": {
+   "share": 1.0,
+   "verdict": "vocal"
+  },
+  "change_at": "none",
+  "tags": [
+   {
+    "cat": "mood",
+    "tag": "warm",
+    "zh": "温暖",
+    "share": 1.0
+   },
+   {
+    "cat": "instrument",
+    "tag": "ukulele",
+    "zh": "尤克里里",
+    "share": 1.0
+   },
+   {
+    "cat": "energy",
+    "tag": "upbeat and energetic",
+    "zh": "明快有劲",
+    "share": 1.0
+   }
+  ],
+  "energy_curve": [
+   -3.1,
+   -7.8,
+   -7.7,
+   -7.7,
+   -1.2,
+   -5.9,
+   -4.7,
+   0.0,
+   -2.8,
+   -1.5
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -591,6 +708,23 @@
   "onsets_per_min": 158.3,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1Rj421S7c4": {
+     "coverage": 0.942,
+     "songs": 1,
+     "stings": 1,
+     "beds": 1,
+     "verdicts": [
+      "vocal"
+     ],
+     "body_s": 40,
+     "under_speech": 0.898
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  }
 }

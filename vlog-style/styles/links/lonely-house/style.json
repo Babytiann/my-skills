@@ -331,6 +331,123 @@
   "sfx": [],
   "music_changes": "约每章 17.3 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.948,
+   "mad": 0.0,
+   "p10": 0.948,
+   "p90": 0.948,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 4.1,
+   "mad": 0.0,
+   "p10": 4.1,
+   "p90": 4.1,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 55.9,
+   "mad": 0.0,
+   "p10": 55.9,
+   "p90": 55.9,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "body_s": {
+   "median": 140.0,
+   "mad": 0.0,
+   "p10": 140,
+   "p90": 140,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0.0,
+   "p90": 0.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0.0,
+   "p90": 0.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 0.938,
+   "mad": 0.0,
+   "p10": 0.938,
+   "p90": 0.938,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 8.1,
+   "mad": 0.0,
+   "p10": 8.1,
+   "p90": 8.1,
+   "n": 1
+  },
+  "song_s": {
+   "median": 95.9,
+   "mad": 52.1,
+   "p10": 42.5,
+   "p90": 263.0,
+   "n": 12
+  },
+  "bpm": {
+   "median": 86.9,
+   "mad": 32.6,
+   "p10": 65.3,
+   "p90": 124.4,
+   "n": 11
+  },
+  "vocal": {
+   "share": 0.092,
+   "verdict": "instrumental"
+  },
+  "change_at": "within_chapter",
+  "tags": [
+   {
+    "cat": "genre",
+    "tag": "cinematic orchestral",
+    "zh": "电影感管弦",
+    "share": 0.41
+   },
+   {
+    "cat": "energy",
+    "tag": "intense and powerful",
+    "zh": "强烈",
+    "share": 0.39
+   },
+   {
+    "cat": "energy",
+    "tag": "medium tempo",
+    "zh": "中速",
+    "share": 0.3
+   }
+  ],
+  "energy_curve": [
+   -3.4,
+   -2.4,
+   -0.7,
+   -3.2,
+   -6.0,
+   -4.6,
+   -6.6,
+   -2.2,
+   0.0,
+   -3.6
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -568,6 +685,34 @@
   "onsets_per_min": 162.8,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1uparzhEjs": {
+     "coverage": 0.948,
+     "songs": 12,
+     "stings": 0,
+     "beds": 2,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "mixed",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental"
+     ],
+     "body_s": 140,
+     "under_speech": 0.938
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  }
 }

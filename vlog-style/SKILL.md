@@ -63,7 +63,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 | yt-dlp | 上网找配乐时只下音频 | `music_lib.py fetch` 用，不登录、不带 cookies |
 | davinci-resolve MCP | 实时搭时间线 | samuelgursky/davinci-resolve-mcp，注册为 `davinci-resolve` 和 `davinci-resolve-advanced`；注册后要新开一个会话（有的客户端要重启）才看得到工具 |
 
-第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变），没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。选曲用的 CLAP（`laion/clap-htsat-unfused`，614 MB）和 demucs（htdemucs，84 MB）第一次 `music_lib.py scan` 时从 Hugging Face 下载，`--no-models` 不用它们（见 measure.md）。
+第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变），没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。选曲用的 CLAP（`laion/clap-htsat-unfused`，614 MB）和 demucs（htdemucs，84 MB）第一次 `music_lib.py scan` 或 `measure_music.py` 时从 Hugging Face 下载，`--no-models` 不用它们（见 measure.md）。
 
 纯标准库的脚本用 `python3 -I -B` 运行，其余用 uv。下载下来的文件只作为参数传给脚本，不在下载目录里运行任何东西。
 
@@ -87,11 +87,13 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 5. **判读。** `aggregate.py labels` 生成骨架；agent 看 `sheets/` 和 `strips/`，按 measure.md 的清单把 labels.json 的空格填上。时间以测量为准，标签只补类型和描述；看不准的 `sure` 填 false。字体只判断类别。判读不听声音，声音的结论只来自测量和转写（见第 2 节）。
    - 测到的推拉多半是机位在动（无人机、车、步行），要看 `strips/moves_*.jpg` 逐个判 digital / camera，风格里的推拉比例只算 digital。
    - 转场候选误报很多（暗镜头、运动中切），每条都看事件条再定。
+   - 判读完跑 `measure_music.py`：配乐覆盖多少、几首、有没有人唱、什么时候进和铺开、口播下面垫不垫、怎么收尾、和章节怎么对应，每首歌的 CLAP 向量。要用 labels 的章节和歌词字幕；判读前跑过的加 `--rebuild` 重算（几秒）。
 6. **汇总。** `aggregate.py draft --name <名字> <参考目录>… --out vlog-style/styles/<名字>/style.json`。对不上测量的标签会被拒收，列进 `evidence.rejected_labels`。多个参考时比较参考之间是否一致；只有一个参考时比较它的各章节之间，只出现在少数章节的标为「单一来源」。
    - 参考目录可以是 `cache/refs/<id>`，也可以是 keep 留下的 `styles/<博主|misc>/refs/<id>`。
    - `--out` 已经存在时拒绝覆盖，因为定稿的 style.json 里有手写的项。重炼时不加 `--out`，草稿写到第一个参考目录下的 `style.draft.json`，对照着把变化并回去；确实要整个覆盖才加 `--force`。
    - 合并的参考来自不同 UP 主（mid）时会打印警告。
-7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md 和 sources.md，补完 style.json 里要看过画面才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
+   - 参考有 measure_music.json 时写出 `music` 块，各首歌的 CLAP 向量写进 `<root>/styles/<名字>/music/profile.json`（选曲排名用）。给定稿的包补测配乐用 `--section music --out <style.json>`：只改 `music` 块和 `evidence.music`，其余和文件格式不动，这是「不覆盖定稿」唯一的例外。
+7. **写风格包。** 按 [style-schema.md](references/style-schema.md) 的模板写 STYLE.md（§11 含「选曲」）和 sources.md，补完 style.json 里要看过画面才能判断的项（summary、mood、景别配比、慢动作），用 `schema.py style` 校验。从关键帧里挑不超过 10 张放进 `<root>/styles/<名字>/stills/`。
    - 写包时才发现的特效（或要改名的特效）先补进参考的 labels.json，再重新 draft，不直接加进 style.json：博主级包的 effects 只从 labels 汇总。draft 会拿只用这一条参考的包比一遍，包里有、labels 里没有的会警告。
    - 草稿 `evidence.unverified` 里列的项要逐条处理：参考之间写法不同的文字、不一致的颜色、混了几种卡片的标题、没测到的字幕描边和底板。处理结果写进炼化记录。
    - sources.md 开头是出处表：UP 主（名字、mid、空间链接）、视频（标题、链接、发布日期、时长）、测量日期，至少要有视频链接。style.json 的 `sources[]` 由 aggregate 从 meta.json 填好 url、title、author，和出处表对一遍。出处主要给人回溯，复刻时默认不去看原片（见第 5 节）。
@@ -179,4 +181,4 @@ uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg
 - 2026-11-07 复刻补上了对白片要的环节：纸面剪辑（`story.json`）驱动的对白剪辑和按拍摄顺序铺开、按句转写和外语原文、`subs.py` 出字幕、`story.py review` 审片拼图、照片入片（`photo_clips.py`）、按章调色（`grade.py`）、对白和整片电平（`mix.py`）、读回整理和成片核对（`compare.py normalize`、`final`）。没有 story 时输出和改动前逐字节相同（`test_plan_cut.py` 的 baseline 测试）。Resolve 探针 #13–#17 跑完，#17 用合成素材从计划走到 H.265 成片，`compare.py final` 全过。用真实素材的完整试剪还没做；Links 包里 `aroll` 除 `speech_share` 外的值和 `photo` 块标着「存疑」，等试剪再定。
 - 2026-11-10 到 11-11 第二批九条炼完（用户按地点挑：日本四条、极地三条、极夜系列两集）：`links/hokkaido-dream`、`links/oki-islands`、`links/kyoto`、`links/aomori`、`links/uummannaq`、`links/longyearbyen`、`links/lofoten`，`links/polar-night` 由两集重建，替换 11-01 只用第 1 集的版本。测量都 keep 到了 `<root>/styles/links/refs/`，博主级包 `links` 由 12 份测量重新合并。途中改了四处：look 逐镜头遮黑边、2:1 参考的文字位置换算、字幕带取文字最密的一行、keep 清掉 `subtitle_misread` 的原文（见 learnings.md 2026-11-10、11-11）。第二批的缓存还在 `<root>/cache/refs/`，用户审过 STYLE.md 后决定先不清；以后清不清还是由用户定。
 - 2026-11-13 修了炼化小鹿Lawrence 时发现的 5 个脚本问题：标题颜色测成背景色、叠化带上甩镜方向、剪辑点太少也判卡点可信、博主级合并只取一条参考的写法、子包手加的特效进不了博主级包（见 learnings.md 2026-11-13）。字幕的颜色、描边、底板改成测量，只有 2026-11-13 以后跑过 strips 的参考才有。2026-11-14 按新的测量改了定稿包：links 的 13 个包字幕改成不描边、垫底条；lawrence 三个包写明双语台词行才垫底板（japan-winter 的 plate 改成 false）；misc/lawrence-hokkaido 的卡点可信度改成 uncertain。各包的炼化记录里有一条。同一天三条 Lawrence 参考 `--redo strips` 补了新测量后 keep（两条短片在 `<root>/styles/lawrence/refs/`，长片在 `<root>/styles/misc/refs/`），缓存移进了废纸篓。
-- 2026-11-14 开始加选曲（计划：从炼化的参考片学怎么选配乐、在 Resolve 里试听由用户定，或用户说「你来定」时 AI 直接定）。阶段 0 跑完 Resolve 探针 #18–#22、选定模型、核实曲子来源，结论在 music.md、resolve-routes.md 和 learnings.md。阶段 1 做完共享曲库 `music_lib.py`（add、fetch、list、scan）。参考片的配乐测量、风格包的 `music` 块、排名、试听和 AI 定还没做。
+- 2026-11-14 开始加选曲（计划：从炼化的参考片学怎么选配乐、在 Resolve 里试听由用户定，或用户说「你来定」时 AI 直接定）。阶段 0 跑完 Resolve 探针 #18–#22、选定模型、核实曲子来源，结论在 music.md、resolve-routes.md 和 learnings.md。阶段 1 做完共享曲库 `music_lib.py`（add、fetch、list、scan）。阶段 2 做完参考片的配乐测量 `measure_music.py` 和风格包的 `music` 块（`aggregate.py draft --section music`），15 条参考和 16 个包都补测了，STYLE.md §11 加了「选曲」，等用户审。排名、试听和 AI 定还没做。

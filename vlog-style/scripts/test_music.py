@@ -25,6 +25,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # -I drops the script dir
 
+import measure_music as mm  # noqa: E402
 import music_lib as ml  # noqa: E402
 import paths  # noqa: E402
 
@@ -323,6 +324,90 @@ class AnalysisTest(unittest.TestCase):
         self.assertEqual(talk_then_sing["spans"], [[20.0, 30.0]])
         silent = ml.vocal_of([-90.0] * 5, [-90.0] * 5)
         self.assertEqual((silent["share"], silent["verdict"]), (None, None))
+
+
+A, B = [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]  # two songs that sound nothing alike
+
+
+def film(spec: list[tuple]) -> dict:
+    """One tuple per 10 s window: (accompaniment dB, vocals dB, music score, sing score, vector)."""
+    return {"acc": [a for a, *_ in spec for _ in range(10)], "voc": [v for _, v, *_ in spec for _ in range(10)],
+            "windows": [{"music": m, "sing": g} for _, _, m, g, _ in spec], "vecs": [x for *_, x in spec],
+            "tag_keys": [], "tag_vecs": []}
+
+
+SONG_A, SONG_B = (-20.0, -60.0, 0.4, -0.3, A), (-20.0, -60.0, 0.4, -0.3, B)
+AMBIENT = (-40.0, -60.0, -0.2, -0.3, None)
+
+
+class MeasureMusicTest(unittest.TestCase):
+    def test_a_new_song_at_a_silence_on_a_chapter_cut(self):
+        ma = {"duration_s": 200.0, "music": {"silences": [[99.8, 100.4]]}}
+        res, emb = mm.build(film([SONG_A] * 10 + [SONG_B] * 10), ma, [{"t0": 0}, {"t0": 100.0}], today="2026-11-14")
+        self.assertEqual([(s["t0"], s["t1"]) for s in res["songs"]], [(0, 99.8), (99.8, 200.0)])
+        self.assertTrue(res["songs"][1]["at_chapter_cut"] and res["songs"][1]["start_sure"])
+        self.assertEqual((res["change_at"], res["coverage"], res["songs_per_10min"]), ("chapter", 1.0, 6.0))
+        self.assertEqual(emb["songs"], [A, B])
+        self.assertEqual(len(emb["acc_s"]), 200)
+
+    def test_without_a_measured_candidate_only_a_stark_change_splits(self):
+        mid = [-20.0, -60.0, 0.4, -0.3, [0.8, 0.6, 0.0]]  # cos 0.8 / 0.6 with A / B
+        res, _ = mm.build(film([SONG_A] * 6 + [tuple(mid)] * 6), {"duration_s": 120.0})
+        self.assertEqual(len(res["songs"]), 1)
+        res, _ = mm.build(film([SONG_A] * 6 + [SONG_B] * 6), {"duration_s": 120.0})
+        self.assertEqual([s["t0"] for s in res["songs"]], [0, 60.0])
+        self.assertFalse(res["songs"][1]["start_sure"])
+
+    def test_an_opening_sting_and_one_quiet_gap_bridged(self):
+        spec = [SONG_B, AMBIENT] + [SONG_A] * 5 + [AMBIENT] + [SONG_A] * 5
+        res, _ = mm.build(film(spec), {"duration_s": 130.0})
+        self.assertEqual(res["stings"], [{"t0": 0, "t1": 10}])
+        self.assertEqual([(s["t0"], s["t1"]) for s in res["songs"]], [(20, 130.0)])
+
+    def test_a_piece_under_20_s_at_the_start_of_a_run_joins_the_song(self):
+        # edges stay more than CTX windows apart, so a short piece only happens at either end of a run
+        res, _ = mm.build(film([SONG_B] + [SONG_A] * 11), {"duration_s": 120.0})
+        self.assertEqual([e["t"] for e in res["edges"]], [10])
+        self.assertEqual([(s["t0"], s["t1"]) for s in res["songs"]], [(0, 120.0)])
+
+    def test_a_quiet_bed_under_the_talk_then_the_song(self):
+        bed = (-48.0, -25.0, 0.4, -0.2, A)
+        ma = {"duration_s": 120.0, "speech": [[10.0, 40.0]]}
+        res, _ = mm.build(film([SONG_A] + [bed] * 3 + [SONG_A] * 8), ma)
+        self.assertEqual((res["enter_s"], res["body_s"], res["exit_s"]), (0, 40, 120))
+        self.assertEqual((res["under_speech"], res["talk_s"], res["duck_db"]), (1.0, 30, 28.0))
+        self.assertEqual(res["energy_curve"][1], -28.0)
+
+    def test_a_quiet_piece_under_the_talk_is_a_bed_not_a_song(self):
+        bed = (-48.0, -25.0, 0.4, -0.2, B)
+        ma = {"duration_s": 90.0, "speech": [[0.0, 30.0]], "music": {"silences": [[29.8, 30.2]]}}
+        res, _ = mm.build(film([bed] * 3 + [SONG_A] * 6), ma)
+        self.assertEqual([(s["t0"], s["bed"]) for s in res["songs"]], [(0, True), (29.8, False)])
+        self.assertEqual((res["songs_per_10min"], res["change_at"], res["bed_s"], res["body_s"]), (6.67, "none", 29.8, 30))
+        # a long quiet piece under the talking is a song played low (links), not a bed
+        ma = {"duration_s": 120.0, "speech": [[0.0, 60.0]], "music": {"silences": [[59.8, 60.2]]}}
+        res, _ = mm.build(film([bed] * 6 + [SONG_A] * 6), ma)
+        self.assertEqual([(s["t0"], s["bed"]) for s in res["songs"]], [(0, False), (59.8, False)])
+        self.assertEqual((res["songs_per_10min"], res["bed_s"]), (10.0, 0))
+
+    def test_singing_needs_two_windows_in_a_row(self):
+        sung = (-20.0, -15.0, 0.4, 0.2, A)
+        res, _ = mm.build(film([SONG_A] * 3 + [sung] + [SONG_A] * 3 + [sung] * 3), {"duration_s": 100.0})
+        self.assertEqual((res["songs"][0]["vocal_share"], res["songs"][0]["verdict"]), (0.3, "vocal"))
+        quiet = (-20.0, -50.0, 0.4, 0.3, A)  # the sing score alone is not enough: the stem must be audible
+        res, _ = mm.build(film([quiet] * 5), {"duration_s": 50.0}, lyrics=True)
+        self.assertEqual(res["songs"][0]["verdict"], "instrumental")
+        self.assertEqual(len(res["doubts"]), 1)
+
+    def test_fades_and_power_mean(self):
+        self.assertEqual(mm.fade_in_of([-60.0, -50.0, -40.0, -30.0, -20.0] + [-20.0] * 10, 0), 4.0)
+        self.assertEqual(mm.fade_out_of([-20.0] * 10 + [-30.0, -40.0, -50.0], 13), 3.0)
+        self.assertAlmostEqual(mm.power_mean([-20.0, -90.0]), -23.01, places=2)
+
+    def test_no_music_at_all(self):
+        res, emb = mm.build(film([AMBIENT] * 6), {"duration_s": 60.0, "speech": [[0.0, 60.0]]})
+        self.assertEqual((res["coverage"], res["songs"], res["enter_s"], res["body_s"]), (0.0, [], None, None))
+        self.assertEqual((res["change_at"], res["under_speech"]), ("none", 0.0))
 
 
 if __name__ == "__main__":

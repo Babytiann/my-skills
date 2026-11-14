@@ -10,6 +10,7 @@
 - [ ] 卡点：人声多、非人声段少（`beats.confidence = uncertain`）时，结论写「存疑」；beat 的命中率要和随机基线对比着写，不能只写命中率。
 - [ ] 字幕和标题没有混在一起：`subtitle_band` 的位置合理，每个 title 都看过事件条。
 - [ ] 调色的 summary 和 look 数值方向一致。比如写了「偏冷」，`mid_b` 就应该为负。
+- [ ] 每条参考都跑过 `measure_music.py`，style.json 有 `music` 块，§11 有「选曲」小节。`evidence.music` 的 `dropped`（参考之间不一致被去掉的项）和 `doubts`（有歌词字幕却没测出有人唱）在 §11 交代了。选曲的结论能对上已知的事实，比如 STYLE.md 已经写了「前 40 s 只铺旁白」，`body_s` 就该在 40 s 前后；对不上的写「存疑」，不改测量去凑。包里没有歌名和歌手。
 - [ ] `stills/` 不超过 10 张，是低清关键帧，只用来做验收对照。
 - [ ] STYLE.md 里没有参考片的台词原文大段摘录，也没有画面、音乐、字体文件。
 - [ ] `paths.py check` 对风格包、缓存和 `<root>/styles/<博主|misc>/refs/` 里的 JSON 都报 0 个绝对路径。OCR 文字的提示不计入，但要扫一眼确认确实是片子里的字。

@@ -504,16 +504,10 @@ def chroma_of(y, sr: int) -> list[float]:
     return [round(float(v), 4) for v in (c[:, keep] if keep.any() else c).mean(axis=1)]
 
 
-def demucs_levels(path: Path) -> tuple[list[float], list[float]]:
-    """Per-second dB of the vocals stem and of the loudest other stem."""
-    import numpy as np
-    import torch
-    from demucs.apply import apply_model
-    from demucs.pretrained import get_model
-
-    import measure_audio as ma
-
+def _demucs():
     if "demucs" not in _MODELS:
+        from demucs.pretrained import get_model
+
         model = get_model(DEMUCS_MODEL).eval()
         dev = _device()
         try:
@@ -521,24 +515,50 @@ def demucs_levels(path: Path) -> tuple[list[float], list[float]]:
         except Exception:  # noqa: BLE001 - mps can refuse a model; cpu always works
             dev = "cpu"
         _MODELS["demucs"] = (model, dev)
-    model, dev = _MODELS["demucs"]
+    return _MODELS["demucs"]
+
+
+def separate(path: Path, chunk_s: int = 60):
+    """demucs in chunks (a 55-min film never sits in memory as stems). Yields (t0_s, sr, sources, stems):
+    stems is (len(sources), n) mono float32 for that chunk."""
+    import numpy as np
+    import torch
+    from demucs.apply import apply_model
+
+    import measure_audio as ma
+
+    model, dev = _demucs()
     sr = model.samplerate
     wav = np.ascontiguousarray(ma.decode(path, sr, 2).T)
-    vi = model.sources.index("vocals")
-    voc: list[float] = []
-    acc: list[float] = []
-    chunk = 60 * sr
+    chunk = chunk_s * sr
     for a in range(0, wav.shape[1], chunk):
         seg = torch.from_numpy(wav[:, a:a + chunk])
         ref = seg.mean(0)
         mu, sd = ref.mean(), ref.std() + 1e-8
         with torch.no_grad():
             out = apply_model(model, ((seg - mu) / sd)[None], device=dev, split=True, overlap=0.25, progress=False)[0]
-        mono = (out * sd).cpu().numpy().mean(axis=1)
-        secs = mono.shape[1] // sr
-        if secs == 0:
-            continue
-        db = 20 * np.log10(np.sqrt((mono[:, :secs * sr].reshape(len(model.sources), secs, sr) ** 2).mean(2)) + 1e-9)
+        yield a / sr, sr, list(model.sources), (out * sd).cpu().numpy().mean(axis=1).astype(np.float32)
+
+
+def per_second_db(stems, sr: int):
+    """(sources, n) -> (sources, whole seconds) RMS dB; the last partial second is dropped."""
+    import numpy as np
+
+    secs = stems.shape[1] // sr
+    if secs == 0:
+        return np.zeros((stems.shape[0], 0))
+    return 20 * np.log10(np.sqrt((stems[:, :secs * sr].reshape(stems.shape[0], secs, sr) ** 2).mean(2)) + 1e-9)
+
+
+def demucs_levels(path: Path) -> tuple[list[float], list[float]]:
+    """Per-second dB of the vocals stem and of the loudest other stem."""
+    import numpy as np
+
+    voc: list[float] = []
+    acc: list[float] = []
+    for _, sr, sources, stems in separate(path):
+        db = per_second_db(stems, sr)
+        vi = sources.index("vocals")
         voc += [round(float(v), 1) for v in db[vi]]
         acc += [round(float(v), 1) for v in np.delete(db, vi, axis=0).max(axis=0)]
     return voc, acc
@@ -582,12 +602,25 @@ def clap_text(texts: list[str]):
     return torch.nn.functional.normalize(t, dim=-1).cpu().numpy()
 
 
-def clap_windows(y, sr: int = 48000, window_s: float = 10.0):
-    """Unit CLAP audio vectors for each non-silent window, with the windows' (t0, t1)."""
+def clap_audio(clips: list, sr: int = 48000):
+    """Unit CLAP vectors (numpy, one row per clip). Clips are mono float arrays at `sr`."""
     import numpy as np
     import torch
 
     model, proc, dev = _clap()
+    rows = []
+    for i in range(0, len(clips), 16):
+        ain = {k: v.to(dev) for k, v in proc(audio=clips[i:i + 16], sampling_rate=sr, return_tensors="pt").items()}
+        with torch.no_grad():
+            e = _feats(model.get_audio_features(**ain), "audio")
+        rows.append(torch.nn.functional.normalize(e, dim=-1).cpu().numpy())
+    return np.concatenate(rows) if rows else np.zeros((0, 512), np.float32)
+
+
+def clap_windows(y, sr: int = 48000, window_s: float = 10.0):
+    """Unit CLAP audio vectors for each non-silent window, with the windows' (t0, t1)."""
+    import numpy as np
+
     w = int(window_s * sr)
     clips, spans = [], []
     for a in range(0, max(1, len(y) - w + 1), w):
@@ -595,13 +628,7 @@ def clap_windows(y, sr: int = 48000, window_s: float = 10.0):
         if 20 * np.log10(np.sqrt(np.mean(c ** 2)) + 1e-12) >= -50:
             clips.append(c)
             spans.append((a / sr, min(len(y), a + w) / sr))
-    rows = []
-    for i in range(0, len(clips), 16):
-        ain = {k: v.to(dev) for k, v in proc(audio=clips[i:i + 16], sampling_rate=sr, return_tensors="pt").items()}
-        with torch.no_grad():
-            e = _feats(model.get_audio_features(**ain), "audio")
-        rows.append(torch.nn.functional.normalize(e, dim=-1).cpu().numpy())
-    return (np.concatenate(rows) if rows else np.zeros((0, 512), np.float32)), spans
+    return clap_audio(clips, sr), spans
 
 
 def unit(v):
