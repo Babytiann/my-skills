@@ -20,6 +20,7 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 | [style-schema.md](references/style-schema.md) | 写或审风格包：style.json 每个字段、STYLE.md 模板 |
 | [apply.md](references/apply.md) | 复刻：素材索引、brief、剪辑计划、MCP 搭建顺序、读回格式 |
 | [resolve-routes.md](references/resolve-routes.md) | 任何 Resolve 操作：每个元素走哪条路线、探针清单、常见坑 |
+| [music.md](references/music.md) | 选配乐：曲子从哪来、授权怎么标、在 Resolve 里怎么试听 |
 | [qa.md](references/qa.md) | 交付前：炼化验收和复刻验收清单、已有的教训 |
 | [learnings.md](references/learnings.md) | 开始之前翻一遍；被否掉的做法记在这里 |
 

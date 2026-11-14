@@ -40,6 +40,7 @@
 | 音乐压低（offline_ffmpeg） | 用 `duck.py` 渲染一条只有音乐的压低版音乐床，放在 A2；原始音乐放在一条静音的 A3 上，方便手动重混 | 离线可用（测试实测 −12 dB ±0.5） | 不涉及 Resolve |
 | 片段音量（live_api） | `timeline_item set_property {key:"AudioVolume", value:<dB>}`，范围 −100 到 30。不要用 `set_audio Volume` | 已验证 | 通过（#12）：读回 −12，渲染实测稳态 −12.00 dB。整片电平（#17）：`mix.py dialogue` 的 +7.6、−0.3 写进去后，只出音频的渲染里两段对白 −15.8、−16.0 LUFS（目标 −16）；`mix.py master` 一轮 +2.3 dB，第二次渲染 −14.1 LUFS、真峰值 −1.0 dBTP，和预测一样，`master_db` 不再变 |
 | 淡入淡出（live_api） | `set_fades {options:{FadeIn, FadeOut}}`，整数帧。片尾淡出也用它，不用转场：最后一个片段后面没有片段，单边转场会出错。片头淡入也可以在第一个片段上加 Cross Dissolve，`position:start`、`alignment:right` | 已验证 | 音频通过（#12）：渲染里淡入 1 秒、淡出 2 秒都在。视频 set_fades 本机没单独测；片头 Cross Dissolve 淡入通过（#4） |
+| 选曲试听：候选音轨（live_api） | 每个候选一条音轨，A5 起往后排：`add_track audio {audio_type:"stereo"}`（包在 `timeline_versioning begin_run`/`end_run` 里，只归档一次），`set_track_name` 写「候选k 曲名 BPM 授权」。候选按位置 append（`media_type 2`），`AudioVolume` 对齐响度，`set_fades` 淡入淡出。只开一条：`set_track_enable {track_type:"audio", index, enabled}`（参数叫 `index`，不是 `track_index`）。切换前 `resolve_control get_page` 必须是 `edit`，用户要先暂停。`set_clip_enabled` 也能静音，作备用 | 已验证 | 通过（#18–#22）：中文轨名原样读回；record_frame 150 加源 60–1060 读回逐帧一致；三条候选 0 / −6 / +6 dB 后渲染都是 −20.0 dB；关掉的轨渲染里是数字静音（约 −175 dB）。交付页上切轨无效、播放中切轨要等暂停才生效，见常见坑第 30、31 条 |
 | 镜头光斑、剪辑页特效模板、Fusion 页宏、播放帧率、Fairlight 自动化、变速曲线（manual） | 没有可用的 API。在时间线上打标记，写进手动收尾清单 | 手动 | — |
 
 ### 音乐压低为什么不用 sidechaincompress
@@ -73,7 +74,7 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 
 ## 探针清单
 
-#1–#12 于 2026-11-02、#13–#17 于 2026-11-07 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
+#1–#12 于 2026-11-02、#13–#17 于 2026-11-07、#18–#22 于 2026-11-14 在本机跑完，结论在上面的表、常见坑和 `learnings.md`。Resolve 或 MCP 升级后重跑。在一次性工程 `vlog-style-QA-*` 里只用合成素材（比如 `test_synthetic.py` 或 ffmpeg testsrc 生成的片子），工程按上一节自动建。每一项都要有结论：
 
 1. **连通性。** 在偏好设置 System > General 里，「External scripting using」要设为 Local。MCP 要能列出工程。Resolve 没开时 MCP 会自己启动它。
 2. **帧号。** 读回时间线起始帧，29.97 应为 108000，24 应为 86400。核对 `GetEnd` 是否不含该帧，也就是 end − start = duration。
@@ -92,6 +93,11 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
 15. **.srt 落位。** 第一条字幕写在第 1 秒，第 300 秒再放一条（29.97 下真实时间和非丢帧时间码在这里差约 9 帧），烧录渲染一小段核对。在带 V1、V2、A1 的小时间线上 `set_subtitle_preset` 前后各读回一次，看条目、音量、缩放、调色有没有丢；再调字号和位置，用 `vision_ocr` 量框高和中心。
 16. **按章 CDL 校准。** 测试卡和时间线一样大（灰阶渐变、几档明度和饱和度的色相带、柔和的彩色纹理），做成 bt709 的 ProRes 短片，在一条时间线上放多段。一段不调色，其余各套一个 `safe_set_cdl`：slope 1.2、offset +0.03、offset −0.03、power 0.85、sat 1.25，再一段四项分通道一起（slope 1.15/1/0.9、offset 0.02/0/−0.01、power 0.9/1/1.1、sat 1.2，顺带核对通道顺序）。每段中间导出一张静帧，跑 `grade.py preview --grade <只含这些 CDL 的 grade.json> --chapter <段> <未调色> --graded <已调色>`，看每通道平均 |diff| 和各键 look 差，2/255 以内算通过；再拿 Rec.601、等权亮度系数和先 power 的公式算一遍，确认测试卡分得出对错。LUT 用逐通道的测试 LUT（每个输出通道只看自己的输入，三线性和四面体插值结果一样，能精确预测），分三段：只套 LUT；LUT 和 CDL 同在节点 1；中性两节点 DRX，LUT 在节点 1、CDL 在节点 2。最后给一段已写 CDL 的条目再套一次 DRX，看 CDL 还在不在
 17. **电平和成片核对。** 合成素材（testsrc 画面、`say` 念的 6 句中文、前两句轻 8 dB、和弦加底鼓的音乐），手写约 25 秒的 cut_plan：两段对白、照片、带 dip_to_black 的两段 B-roll、V2 插入镜头、片尾 B-roll。跑 subs、duck、`mix.py dialogue`，按 apply.md §7 搭好，渲染只有音频的整片跑 `mix.py master`，写回再渲染一次，看 `master_db` 是否收敛、整片是否落在 −14 ±0.5 LUFS、真峰值 ≤ −1 dBTP。再烧录导出 H.265 Main10，跑 §9 的五条命令，`compare.py final` 要全过；然后用 ffmpeg 做三个坏版本（音频晚 0.4 s、整体 −6 dB、剪掉最后 1 秒），在 Resolve 里再渲一个不烧字幕的，各自只该挂对应的那一项（同步、响度、规格、字幕）
+18. **加音轨、改轨名。** 只有 1 条音轨的时间线上加 6 条立体声轨到 A7，读回轨数和 sub_type；A5–A7 写中文轨名（「候选1 测试曲甲 120BPM 免署名」这样），读回要一字不差。每次 `add_track` 都会自动归档时间线，看 `begin_run` 能不能把它们并成一次。
+19. **静音一条候选。** 三首合成曲是频率各不相同的正弦（300 Hz −20、1 kHz −14、3 kHz −26 dB RMS），每条单独一轨，一次只出音频的渲染里就能按频率分别量出每条的电平。分别试 `set_track_enable(false)` 和 `set_clip_enabled(false)`，只认渲染：关掉的那条要是静音，开着的那条电平不变。顺便试交付页和剪辑页是否一样。
+20. **候选的位置和电平。** clip_infos 往空轨上放，有一条 record_frame 不从 0 开始、源也不从 0 开始；`clip_where` 读回位置。三条 `AudioVolume` 设 0、−6、+6 dB，让渲染里都落到 −20 dB；第一条加 `set_fades` 30/60 帧。
+21. **播放头和标记。** `set_current_timecode` 跳到 01:00:20:00 并读回；在第 0 帧写一个带中文名、说明和 custom_data 的标记，在候选 2 的进入点写一个带时长的标记，`get_all` 读回。查 MCP 有没有开始播放的接口。
+22. **播放中切轨。** 至少 10 分钟长的时间线（40 秒的在一问一答之间就播完了，循环播放也没生效），A1 300 Hz 开、A2 1 kHz 关。请用户按空格播放，播放中开 A2、关 A1，问用户听到了什么；再请用户暂停，读回轨道状态；再播一次，问用户听到了什么。
 
 结论写回上面的表，并在 `learnings.md` 记一条，写明日期和本机版本。
 
@@ -162,3 +168,9 @@ MCP 自带的 mix_plan 不用，原因有两个：它输出的是人声加音乐
    - 风格包里的字高是 `vision_ocr` 的框高，不是笔画高度，量的时候要用同一种方法。PingFang SC Regular 实测：`size 0.040` + `position [0.5, 0.032]` 框高 4.44%、中心 y 0.9555；`size 0.037` + `position [0.5, 0.023]` 框高 4.03%、中心 y 0.965；`size 0.053` 框高 6.1%。估算用「框高 ≈ 1.1 × size」「中心 y ≈ 0.9875 − position y」，套完渲一小段量一次。
    - 框高跟字有关（#17，同一套 `size 0.040` + `position [0.5, 0.032]`）：没有标点的句子框高 4.72%、中心 y 0.956；带逗号的 5.21–5.60%、中心 0.958，因为逗号伸到字底下。参考片的字幕不带标点，所以核对字号只看不带逗号、顿号、括号和 g/j/p/q/y 的句子（`compare.py` 的 `LOW_INK`）。
 29. **CDL 和 LUT 的先后。** 同一个节点里 Resolve 先算 CDL 再算 LUT（#16）。所以风格包带 LUT 时，LUT 放节点 1，CDL 放节点 2（`grade.py solve --node 2`），这样才是 `--stills` 假设的「先 LUT 后 CDL」。`safe_apply_drx` 会替换整个节点图，已经写进去的 CDL 一起没了（#16 实测静帧和未调色逐像素相同），所以要先套 DRX、再写 CDL；重套 DRX 之后 CDL 要重写。
+30. **交付页上切轨无效。** Resolve 停在交付页时，`set_track_enable` 对音轨和视频轨都返回 True，但什么都没改：读回还是 true，渲染里三条候选照样都在（#19）。渲染会把 Resolve 留在交付页，所以渲染之后要切轨，先 `resolve_control get_page`，不是 `edit` 就 `open_page edit`（只在没在播放时切页，见下一条），再切轨并读回。剪辑页上切轨读回和渲染都对。
+31. **播放中改时间线的调用会被挂起。** 用户在播放时，`set_track_enable` 不生效，调用一直不返回，读播放头的 `get_current_timecode` 也一样（#22：两条切轨各卡了 120 秒以上，用户一直听到旧的那条）。用户一暂停，挂起的调用马上执行完，状态也对；再按空格播放的就是新的那条。`get_page` 在播放中照样立刻返回。所以：
+   - 试听时请用户先暂停，再说「换 k」；agent 切轨、读回，用户再按空格。播放中说的也不会丢，暂停时才生效。
+   - 一个调用还没返回时不要接着发别的 Resolve 调用（第 11 条）。
+   - MCP 的 playback_guard 靠「隔 0.18 秒读两次播放头，变了就是在播放」，本机读播放头会被挂起而不是返回在动的播放头，所以这个检测在 21.1.1.10 上不起作用；更不能在播放中切页，19.1 上播放中切页会把 Resolve 卡死（MCP 源码注释）。
+32. **没有播放接口。** 脚本 API 不能开始、停止播放，也不能查是否在播放（MCP 4.15.3 源码里没有，playback_guard 的注释也这么写）。播放只能请用户按空格；agent 能做的是移播放头（停着时 `set_current_timecode` 立刻生效）和打标记。
