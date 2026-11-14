@@ -303,6 +303,117 @@
   "sfx": [],
   "music_changes": "约每章 9.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.867,
+   "mad": 0.0,
+   "p10": 0.867,
+   "p90": 0.867,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 5.6,
+   "mad": 0.0,
+   "p10": 5.6,
+   "p90": 5.6,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "body_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 8.0,
+   "mad": 0.0,
+   "p10": 8.0,
+   "p90": 8.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0.0,
+   "p90": 0.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 0.838,
+   "mad": 0.0,
+   "p10": 0.838,
+   "p90": 0.838,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 10.4,
+   "mad": 0.0,
+   "p10": 10.4,
+   "p90": 10.4,
+   "n": 1
+  },
+  "song_s": {
+   "median": 75.3,
+   "mad": 45.3,
+   "p10": 30.0,
+   "p90": 161.1,
+   "n": 11
+  },
+  "bpm": {
+   "median": 80.1,
+   "mad": 23.5,
+   "p10": 36.4,
+   "p90": 138.3,
+   "n": 9
+  },
+  "vocal": {
+   "share": 0.1,
+   "verdict": "instrumental"
+  },
+  "change_at": "within_chapter",
+  "tags": [
+   {
+    "cat": "genre",
+    "tag": "lo-fi hip hop",
+    "zh": "lo-fi",
+    "share": 0.37
+   },
+   {
+    "cat": "genre",
+    "tag": "cinematic orchestral",
+    "zh": "电影感管弦",
+    "share": 0.35
+   }
+  ],
+  "energy_curve": [
+   -5.5,
+   0.0,
+   -8.1,
+   -13.4,
+   -12.3,
+   -0.5,
+   -6.4,
+   -3.2,
+   -13.1,
+   -2.1
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -518,7 +629,34 @@
   "onsets_per_min": 165.1,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1HvQ3YgE4F": {
+     "coverage": 0.867,
+     "songs": 11,
+     "stings": 0,
+     "beds": 0,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "vocal"
+     ],
+     "body_s": 0,
+     "under_speech": 0.838
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  },
  "photo": {
   "dur_s": 2.6,

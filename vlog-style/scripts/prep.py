@@ -232,6 +232,14 @@ def hvc1_remux(src: Path) -> str | None:
     return "hev1->hvc1"
 
 
+def audio_short_s(info: dict) -> float:
+    """Seconds the audio stream ends before the file does (0 without durations or audio). A download cut short
+    can leave a full-length picture with minutes of sound missing (learnings 2026-11-14)."""
+    total = float((info.get("format") or {}).get("duration") or 0)
+    auds = [float(s["duration"]) for s in info.get("streams") or [] if s.get("codec_type") == "audio" and s.get("duration")]
+    return max(0.0, total - max(auds)) if total and auds else 0.0
+
+
 def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tuple[Path, dict]:
     src_dir = ref_dir / "src"
     src_dir.mkdir(parents=True, exist_ok=True)
@@ -254,6 +262,13 @@ def fetch_bilibili(P: vpaths.Paths, bv: str, ref_dir: Path, quality: str) -> tup
             raise SystemExit(f"download failed for {bv} (exit {r.returncode})\n"
                              f"stdout: {r.stdout.strip()[-400:]}\nstderr: {r.stderr.strip()[-400:]}")
     files = videos()
+    r = run(["ffprobe", "-v", "error", "-show_streams", "-show_format", "-of", "json", str(files[0])])
+    info = json.loads(r.stdout or "{}") if r.returncode == 0 else {}  # unreadable: the steps after prep will say so
+    short = audio_short_s(info)
+    if short > max(5.0, 0.02 * float((info.get("format") or {}).get("duration") or 0)):
+        raise SystemExit(f"{files[0].name}: the sound stops {short:.0f} s before the picture does. A download cut "
+                         f"short, or broken audio fragments at the source (a re-download is then byte-identical): "
+                         f"see learnings.md 2026-11-14 before downloading {P.rel(src_dir)} again")
     subs, _ = opencli_json(["subtitle", bv, "--lang", "ai-zh"], timeout=120)
     if subs:
         (ref_dir / "subtitles.json").write_text(json.dumps(subs, ensure_ascii=False, indent=1), encoding="utf-8")

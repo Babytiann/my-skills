@@ -188,6 +188,8 @@ def bpm_from_beats(beats: list[float], spans=None) -> float | None:
     # beat trackers report frame-quantised times (20-23 ms): the median gap snaps
     # to a whole frame, the mean of the in-tempo gaps does not
     near = [x for x in ibis if abs(x - m) <= 0.15 * m]
+    if not near:  # a few gaps far apart (an even count's median falls between them): no steady tempo
+        return None
     return round(60.0 * len(near) / sum(near), 2)
 
 

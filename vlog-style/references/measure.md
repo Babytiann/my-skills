@@ -18,8 +18,9 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
 | 4. 声音 | `uv run --python 3.13 --script measure_audio.py "$R" --prompt "<地名、人名>"` | `measure_audio.json` |
 | 5. 字幕分类重算 | `uv run --python 3.13 --script measure_video.py "$R" --redo text` | 用人声段重新给文字分类，look 和 strips 会跟着重算 |
 | 6. 标签骨架 | `python3 -I -B aggregate.py labels "$R"` | `labels.json` |
+| 6b. 配乐 | `uv run --python 3.13 --script measure_music.py "$R"`；判读前先跑过的，判读完再 `--rebuild` | `measure_music.json`、`measure_music.embed.json`。要 measure_audio.json；labels.json 的章节和歌词字幕特效拿来判换歌和核对人声。keep 留下的参考没有 music44k.wav，用 `--audio <重下的原片>` |
 | 7. 汇总 | `python3 -I -B aggregate.py draft --name <风格名> "$R1" "$R2" … --out <风格包>/style.json` | 通过 schema 校验的 style.json 草稿。`R` 也可以是 keep 留下的 `styles/<博主\|misc>/refs/<id>`。`--out` 已存在时拒绝覆盖，加 `--force` 才覆盖；不加 `--out` 写到 `$R1/style.draft.json`。参考来自多个 mid 时打印警告 |
-| 8. 留测量 | `python3 -I -B cleanup.py keep <id> --style <博主\|misc> [--yes]` | 不在 `R` 下，在 `<root>/styles/<博主\|misc>/refs/<id>/`：剥掉转写和字幕原文的 measure_video.json、measure_audio.json，labels.json，只留 6 个字段的 meta.json。之后才能 `cleanup.py trash <id>` |
+| 8. 留测量 | `python3 -I -B cleanup.py keep <id> --style <博主\|misc> [--yes]` | 不在 `R` 下，在 `<root>/styles/<博主\|misc>/refs/<id>/`：剥掉转写和字幕原文的 measure_video.json、measure_audio.json，labels.json，只留 6 个字段的 meta.json，measure_music.json 和 .embed.json 原样带上。之后才能 `cleanup.py trash <id>` |
 
 几点说明：
 - **OCR 跑在原片上，不跑代理。** 540p 下字幕只有 20 像素左右高，中文识别不可靠。OCR 默认把原片缩到 1080 高再识别。
@@ -107,6 +108,42 @@ BPM 的算法：先取拍点间隔的中位数，再对落在中位数 ±15% 以
 ```sh
 uv run --python 3.13 --script measure_audio.py --music <音乐文件> --out <项目>/index/beats.json
 ```
+
+## measure_music.py
+
+参考片怎么用配乐。只测量，不听（SKILL.md §2）。demucs 把声音分成人声和伴奏（60 秒一段），每 10 秒一个窗：
+
+- `music`：伴奏轨的 CLAP 分数，最像的音乐提示词减最像的环境声提示词。口播已经分走，所以说话不会被当成音乐。大于 0.1 且伴奏中位电平高于 −50 dB 算有音乐。
+- `sing`：人声轨的 CLAP 分数，唱歌提示词减说话提示词。demucs 的人声轨包括口播，歌词字幕又落在 measure_audio 的人声段里，两样都分不出唱和说，只能靠这个。大于 0 且人声轨高于 −45 dB，并且连着两个窗以上，才算在唱。
+- `acc_db`、`voc_db`：两条轨每秒电平的窗内中位数；`speech`：窗内落在人声段的比例。
+
+有音乐的窗连成段，中间只空一个窗、前后音乐又像（CLAP 余弦 ≥ 0.80）就接上。段内换歌：某个窗前后各 30 秒的音乐余弦 < 0.70，且 6 秒内有 measure_audio 的换曲候选（静音、拍点中断、变速）；< 0.55 时没有候选也切。不到 20 秒的碎段并进更像的一边；单独一段不到 20 秒的是 sting，单独计数。
+
+换歌的阈值落在边上时，demucs 在 mps 上的细微差别就能让结果翻转：BV1Rj421S7c4 两次跑的窗向量余弦都在 0.978 以上，40 s 那条边界一次 0.698、一次 ≥ 0.70。翻的多半是口播下的铺底和后面的歌分不分开，所以短的铺底单独标 `bed`，不算歌，分不分开都不影响歌数和换歌规则。
+
+| 字段 | 含义 |
+|---|---|
+| `coverage` | 有音乐的时长占全片 |
+| `enter_s`、`exit_s` | 第一声和最后一声音乐 |
+| `body_s` | 音乐真正铺开的时刻：第一次连着两个窗都在全片常态电平（没口播时的伴奏中位数）8 dB 以内。开头的短 sting、口播下面小声的铺底都不算 |
+| `fade_in_s`、`fade_out_s` | 音乐开头、结尾到稳定电平 3 dB 以内用了几秒（平滑后） |
+| `under_speech` | 口播的秒数里有音乐的占比（唱歌的窗不算口播） |
+| `duck_db` | 没口播时的伴奏中位数减口播时的；两边都要有 20 秒以上 |
+| `talk_s`、`ambient_only_s` | 口播秒数；没音乐也没口播、但有声音的秒数 |
+| `usual_db` | 全片常态电平：没口播时的伴奏轨中位数 |
+| `songs[]` | `t0`、`t1`、`level_db`（这一段的伴奏中位电平）、`bed`（不到 30 秒、比常态低 8 dB 以上：很短的小声铺底，不算一首歌；长的小声段是压在口播下的歌，照样算歌）、`bpm`（measure_audio 的拍点在这首歌里的速度）、`vocal_share`（有音乐的窗里在唱的占比；≥ 0.3 vocal，≤ 0.05 instrumental）、`verdict`、`tags`（伴奏向量的 CLAP 标签，每类前 3）、`at_chapter_cut`（开头离章节边界 6 秒内）、`start_sure`（开头那条边界余弦 < 0.65 且 3 秒内有候选） |
+| `stings`、`bed_s` | 单独的短音乐；铺底一共几秒 |
+| `songs_per_10min`、`change_at` | 每 10 分钟几首（不算铺底）；换歌多半在章节边界（≥ 60%）为 chapter，否则 within_chapter，只有一首为 none |
+| `energy_curve` | 全片十等分，每段音乐电平的功率平均，最响一段为 0 dB（没音乐的秒按 −90 算） |
+| `edges` | 每条换歌边界的时刻、余弦、离候选多远 |
+| `doubts` | labels 里有歌词字幕特效、却没有一首测成有人唱 |
+| `windows` | 每窗的上面几项，复查用 |
+
+耗时（2026-11-14 补测 15 条，M6 / 24 GB，mps）：4–5 分钟的短片 21–23 秒，大半是加载模型；20–37 分钟的片子 83–142 秒；55 分钟的雪山 176 秒。约是片长的 7%，demucs 占大头；`--rebuild` 只加载 CLAP 文本端，几秒一条。
+
+读到的声音比 measure_audio 记的片长短 5 秒以上（长片按 2%）时停下，不写结果：重下的原片音轨可能解不全，B 站源流有坏分片时重下也一样，修法见 learnings.md 2026-11-14。
+
+`measure_music.embed.json` 存每窗和每首歌的 CLAP 向量，外加每秒的两条轨电平（`acc_s`、`voc_s`）。改了上面的阈值后 `--rebuild` 只重算分段，几秒钟，不跑 demucs。两个文件都没有片子里的文字，也不记歌名。
 
 ## 判读清单
 

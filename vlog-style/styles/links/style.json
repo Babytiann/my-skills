@@ -928,6 +928,69 @@
     "sfx": [],
     "music_changes": "约每章 12.7 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
   },
+  "music": {
+    "refs": 12,
+    "coverage": {
+      "median": 0.79,
+      "mad": 0.037,
+      "p10": 0.697,
+      "p90": 0.864,
+      "n": 12
+    },
+    "songs_per_10min": {
+      "median": 4.6,
+      "mad": 0.5,
+      "p10": 4.0,
+      "p90": 5.9,
+      "n": 12
+    },
+    "enter_s": {
+      "median": 0.0,
+      "mad": 0.0,
+      "p10": 0.0,
+      "p90": 1.0,
+      "n": 12
+    },
+    "under_speech": {
+      "median": 0.756,
+      "mad": 0.058,
+      "p10": 0.631,
+      "p90": 0.836,
+      "n": 12
+    },
+    "song_s": {
+      "median": 80.0,
+      "mad": 32.9,
+      "p10": 37.8,
+      "p90": 182.0,
+      "n": 169
+    },
+    "bpm": {
+      "median": 81.4,
+      "mad": 18.5,
+      "p10": 46.2,
+      "p90": 130.0,
+      "n": 153
+    },
+    "vocal": {
+      "share": 0.132,
+      "verdict": "instrumental"
+    },
+    "change_at": "within_chapter",
+    "tags": [],
+    "energy_curve": [
+      -5.4,
+      -8.6,
+      -4.6,
+      -5.9,
+      -6.6,
+      -5.5,
+      -8.8,
+      -5.8,
+      -3.3,
+      -2.0
+    ]
+  },
   "aroll": {
     "speech_share": 0.593,
     "pad_s": 0.2,
@@ -1344,6 +1407,307 @@
     "letterbox": "3 of 12 references have a wider picture (2.0, 2.0, 2.0); a minority, so no letterbox",
     "unverified": [],
     "rejected_labels": [],
-    "single_source": []
+    "single_source": [],
+    "music": {
+      "refs": {
+        "BV16w4m1C7uN": {
+          "coverage": 0.698,
+          "songs": 14,
+          "stings": 1,
+          "beds": 1,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 70,
+          "under_speech": 0.628
+        },
+        "BV1H5xie8EJZ": {
+          "coverage": 0.697,
+          "songs": 15,
+          "stings": 4,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 60,
+          "under_speech": 0.661
+        },
+        "BV1HrrjB9EUj": {
+          "coverage": 0.833,
+          "songs": 14,
+          "stings": 1,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed"
+          ],
+          "body_s": 0,
+          "under_speech": 0.807
+        },
+        "BV1HvQ3YgE4F": {
+          "coverage": 0.867,
+          "songs": 11,
+          "stings": 0,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "vocal"
+          ],
+          "body_s": 0,
+          "under_speech": 0.838
+        },
+        "BV1SSQLBREVV": {
+          "coverage": 0.776,
+          "songs": 25,
+          "stings": 3,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "instrumental"
+          ],
+          "body_s": 10,
+          "under_speech": 0.721
+        },
+        "BV1fwEwzeEPp": {
+          "coverage": 0.799,
+          "songs": 17,
+          "stings": 1,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 10,
+          "under_speech": 0.774
+        },
+        "BV1jy2CBNEDL": {
+          "coverage": 0.759,
+          "songs": 18,
+          "stings": 0,
+          "beds": 3,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 30,
+          "under_speech": 0.714
+        },
+        "BV1sHqPBLExZ": {
+          "coverage": 0.789,
+          "songs": 12,
+          "stings": 0,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 0,
+          "under_speech": 0.748
+        },
+        "BV1uparzhEjs": {
+          "coverage": 0.948,
+          "songs": 12,
+          "stings": 0,
+          "beds": 2,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 140,
+          "under_speech": 0.938
+        },
+        "BV1xF4m1L7Q2": {
+          "coverage": 0.633,
+          "songs": 11,
+          "stings": 0,
+          "beds": 0,
+          "verdicts": [
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "vocal",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 10,
+          "under_speech": 0.508
+        },
+        "BV1ydjizBE1o": {
+          "coverage": 0.791,
+          "songs": 11,
+          "stings": 2,
+          "beds": 1,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "mixed",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 0,
+          "under_speech": 0.763
+        },
+        "BV1ym42137vx": {
+          "coverage": 0.815,
+          "songs": 9,
+          "stings": 3,
+          "beds": 0,
+          "verdicts": [
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental",
+            "instrumental"
+          ],
+          "body_s": 10,
+          "under_speech": 0.82
+        }
+      },
+      "dropped": [
+        "bed_s: references disagree (24.5, 0, 0, 0, 0, 0, 69.1, 0, 55.9, 0, 24.2, 0)",
+        "body_s: references disagree (70, 60, 0, 0, 10, 10, 30, 0, 140, 10, 0, 10)",
+        "fade_in_s: references disagree (1, 6, 1, 8, 7, 8, 0, 4, 0, 10, 5, 13)",
+        "fade_out_s: references disagree (6, 7, 0, 0, 5, 0, 2, 0, 0, 0, 2, 0)",
+        "duck_db: references disagree (10.6, 10.1, 9.2, 10.4, 11.2, 12.9, 12.1, 11.4, 8.1, 3.6, 9.7, 3.4)"
+      ],
+      "doubts": []
+    }
   }
 }

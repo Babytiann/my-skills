@@ -6,6 +6,7 @@
       write REF_DIR/labels.json: every measured event, title and a chapter
       proposal, with blanks for the agent to fill after viewing sheets/ and strips/
   python3 -I -B aggregate.py draft --name NAME REF_DIR... [--out style.json] [--size 3840x2160] [--force] [--packs DIR]
+                                  [--section music]
       reconcile labels with measurements, pool the references (or, with one
       reference, its chapters) and write a schema-checked draft style.json;
       evidence (consistency, unverified and rejected labels) goes in style.evidence.
@@ -16,6 +17,10 @@
       has but its labels.json lacks are listed: add them to the labels and re-draft.
       Pooled, free text the references word differently, look keys they disagree
       on and card kinds one film mixes are left out or flagged, never picked from one film.
+      References with measure_music.json give a `music` block, and the CLAP vectors of
+      their songs go to <root>/styles/NAME/music/profile.json (never into the repo).
+      --section music writes only the music block (and evidence.music) into an existing
+      --out, leaving every hand-written part and the file's formatting as they were.
   python3 -I -B aggregate.py footage --project NAME
       index/footage.json for plan_cut.py from each clip's measurements plus
       the agent's index/tags.json
@@ -47,6 +52,14 @@ MOVES = ("digital", "camera")  # what made a measured push/pull: the edit, or th
 META_KEYS = ("bvid", "title", "author", "mid", "publish_time", "duration_sec")  # all a kept meta.json holds
 MEASURED_TO_TYPE = {"dissolve": "dissolve", "flash_white": "flash_white", "dip_to_black": "dip_to_black",
                     "whip": "whip", "zoom": "zoom", "hard_sample": "hard_cut"}
+MUSIC_FILE, MUSIC_EMBED = "measure_music.json", "measure_music.embed.json"
+PROFILE_SCHEMA = "music_profile/1"
+# spread across references (p10-p90, or max-min under 5) that still agrees: max(absolute, relative x median)
+MUSIC_AGREE = {"coverage": (0.25, 0.0), "songs_per_10min": (1.0, 0.5), "bed_s": (30.0, 0.5), "enter_s": (15.0, 0.5), "body_s": (20.0, 0.5),
+               "fade_in_s": (4.0, 0.5), "fade_out_s": (5.0, 0.5), "under_speech": (0.3, 0.0), "duck_db": (6.0, 0.3)}
+MUSIC_VOTE = 0.75   # a verdict or a tag holds for a pooled pack when this share of the references has it
+TAG_MIN = 0.3       # a tag is listed when it leads its category for this share of the song time
+TAG_MARGIN = 0.02   # a song counts for a tag only when CLAP puts it this far ahead of the runner-up (cosine)
 DEFAULT_FRAMES = {"dissolve": 12, "dip_to_black": 12, "flash_white": 6, "whip": 8, "zoom": 8,
                   "smooth_cut": 6, "wipe": 12, "other": 10}
 FONT_FALLBACK = {"黑体": ["PingFang SC", "Hiragino Sans GB", "STHeiti"], "宋体": ["Songti SC", "STSong"],
@@ -246,6 +259,7 @@ def analyse_ref(ref: Path) -> dict:
     if not mv or "scan" not in mv:
         raise SystemExit(f"{ref.name}: run measure_video.py first")
     ma = load_json(ref / "measure_audio.json", {}) or {}
+    mm = load_json(ref / MUSIC_FILE)
     lab, rejected = reconcile(ref.name, mv, load_json(ref / "labels.json"))
     fps, dur = mv["video"]["fps"], mv["video"]["duration_s"]
     chapters = lab["chapters"] or [{"name": "all", "role": "chapter", "t0": 0.0, "t1": dur}]
@@ -292,8 +306,179 @@ def analyse_ref(ref: Path) -> dict:
     align = stats.beat_alignment([c["t"] for c in cuts], beats.get("beats") or [], tol=1.0 / fps,
                                  spans=beats.get("nonspeech_spans"), downbeats=beats.get("downbeats")) \
         if beats.get("beats") else {"verdict": "no_beats"}
-    return {"id": ref.name, "meta": video_meta(ref), "mv": mv, "ma": ma, "lab": lab, "rejected": rejected, "unverified": unverified,
+    return {"id": ref.name, "dir": ref, "meta": video_meta(ref), "mv": mv, "ma": ma, "mm": mm, "lab": lab, "rejected": rejected, "unverified": unverified,
             "fps": fps, "duration": dur, "chapters": chapters, "shots": shots, "trans": trans, "align": align}
+
+
+# ---------------------------------------------------------------- music
+
+def agrees(xs: list[float], abs_tol: float, rel_tol: float) -> bool:
+    xs = sorted(x for x in xs if x is not None)
+    if len(xs) < 2:
+        return True
+    lo, hi = (stats.percentile(xs, 10), stats.percentile(xs, 90)) if len(xs) >= 5 else (xs[0], xs[-1])
+    return hi - lo <= max(abs_tol, rel_tol * abs(stats.median(xs)))
+
+
+def music_dist(xs, nd: int = 1) -> dict:
+    """dist, but under 5 values p10/p90 are the smallest and largest (an interpolated p10 of two films is neither)."""
+    d = dist(xs, nd)
+    if d and d["n"] < 5:
+        d["p10"], d["p90"] = round(min(xs), nd), round(max(xs), nd)
+    return d
+
+
+def sung_verdict(share: float | None) -> str | None:
+    """Pack verdict from the share of song time in songs measured as sung."""
+    return None if share is None else "vocal" if share >= 0.6 else "instrumental" if share <= 0.2 else "mixed"
+
+
+def lead_tags(songs: list[dict]) -> dict:
+    """{(cat, tag, zh): share of song time it clearly leads its category}; a song's tags list each category best
+    first. A near tie (under TAG_MARGIN) says nothing about the song, so that category gets no tag from it."""
+    total = sum(s["t1"] - s["t0"] for s in songs)
+    out: Counter = Counter()
+    for s in songs:
+        by_cat: dict = {}
+        for t in s.get("tags") or []:
+            by_cat.setdefault(t["cat"], []).append(t)
+        for ts in by_cat.values():
+            if len(ts) > 1 and ts[0]["score"] - ts[1]["score"] < TAG_MARGIN:
+                continue
+            out[(ts[0]["cat"], ts[0]["tag"], ts[0]["zh"])] += (s["t1"] - s["t0"]) / total if total else 0
+    return out
+
+
+def music_of(refs: list[dict]) -> tuple[dict | None, dict]:
+    """style.json `music` block and evidence.music from the references' measure_music.json. A pooled pack keeps only
+    what the references agree on and lists the rest in evidence; one reference gives its own numbers."""
+    have = [r for r in refs if r.get("mm")]
+    if not have:
+        return None, {"missing": [r["id"] for r in refs]}
+    mms = {r["id"]: r["mm"] for r in have}
+    mains = {i: [s for s in m["songs"] if not s.get("bed")] for i, m in mms.items()}  # quiet beds are not songs
+    songs = [s for ss in mains.values() for s in ss]
+    pooled = len(have) > 1
+    ev: dict = {"refs": {i: {"coverage": m["coverage"], "songs": len(mains[i]), "stings": len(m["stings"]),
+                             "beds": sum(1 for s in m["songs"] if s.get("bed")),
+                             "verdicts": [s["verdict"] for s in mains[i]], "body_s": m.get("body_s"),
+                             "under_speech": m["under_speech"]} for i, m in mms.items()},
+                "dropped": [], "doubts": [f"{i}: {d}" for i, m in mms.items() for d in m.get("doubts") or []]}
+    if len(have) < len(refs):
+        ev["missing"] = [r["id"] for r in refs if not r.get("mm")]
+    music: dict = {"refs": len(have)}
+    for key, (abs_tol, rel_tol) in MUSIC_AGREE.items():
+        xs = [m.get(key) for m in mms.values() if m.get(key) is not None]
+        if not xs:
+            continue
+        if pooled and not agrees(xs, abs_tol, rel_tol):
+            ev["dropped"].append(f"{key}: references disagree ({', '.join(f'{x:g}' for x in xs)})")
+            continue
+        music[key] = music_dist(xs, 3 if key in ("coverage", "under_speech") else 1)
+    music["song_s"] = music_dist([s["t1"] - s["t0"] for s in songs], 1)
+    music["bpm"] = music_dist([s["bpm"] for s in songs if s.get("bpm")], 1)
+
+    def sung_share(ss):
+        total = sum(s["t1"] - s["t0"] for s in ss)
+        return sum(s["t1"] - s["t0"] for s in ss if s["verdict"] in ("vocal", "mixed")) / total if total else None
+    per_ref = {i: sung_verdict(sung_share(ss)) for i, ss in mains.items() if ss}
+    share = sung_share(songs)
+    verdict = sung_verdict(share)
+    if pooled and per_ref and Counter(per_ref.values()).most_common(1)[0][1] / len(per_ref) < MUSIC_VOTE:
+        ev["dropped"].append(f"vocal verdict: references differ ({', '.join(f'{k} {v}' for k, v in per_ref.items())}); "
+                             "pooled as mixed")
+        verdict = "mixed"
+    if share is not None:
+        music["vocal"] = {"share": round(share, 3), "verdict": verdict}
+    rules = [mms[i]["change_at"] for i, ss in mains.items() if len(ss) >= 2]
+    if rules:
+        top, n = Counter(rules).most_common(1)[0]
+        if pooled and n / len(rules) < MUSIC_VOTE:
+            ev["dropped"].append(f"change_at: references differ ({', '.join(rules)})")
+        else:
+            music["change_at"] = top
+    elif all(len(ss) <= 1 for ss in mains.values()):
+        music["change_at"] = "none"
+    per_tags = {i: lead_tags(ss) for i, ss in mains.items()}
+    tags = []
+    for key, sh in lead_tags(songs).items():
+        held = sum(1 for t in per_tags.values() if t.get(key, 0) >= TAG_MIN) / len(per_tags)
+        if sh >= TAG_MIN and (not pooled or held >= MUSIC_VOTE):
+            tags.append({"cat": key[0], "tag": key[1], "zh": key[2], "share": round(sh, 2)})
+    cats = list(dict.fromkeys(t["cat"] for s in songs for t in s.get("tags") or []))
+    music["tags"] = sorted(tags, key=lambda t: (cats.index(t["cat"]) if t["cat"] in cats else 99, -t["share"]))
+    curves = [m["energy_curve"] for m in mms.values() if len(m.get("energy_curve") or []) == 10]
+    if curves:
+        music["energy_curve"] = [round(stats.median([c[k] for c in curves]), 1) for k in range(10)]
+    return {k: v for k, v in music.items() if v != {}}, ev
+
+
+def music_profile(name: str, refs: list[dict]) -> dict | None:
+    """CLAP vectors of every reference song and their length-weighted unit centroid, for music_pick rank."""
+    songs, models = [], set()
+    for r in refs:
+        if not r.get("mm"):
+            continue
+        emb = load_json(r["dir"] / MUSIC_EMBED)
+        if not emb:
+            continue
+        models.add(emb["model"])
+        for s, v in zip(r["mm"]["songs"], emb["songs"]):
+            if v and not s.get("bed"):
+                songs.append({"ref": r["id"], "t0": s["t0"], "t1": s["t1"], "verdict": s["verdict"], "vec": v})
+    if not songs:
+        return None
+    if len(models) > 1:
+        raise SystemExit(f"music vectors come from different CLAP models ({', '.join(sorted(models))}); "
+                         "measure the references again with one")
+    def unit_sum(rows):  # rows: (weight, vector)
+        acc = [0.0] * len(songs[0]["vec"])
+        for w, v in rows:
+            for k, x in enumerate(v):
+                acc[k] += w * x
+        n = math.sqrt(sum(x * x for x in acc)) or 1.0
+        return [x / n for x in acc]
+    # songs weigh by length inside a film, every film the same: a 55-min film does not outvote a 20-min one
+    ids = list(dict.fromkeys(s["ref"] for s in songs))
+    per_ref = [unit_sum([(s["t1"] - s["t0"], s["vec"]) for s in songs if s["ref"] == i]) for i in ids]
+    return {"schema": PROFILE_SCHEMA, "pack": name, "model": models.pop(), "refs": ids,
+            "centroid": [round(x, 5) for x in unit_sum([(1.0, v) for v in per_ref])], "songs": songs}
+
+
+def write_profile(name: str, refs: list[dict]) -> None:
+    prof = music_profile(name, refs)
+    if not prof:
+        return
+    try:
+        dest = vpaths.load().style(name) / "music" / "profile.json"
+    except (SystemExit, ValueError) as e:
+        print(f"warning: music profile not written ({e})", file=sys.stderr)
+        return
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(prof, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"wrote styles/{name}/music/profile.json: {len(prof['songs'])} songs from {len(prof['refs'])} references")
+
+
+def with_music(style: dict, music: dict, ev: dict) -> dict:
+    """The style with its music block (right after audio) and evidence.music replaced; nothing else changes."""
+    out = {}
+    for k, v in style.items():
+        if k != "music":
+            out[k] = v
+        if k == "audio":
+            out["music"] = music
+    out.setdefault("music", music)
+    out.setdefault("evidence", {})["music"] = ev
+    return out
+
+
+def dump_like(path: Path, data: dict) -> None:
+    """Write JSON in the indent and trailing newline the file already uses, so a diff shows only real changes."""
+    old = path.read_text(encoding="utf-8")
+    lines = old.split("\n")
+    indent = len(lines[1]) - len(lines[1].lstrip(" ")) if len(lines) > 1 else 1
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=indent or 1) + ("\n" if old.endswith("\n") else ""),
+                    encoding="utf-8")
 
 
 # ---------------------------------------------------------------- pooling
@@ -868,6 +1053,9 @@ def build_style(name: str, refs: list[dict], size: tuple[int, int]) -> dict:
         "resolve": resolve,
         "evidence": evidence,
     }
+    music, music_ev = music_of(refs)
+    if music:
+        style = with_music(style, music, music_ev)
     evidence["unverified"] = evidence.get("unverified", []) + [u for r in refs for u in r["unverified"]]
     evidence["rejected_labels"] = [x for r in refs for x in r["rejected"]]
     evidence["single_source"] = sorted(k for k, v in evidence["consistency"].items()
@@ -929,7 +1117,32 @@ def warn_pack_only(refs: list[dict], packs: Path, unverified: list[str]) -> int:
     return n
 
 
+def cmd_music_section(args) -> int:
+    """--section music: only the music block goes into the finished style.json (the named exception to --force)."""
+    if not args.out or not Path(args.out).expanduser().exists():
+        raise SystemExit("--section music writes into an existing style.json: give it as --out")
+    out = Path(args.out).expanduser()
+    refs = [analyse_ref(Path(d).expanduser().resolve()) for d in args.refs]
+    music, ev = music_of(refs)
+    if not music:
+        raise SystemExit(f"no {MUSIC_FILE} in {', '.join(r['id'] for r in refs)}: run measure_music.py first")
+    style = with_music(json.loads(out.read_text(encoding="utf-8")), music, ev)
+    errs = schema.check_style(style)
+    for e in errs:
+        print(f"schema: {e}", file=sys.stderr)
+    if errs:
+        return 1
+    dump_like(out, style)
+    write_profile(args.name, refs)
+    print(f"wrote the music block of {out.name}: {music.get('refs')} references, "
+          f"vocal {(music.get('vocal') or {}).get('verdict')}, change at {music.get('change_at')}; "
+          f"{len(ev['dropped'])} dropped, {len(ev['doubts'])} doubts")
+    return 0
+
+
 def cmd_draft(args) -> int:
+    if args.section == "music":
+        return cmd_music_section(args)
     out = Path(args.out).expanduser() if args.out else Path(args.refs[0]).expanduser() / "style.draft.json"
     if args.out and out.exists() and not args.force:
         raise SystemExit(f"{out.name} exists and may hold hand-written parts: leave out --out to write "
@@ -951,6 +1164,10 @@ def cmd_draft(args) -> int:
           f"{len(ev['unverified'])} unverified, {len(ev['rejected_labels'])} rejected labels")
     for e in errs:
         print(f"schema: {e}", file=sys.stderr)
+    if "music" in style:
+        write_profile(args.name, refs)
+    else:
+        print("warning: no measure_music.json in the references: the pack has no music block", file=sys.stderr)
     return 1 if errs else 0
 
 
@@ -1078,6 +1295,7 @@ def main(argv: list[str] | None = None) -> int:
     dr.add_argument("--force", action="store_true", help="overwrite an existing --out")
     dr.add_argument("--packs", help="style packs to check for effects missing from labels.json "
                                     "(default: the repo's vlog-style/styles)")
+    dr.add_argument("--section", choices=["music"], help="write only this block into the existing --out")
     ft = sub.add_parser("footage")
     ft.add_argument("--project", required=True)
     args = ap.parse_args(argv)

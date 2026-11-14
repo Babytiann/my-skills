@@ -30,7 +30,7 @@ vlog-style/styles/                    仓库
 ```
 
 - **调用。** `--style links`（博主级）、`--style links/polar-night`、`--style misc/<名字>`。只允许一层嵌套，子包不能叫 `refs`、`stills`、`luts`、`drx`、`fusion`。找不到包时报错并列出已有的包，比如还没有博主级包时 `--style links` 会列出 `links/` 下的子包。
-- **refs/。** `cleanup.py keep` 写进去：measure_video.json、measure_audio.json（转写和字幕原文剥掉，标题文字保留，labels 要用）、labels.json、meta.json（只留 bvid、title、author、mid、publish_time、duration_sec）。够重新 draft，不够重跑 measure。只在本机，不进仓库。
+- **refs/。** `cleanup.py keep` 写进去：measure_video.json、measure_audio.json（转写和字幕原文剥掉，标题文字保留，labels 要用）、labels.json、meta.json（只留 bvid、title、author、mid、publish_time、duration_sec），有 measure_music.json 和 measure_music.embed.json 时一起带上（只有数字和 CLAP 向量，不用剥）。够重新 draft，不够重跑 measure。只在本机，不进仓库。
 - **博主专辑只收本人投稿的视频。** 入池前核对 mid；别人的视频即使出现在投稿列表里，也放进 misc，出处写真实的 UP 主。
 - **博主级包按每条视频比较**（multi_reference）。节奏写各条视频中位数的分布。调色跟着内容走，博主级包只写各条一致的部分，调色核对用子包。
 - **`aggregate.py draft` 合并多条参考时不悄悄挑一条**（learnings.md 2026-11-13）：
@@ -38,6 +38,7 @@ vlog-style/styles/                    仓库
   - `grade.summary`、`grade.grain`、`audio.mood`、`selection.opening` 各条写法不同时留空，原文只打在 stderr，记进 `evidence.unverified`，由写包的人合并。`selection.reject` 去重。
   - 标题和章节卡的字高、位置、颜色、时长先按视频取中位数，再在视频之间取；一条片子里卡片的字高或位置差得多（像几种不同的卡）时逐张列出，记进 `evidence.text_spread`，写包时挑一种。
   - 每条特效带 `ref`。
+  - `music` 块：`coverage`、`songs_per_10min`、`bed_s`、`enter_s`、`body_s`、`fade_in_s`、`fade_out_s`、`under_speech`、`duck_db` 各条差得多（p10–p90，不到 5 条用极差，超过 `aggregate.MUSIC_AGREE` 的绝对或相对容差）就去掉；各条的人声判断不到 3/4 一致时记成 `mixed`；换曲方式不到 3/4 一致就去掉；标签要在 3/4 的参考里都领先。去掉的项和原因写进 `evidence.music.dropped`。
 
 ## sources.md 模板
 
@@ -98,10 +99,11 @@ vlog-style/styles/                    仓库
 | `grade` | `summary`、`look`（见下）、`lut`、`drx`、`grain` | 测量 + labels；多参考时 summary、grain 各条写法不同就留空 |
 | `text` | `title`、`chapter_card`、`subtitle`，每项见下 | 测量 + labels |
 | `audio` | `bpm`（分布）、`mood`、`lufs`、`duck_db`、`music_changes`、`sfx[]`、`broll_ambient_db`（B-roll 环境声放 A4 的电平，dB；不写就不放） | 测量；mood 和 sfx 由 agent 根据测量写；broll_ambient_db 手填 |
+| `music` | 参考片怎么用配乐，可选（2026-11-14 以前的包没有，`schema.py` 只给警告）：`refs`（测了几条）；分布值 `coverage`（有音乐的时长占比）、`songs_per_10min`、`song_s`（每首歌在片子里放多久）、`bed_s`（短的小声铺底一共几秒：不到 30 秒、比常态低 8 dB 以上；铺底不算歌，下面几项都不含它）、`bpm`（每首歌）、`enter_s`（第一声音乐）、`body_s`（音乐到正常电平、真正铺开的时刻，开头的短 sting 和口播下的小声铺底不算）、`fade_in_s`、`fade_out_s`、`under_speech`（口播的秒数里垫着音乐的占比）、`duck_db`（口播下音乐比没口播时低多少）；`vocal{share, verdict}`（有人唱的歌占歌曲时长的比例；≥ 0.6 vocal，≤ 0.2 instrumental，其间 mixed）；`change_at`（chapter / within_chapter / none）；`tags[]`（`{cat, tag, zh, share}`，CLAP 零样本标签在该类里领先的歌曲时长占比，≥ 0.3 才列；一首歌的第一名只比第二名高不到 0.02 时算平手，这一类不从这首歌取标签，`aggregate.TAG_MARGIN`）；`energy_curve`（全片十等分的音乐电平，最响一段为 0 dB）。分布值不到 5 个时 `p10`、`p90` 记最小和最大值，插值出来的数两条片子都不是 | `measure_music.py` 测量，`aggregate.py` 汇总（多条参考的规则见上面「两种文件夹」）。每首歌的 CLAP 向量和各条的质心写进 `<root>/styles/<包>/music/profile.json`，不进仓库。包里不记歌名和歌手 |
 | `photo` | 照片怎么放：`dur_s`（每张几秒）、`scale`（相对铺满画面的大小，搭建时用 `set_transform` 设，1 是铺满）、`background`（目前只有 black）。不写时 3 s、1.0、black。只在 brief 写了 `photos` 时起作用 | 看参考里的照片插入：时长按镜头算，大小量照片在画面里的宽高 |
 | `aroll` | 有 story 时 A-roll 怎么剪：`speech_share`（A-roll 占全片的比例，brief 不写 `duration_s` 时用它推成片时长）、`pad_s` / `pad_out_s`（句前、句后留白，按 whisper 的时间）、`cutaway_after_s`（多长的 A-roll 才盖画面）、`cutaway_share`（盖住的比例）、`cutaway_lead_s` / `cutaway_tail_s`（开头、结尾留给说话人的秒数）、`j_s` / `l_s`（J/L cut 声音提前、延后的秒数）。不写的项用 plan_cut 的默认值 | speech_share 取参考的人声占比；其余要按说话段测，测不了的标存疑 |
 | `resolve[]` | `{element, route, status, how}`：每个用到的元素走哪条路线。route 取 `schema.ROUTES`，status 取 verified / probe / manual | aggregate 的路线表；探针后更新 |
-| `evidence` | `consistency`（每项的一致性判断）、`unverified`、`rejected_labels`、`single_source`、`beat`、`ramp_candidates`、`onsets_per_min`、`moves`（推拉的测到 / 判过 / digital 个数） | aggregate 自动写 |
+| `evidence` | `consistency`（每项的一致性判断）、`unverified`、`rejected_labels`、`single_source`、`beat`、`ramp_candidates`、`onsets_per_min`、`moves`（推拉的测到 / 判过 / digital 个数）、`music`（各条参考的覆盖率、歌数、人声判断，`dropped`，`doubts`：比如画面上有歌词字幕却没测出有人唱） | aggregate 自动写 |
 
 所有分布（DIST）的格式都是 `{median, mad, p10, p90, n}`，至少要有 median。
 
@@ -178,6 +180,11 @@ vlog-style/styles/                    仓库
 
 ## 11. 声音
 BPM、情绪、音乐和章节的对应、换曲点、环境声、旁白、音乐压低幅度、整体响度、音效。
+
+### 选曲
+按 `music` 块写，给选曲（`music_pick.py rank`）和挑歌的人看：什么样的歌（曲风、情绪、乐器、能量，写中文标签），有没有人唱，一片几首、每首放多久，什么时候进（第一声和真正铺开的时刻），口播下面垫不垫、压多少，怎么收尾，换歌和章节怎么对应，全片的音乐起伏。只写测量，不写歌名和歌手；`evidence.music` 的 `dropped` 和 `doubts` 要交代。
+
+最后一行是「选曲口味」：用户对选曲的调整，每条标日期（比如「2026-11-20 用户：口播段不要有人声的歌」）。没有就写「暂无」。
 
 ## 12. Resolve 实施清单
 每个元素走哪条路线、本机状态（已验证 / 待探针 / 手动），以及手动收尾清单。

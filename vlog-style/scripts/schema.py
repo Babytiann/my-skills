@@ -49,6 +49,24 @@ TEXT_STYLE = {
     },
 }
 
+MUSIC = {  # optional: packs distilled before measure_music.py have none (a warning, not an error)
+    "type": "object",
+    "required": ["refs"],
+    "properties": {
+        "refs": {"type": "integer", "minimum": 1},
+        "coverage": DIST, "songs_per_10min": DIST, "song_s": DIST, "bpm": DIST, "bed_s": DIST,
+        "enter_s": DIST, "body_s": DIST, "fade_in_s": DIST, "fade_out_s": DIST,
+        "under_speech": DIST, "duck_db": DIST,
+        "vocal": {"type": "object", "required": ["share", "verdict"], "properties": {
+            "share": SHARE, "verdict": {"type": "string", "enum": ["instrumental", "vocal", "mixed"]}}},
+        "change_at": {"type": "string", "enum": ["chapter", "within_chapter", "none"]},
+        "tags": {"type": "array", "items": {"type": "object", "required": ["cat", "tag", "zh", "share"], "properties": {
+            "cat": {"type": "string", "enum": ["genre", "mood", "instrument", "energy"]}, "tag": {"type": "string"},
+            "zh": {"type": "string"}, "share": SHARE}}},
+        "energy_curve": {"type": "array", "items": NUM},
+    },
+}
+
 STYLE = {
     "type": "object",
     "required": ["schema_version", "name", "sources", "basis", "deliverable", "structure",
@@ -107,6 +125,7 @@ STYLE = {
             "grain": {"type": ["object", "null"]}}},
         "text": {"type": "object", "properties": {
             "title": TEXT_STYLE, "chapter_card": TEXT_STYLE, "subtitle": TEXT_STYLE}},
+        "music": MUSIC,
         "audio": {"type": "object", "properties": {
             "bpm": DIST, "mood": {"type": "string"}, "lufs": NUM, "duck_db": NUM,
             "music_changes": {"type": "string"}, "sfx": {"type": "array"},
@@ -228,6 +247,12 @@ def check_style(style: dict) -> list[str]:
     return errs
 
 
+def style_warnings(style: dict) -> list[str]:
+    if "music" not in style:
+        return ["no music block: run measure_music.py on the references, then aggregate.py draft --section music"]
+    return []
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     if len(argv) != 2 or argv[0] not in ("style", "plan"):
@@ -237,6 +262,8 @@ def main(argv: list[str] | None = None) -> int:
     errs = check_style(data) if argv[0] == "style" else validate(data, PLAN)
     for e in errs:
         print(e)
+    for w in style_warnings(data) if argv[0] == "style" else []:
+        print(f"warning: {w}", file=sys.stderr)
     print("ok" if not errs else f"{len(errs)} problem(s)", file=sys.stderr)
     return 1 if errs else 0
 

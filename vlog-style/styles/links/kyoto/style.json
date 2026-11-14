@@ -350,6 +350,123 @@
   "sfx": [],
   "music_changes": "约每章 6.4 处换曲/停顿候选（tempo 变化 + 拍点中断），按章节换曲需人工确认"
  },
+ "music": {
+  "refs": 1,
+  "coverage": {
+   "median": 0.815,
+   "mad": 0.0,
+   "p10": 0.815,
+   "p90": 0.815,
+   "n": 1
+  },
+  "songs_per_10min": {
+   "median": 3.9,
+   "mad": 0.0,
+   "p10": 3.9,
+   "p90": 3.9,
+   "n": 1
+  },
+  "bed_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0,
+   "p90": 0,
+   "n": 1
+  },
+  "enter_s": {
+   "median": 1.0,
+   "mad": 0.0,
+   "p10": 1,
+   "p90": 1,
+   "n": 1
+  },
+  "body_s": {
+   "median": 10.0,
+   "mad": 0.0,
+   "p10": 10,
+   "p90": 10,
+   "n": 1
+  },
+  "fade_in_s": {
+   "median": 13.0,
+   "mad": 0.0,
+   "p10": 13.0,
+   "p90": 13.0,
+   "n": 1
+  },
+  "fade_out_s": {
+   "median": 0.0,
+   "mad": 0.0,
+   "p10": 0.0,
+   "p90": 0.0,
+   "n": 1
+  },
+  "under_speech": {
+   "median": 0.82,
+   "mad": 0.0,
+   "p10": 0.82,
+   "p90": 0.82,
+   "n": 1
+  },
+  "duck_db": {
+   "median": 3.4,
+   "mad": 0.0,
+   "p10": 3.4,
+   "p90": 3.4,
+   "n": 1
+  },
+  "song_s": {
+   "median": 120.0,
+   "mad": 70.0,
+   "p10": 49.8,
+   "p90": 218.0,
+   "n": 9
+  },
+  "bpm": {
+   "median": 93.6,
+   "mad": 24.8,
+   "p10": 44.6,
+   "p90": 121.5,
+   "n": 7
+  },
+  "vocal": {
+   "share": 0.0,
+   "verdict": "instrumental"
+  },
+  "change_at": "within_chapter",
+  "tags": [
+   {
+    "cat": "genre",
+    "tag": "acoustic folk",
+    "zh": "原声民谣",
+    "share": 0.3
+   },
+   {
+    "cat": "instrument",
+    "tag": "ukulele",
+    "zh": "尤克里里",
+    "share": 0.37
+   },
+   {
+    "cat": "energy",
+    "tag": "slow and gentle",
+    "zh": "慢而柔",
+    "share": 0.31
+   }
+  ],
+  "energy_curve": [
+   -14.4,
+   -8.1,
+   -10.0,
+   -14.2,
+   -11.8,
+   -11.8,
+   -6.0,
+   -1.1,
+   0.0,
+   -4.1
+  ]
+ },
  "resolve": [
   {
    "element": "剪辑点",
@@ -602,7 +719,32 @@
   "onsets_per_min": 105.3,
   "unverified": [],
   "rejected_labels": [],
-  "single_source": []
+  "single_source": [],
+  "music": {
+   "refs": {
+    "BV1ym42137vx": {
+     "coverage": 0.815,
+     "songs": 9,
+     "stings": 3,
+     "beds": 0,
+     "verdicts": [
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental",
+      "instrumental"
+     ],
+     "body_s": 10,
+     "under_speech": 0.82
+    }
+   },
+   "dropped": [],
+   "doubts": []
+  }
  },
  "photo": {
   "dur_s": 2.6,

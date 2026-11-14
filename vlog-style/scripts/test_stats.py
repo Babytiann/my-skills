@@ -83,6 +83,9 @@ class BeatTest(unittest.TestCase):
         self.assertFalse(stats.tempo_agrees(99.92, 129.2))
         self.assertIsNone(stats.tempo_agrees(None, 120.0))
 
+    def test_bpm_of_two_gaps_far_apart_is_none(self):
+        self.assertIsNone(stats.bpm_from_beats([0.0, 0.3, 1.3]))  # gaps 0.3 and 1.0, median 0.65 matches neither
+
     def test_bpm_survives_frame_quantisation(self):
         hop = 512 / 22050  # librosa frame
         beats = [round(k * 60 / 128 / hop) * hop for k in range(200)]
