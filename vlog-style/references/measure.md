@@ -28,6 +28,9 @@ R=$(python3 -I -B paths.py resolve cache/refs/<id>)
   - torch 等依赖约 2 GB，已经下好。
   - beat_this 的权重 81 MB。服务器很慢，下载会被截断，所以不由脚本自动下载，要手动下到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变）。没下好时脚本自动改用 librosa，`beats.engine` 会记为 `librosa`，这时没有重拍。
   - whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。默认会跑；没有人声的片子，或者烧录字幕已经覆盖旁白时，加 `--no-asr`（先看字幕段有没有长空档）。
+  - 选曲用的两个模型，第一次测音乐时从 Hugging Face 下载（2026-11-14 在 M6 / 24 GB、torch 2.15、transformers 5.23 上实测，30 分钟音频取 BV1sHqPBLExZ 前 1786 秒）：
+    - CLAP 用 `laion/clap-htsat-unfused`（614 MB）：打曲风、情绪、乐器标签，算两段音乐像不像。30 分钟切成 178 个 10 秒窗，mps 上约 570 倍实时（几秒），加载 5 秒。拿测得的人声段核对：「有人说话」对「音乐」提示词区分人声窗口的 AUC 0.974。`laion/larger_clap_music` 不能用，见 learnings.md 2026-11-14。transformers 5 的 `get_*_features` 返回对象，取 `.pooler_output`（512 维，等于前向的 `*_embeds`），处理器参数是 `audio=`。
+    - demucs htdemucs（84 MB，demucs 4.1.0 从 `adefossez/HTDemucs` 拉，旧的 dl.fbaipublicfiles.com 地址 403）：分出人声和伴奏。30 分钟 88 秒，约 20 倍实时，按 60 秒一段跑，峰值内存 1.9 GB。它分出的人声包括口播，不只是唱歌，见 learnings.md 2026-11-14。
 - **在合成测试片上实测：** 16 秒的片子跑完全部测量约 10 秒。长片的耗时在第一次真实炼化时记到这里。博主模式的第一批（links 是 29–55 分钟）每步跑完都记一下耗时，再决定更长的片子要不要入池。
   - 实测（M 系列 Mac，1080p 下载，`--no-asr`，单位分钟；判读没有计时）：
     - 最孤独的房子（29:22）：prep 2.9、OCR 10.3、measure_video 7.3、measure_audio 0.7、`--redo text` 0.4，合计 21.6。另外修 bug 后重测 `--redo cuts` 7.0。
