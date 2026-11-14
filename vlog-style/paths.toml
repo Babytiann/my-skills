@@ -5,6 +5,7 @@
 root = "/Volumes/Meow Disk/vlog-style"
 
 [dirs]                  # 以下全部相对 root
-styles   = "styles"     # 风格包的本地派生素材：stills/ luts/ drx/ fusion/
-projects = "projects"   # 每个复刻项目：footage/ proxies/ index/ plan/ qa/
+styles   = "styles"     # 风格包的本地派生素材：stills/ luts/ drx/ fusion/ music/
+projects = "projects"   # 每个复刻项目：footage/ proxies/ index/ plan/ qa/ music/
 cache    = "cache"      # 临时文件，炼化结束后移进废纸篓
+music    = "music"      # 共享曲库：一首一个文件夹 <id>/，放曲子、track.json、embed.json

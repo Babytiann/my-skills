@@ -46,6 +46,13 @@ class PathsTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.p.rel("/somewhere/else.mp4")
 
+    def test_music_is_a_reserved_piece_and_a_library_track_is_a_plain_name(self):
+        with self.assertRaises(ValueError):
+            paths.check_style_name("links/music")
+        self.assertEqual(self.p.rel(self.p.music("snow-road-abc123")), "music/snow-road-abc123")
+        with self.assertRaises(ValueError):
+            self.p.music("a/b")
+
     def test_names(self):
         self.assertEqual(self.p.style("极夜纪录").name, "极夜纪录")
         self.assertEqual(self.p.style("links/polar-night"), self.root / "styles" / "links" / "polar-night")
@@ -188,7 +195,8 @@ class VolumeTest(unittest.TestCase):
         self.assertEqual(p.root, root)
         made = paths.init(p, project="trip")
         self.assertTrue((root / "projects" / "trip" / "footage").is_dir())
-        self.assertEqual(p.rel(made[-1]), "projects/trip/qa")
+        self.assertEqual(p.rel(made[-1]), "projects/trip/music")
+        self.assertTrue((root / "music").is_dir())  # the shared library
 
     def test_a_root_off_the_external_disks_is_not_checked(self):
         root = self.use(Path(self.tmp.name) / "root")

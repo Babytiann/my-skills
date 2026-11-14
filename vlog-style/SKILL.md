@@ -32,8 +32,9 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 <root>/
   styles/<名字>/                 stills/（≤10 张低清关键帧）、luts/、drx/、fusion/
   styles/<博主|misc>/refs/<id>/  keep 留下的测量（转写和字幕原文已剥掉），重炼、补参考用
-  projects/<项目>/               footage/（原始素材，只读）、proxies/、index/、plan/、qa/
+  projects/<项目>/               footage/（原始素材，只读）、proxies/、index/、plan/、qa/、music/（这个项目自带的曲子）
   cache/refs/<id>/               参考片下载、代理、抽帧、拼图、事件条；炼化完先 keep，再移进废纸篓
+  music/<id>/                    共享曲库：一首一个文件夹，曲子、track.json（测量和授权）、embed.json（CLAP 向量），见 music.md
 ```
 
 - 风格包的文字部分（STYLE.md、style.json、sources.md）放在仓库里的 `vlog-style/styles/<名字>/`，派生素材放在 root 下。博主文件夹本身还有一份 sources.md，记出处和候选视频。
@@ -59,9 +60,10 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 | xcrun swift | `vision_ocr.swift` | Apple Vision 中文 OCR，直接解释执行，不留编译产物 |
 | opencli + yt-dlp | 下载 B 站视频 | 借 Chrome 的登录状态；1080p 就够 |
 | `trash` | 清理 | 一律移进废纸篓，不用 `rm` |
+| yt-dlp | 上网找配乐时只下音频 | `music_lib.py fetch` 用，不登录、不带 cookies |
 | davinci-resolve MCP | 实时搭时间线 | samuelgursky/davinci-resolve-mcp，注册为 `davinci-resolve` 和 `davinci-resolve-advanced`；注册后要新开一个会话（有的客户端要重启）才看得到工具 |
 
-第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变），没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。
+第一次运行时会下载模型：torch 等依赖约 2 GB；beat_this 权重 81 MB，要手动放到 `torch.hub.get_dir()` 下的 `checkpoints/beat_this-final0.ckpt`（默认 `~/.cache/torch/hub`，设了 `TORCH_HOME` 就跟着变），没有时自动改用 librosa；whisper large-v3-turbo 约 1.6 GB，第一次转写时下载。选曲用的 CLAP（`laion/clap-htsat-unfused`，614 MB）和 demucs（htdemucs，84 MB）第一次 `music_lib.py scan` 时从 Hugging Face 下载，`--no-models` 不用它们（见 measure.md）。
 
 纯标准库的脚本用 `python3 -I -B` 运行，其余用 uv。下载下来的文件只作为参数传给脚本，不在下载目录里运行任何东西。
 
@@ -161,11 +163,11 @@ description: "把剪得好的旅行 vlog（B 站链接或本地文件）炼化�
 改了脚本之后在 `scripts/` 下跑：
 
 ```sh
-for t in test_paths test_stats test_plan_cut test_tools; do python3 -I -B $t.py; done
+for t in test_paths test_stats test_plan_cut test_tools test_music; do python3 -I -B $t.py; done
 uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg、uv、xcrun
 ```
 
-`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare、cleanup keep（再用留下的测量重炼、两份参考合并），检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。另有 grade.py 的按章调色：从已知 CDL 的结果解回来、在范围内不动、撞边界要警告、暗素材自动按夜景只压暗、照片不进拟合、`preview` 自比为 0。`KEEP=1` 保留临时目录，方便查看拼图。
+`test_synthetic.py` 渲染一段答案已知的 16 秒测试片：硬切、12 帧叠化、6 帧闪白、摇镜、1.0→1.3 推镜、中文标题、底部字幕、120 BPM 节拍。依次跑 prep、OCR、measure_video、measure_audio、aggregate、plan_cut、compare、cleanup keep（再用留下的测量重炼、两份参考合并），检查剪辑点 ±1 帧、推镜比例 ±0.03、文字时间 ±0.25 秒、BPM ±1，以及所有输出里没有绝对路径。另有 grade.py 的按章调色：从已知 CDL 的结果解回来、在范围内不动、撞边界要警告、暗素材自动按夜景只压暗、照片不进拟合、`preview` 自比为 0。`MusicLibTest` 拿两首答案已知的合成曲跑 `music_lib.py add` 和 `scan --no-models`：90 BPM、C 大调、24 秒进主歌、边打拍子边淡出；128 BPM、A 小调、4 秒进鼓、满电平戛然而止，检查 BPM ±1、时长、进入点、高潮、收尾类型、调性、重扫跳过和没有绝对路径；`MODELS=1` 再加钢琴、鼓、和弦、`say` 人声叠和弦四首，跑 demucs 和 CLAP（第一次下约 700 MB）。`KEEP=1` 保留临时目录，方便查看拼图。
 
 ## 10. 当前状态
 
@@ -177,3 +179,4 @@ uv run --python 3.13 --script test_synthetic.py     # 约 15 秒，需要 ffmpeg
 - 2026-11-07 复刻补上了对白片要的环节：纸面剪辑（`story.json`）驱动的对白剪辑和按拍摄顺序铺开、按句转写和外语原文、`subs.py` 出字幕、`story.py review` 审片拼图、照片入片（`photo_clips.py`）、按章调色（`grade.py`）、对白和整片电平（`mix.py`）、读回整理和成片核对（`compare.py normalize`、`final`）。没有 story 时输出和改动前逐字节相同（`test_plan_cut.py` 的 baseline 测试）。Resolve 探针 #13–#17 跑完，#17 用合成素材从计划走到 H.265 成片，`compare.py final` 全过。用真实素材的完整试剪还没做；Links 包里 `aroll` 除 `speech_share` 外的值和 `photo` 块标着「存疑」，等试剪再定。
 - 2026-11-10 到 11-11 第二批九条炼完（用户按地点挑：日本四条、极地三条、极夜系列两集）：`links/hokkaido-dream`、`links/oki-islands`、`links/kyoto`、`links/aomori`、`links/uummannaq`、`links/longyearbyen`、`links/lofoten`，`links/polar-night` 由两集重建，替换 11-01 只用第 1 集的版本。测量都 keep 到了 `<root>/styles/links/refs/`，博主级包 `links` 由 12 份测量重新合并。途中改了四处：look 逐镜头遮黑边、2:1 参考的文字位置换算、字幕带取文字最密的一行、keep 清掉 `subtitle_misread` 的原文（见 learnings.md 2026-11-10、11-11）。第二批的缓存还在 `<root>/cache/refs/`，用户审过 STYLE.md 后决定先不清；以后清不清还是由用户定。
 - 2026-11-13 修了炼化小鹿Lawrence 时发现的 5 个脚本问题：标题颜色测成背景色、叠化带上甩镜方向、剪辑点太少也判卡点可信、博主级合并只取一条参考的写法、子包手加的特效进不了博主级包（见 learnings.md 2026-11-13）。字幕的颜色、描边、底板改成测量，只有 2026-11-13 以后跑过 strips 的参考才有。2026-11-14 按新的测量改了定稿包：links 的 13 个包字幕改成不描边、垫底条；lawrence 三个包写明双语台词行才垫底板（japan-winter 的 plate 改成 false）；misc/lawrence-hokkaido 的卡点可信度改成 uncertain。各包的炼化记录里有一条。同一天三条 Lawrence 参考 `--redo strips` 补了新测量后 keep（两条短片在 `<root>/styles/lawrence/refs/`，长片在 `<root>/styles/misc/refs/`），缓存移进了废纸篓。
+- 2026-11-14 开始加选曲（计划：从炼化的参考片学怎么选配乐、在 Resolve 里试听由用户定，或用户说「你来定」时 AI 直接定）。阶段 0 跑完 Resolve 探针 #18–#22、选定模型、核实曲子来源，结论在 music.md、resolve-routes.md 和 learnings.md。阶段 1 做完共享曲库 `music_lib.py`（add、fetch、list、scan）。参考片的配乐测量、风格包的 `music` 块、排名、试听和 AI 定还没做。
