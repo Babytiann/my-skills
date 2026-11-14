@@ -28,7 +28,7 @@
 
 - 仓库里：STYLE.md、style.json、本文件。
 - 本地 `<root>/styles/misc/lawrence-hokkaido/stills/`：10 张 320×180 关键帧，只用来做验收对照。
-- 参考片本身、代理、抽帧、总览图和事件条都在 `<root>/cache/refs/BV1S9ZGYqEEr/`。**还没有 keep**：等用户审过 STYLE.md，先 `cleanup.py keep BV1S9ZGYqEEr --style misc`（是 misc，不是 lawrence），再移进废纸篓。keep 时不要带转写和字幕原文。
+- 参考片本身、代理、抽帧、总览图和事件条：2026-11-14 先 `--redo strips` 重测了标题颜色和字幕样本（learnings.md 2026-11-13、11-14），再 `cleanup.py keep BV1S9ZGYqEEr --style misc`，剥掉转写和字幕原文的测量留在 `<root>/styles/misc/refs/BV1S9ZGYqEEr/`。keep 前从 labels.json 删了 3 条和 Part 卡重复的 chapter_card 特效（镜头 116、232、329），留下 56 条，和本包一致。缓存（连同 `*.bak-*` 备份）随后移进了废纸篓；以后要重测，按上面的链接重新下载。
 
 ## 后续
 
